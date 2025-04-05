@@ -1,0 +1,214 @@
+﻿@inject IScoutRepository ScoutRepository
+
+@if (ErrorMessages.Any()){
+    <RadzenCard>
+        <RadzenStack Orientation="Orientation.Vertical">
+            @foreach (string message in ErrorMessages)
+            {
+                <RadzenAlert AllowClose="false" AlertStyle="AlertStyle.Danger" Variant="Variant.Flat" Shade="Shade.Lighter">
+                    @message
+                </RadzenAlert>
+            }
+        </RadzenStack>
+    </RadzenCard>
+}
+else{
+    <RadzenDataGrid @ref="ScoutGridRef" TItem="Scout" Data="Scouts">
+        <Columns>
+            <RadzenDataGridColumn Title="Voornaam" Property="@nameof(Scout.Firstname)">
+                <EditTemplate Context="scout">
+                    <RadzenTextBox @bind-Value="scout.Firstname" />
+                </EditTemplate>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn Title="Achternaam" Property="@nameof(Scout.Lastname)">
+                <EditTemplate Context="scout">
+                    <RadzenTextBox @bind-Value="scout.Lastname" />
+                </EditTemplate>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn title="Geboortedatum" Property="@nameof(Scout.DateOfBirth)">
+                <EditTemplate Context="scout">
+                    <RadzenDatePicker @bind-Value="scout.DateOfBirth" />
+                </EditTemplate>
+            </RadzenDataGridColumn>
+            @if(patrol == null){
+                <RadzenDataGridColumn title="Patrouille" Property="@nameof(Scout.PatrolId)">
+                    <EditTemplate Context="scout">
+                        <RadzenNumeric @bind-Value="scout.PatrolId" />
+                    </EditTemplate>
+                </RadzenDataGridColumn>
+            }
+            <RadzenDataGridColumn title="PL" Width="100px">
+                <Template Context="scout">
+                    @if (scout.IsPL)
+                    {
+                        <RadzenIcon Icon="done" IconColor="@Colors.Success" />
+                    }
+                </Template>
+                <EditTemplate Context="scout">
+                    <RadzenSwitch Disabled="scout.IsAPL" Value="scout.IsPL" Change="@((args) => SetPL(patrol,scout))" />
+                </EditTemplate>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn title="APL" Width="100px">
+                <Template Context="scout">
+                    @if(scout.IsAPL){
+                        <RadzenIcon Icon="done" IconColor="@Colors.Success" />
+                    }
+                </Template>
+                <EditTemplate Context="scout">
+                    <RadzenSwitch Disabled="scout.IsPL" Value="scout.IsAPL" Change="@((args) => SetAPL(patrol,scout))" />
+                </EditTemplate>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn title="Leeftijd" Width="100px">
+                <Template Context="scout">
+                    @scout.CalculateAge((DateOnly)AgeDate)
+                </Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn Context="scout" Filterable="false" Sortable="false" TextAlign="TextAlign.Right" Frozen="true" FrozenPosition="FrozenColumnPosition.Right">
+                <Template Context="scout">
+                    <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Click="@((args) => EditScout(scout))" />
+                </Template>
+                <EditTemplate Context="scout">
+                    <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat" Size="ButtonSize.Medium" Click="@((args) => SaveScout(scout))" aria-label="Save" />
+                    <RadzenButton Icon="close" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Click="@((args) => CancelEditScout(scout))" aria-label="Cancel" />
+                    <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" Size="ButtonSize.Medium" Shade="Shade.Lighter" class="rz-my-1 rz-ms-1" Click="@(args => DeleteScout(scout))" aria-label="Delete" />
+                </EditTemplate>
+                <HeaderTemplate>
+                    @if (EditScouts.Any()){
+                        <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-mr-1" Click="@((args) => SaveAllScout())" aria-label="Save All" />
+                        <RadzenButton Icon="close" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-mr-2" Click="@((args) => CancelAllScout())" aria-label="Cancel" />
+                        <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" Size="ButtonSize.Medium" Shade="Shade.Lighter" class="rz-mr-1" Click="@(args => DeleteSelectedScout())" aria-label="Delete" />
+                    }
+                    <RadzenButton Icon="add_circle" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-mr-4" Click="@(() => AddScout())" />
+                </HeaderTemplate>
+            </RadzenDataGridColumn>
+        </Columns>
+    </RadzenDataGrid>
+}
+
+@code {
+    [Parameter] public List<Scout> Scouts { get; set; } = null;
+    [Parameter] public Patrol patrol { get; set; } = null;
+    [Parameter] public EventCallback<Patrol> UpdateRow { get; set; }
+
+    private List<Scout> EditScouts = new List<Scout>();
+
+    private RadzenDataGrid<Scout> ScoutGridRef { get; set; }
+
+    private DateOnly AgeDate = DateOnly.FromDateTime(DateTime.Now);
+
+    private List<string> ErrorMessages { get; set; } = new List<string>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if(Scouts == null && patrol == null){
+            ErrorMessages.Add("No scouts or patrol given!");
+        }
+        else if (patrol != null){
+            Scouts = patrol.Scouts;
+
+            if (patrol.SubGroup != null)
+            {
+                if (patrol.SubGroup.Edition != null)
+                {
+                    AgeDate = patrol.SubGroup.Edition.RSWStartDate;
+                }
+            }
+        }
+        await base.OnInitializedAsync();
+    }
+    private async Task EditScout(Scout scout){
+        await ScoutGridRef.EditRow(scout);
+        EditScouts.Add(scout);
+    }
+    private async Task SaveAllScout()
+    {
+        foreach (Scout scout in EditScouts)
+        {
+            await ScoutRepository.Save(scout);
+            await ScoutGridRef.UpdateRow(scout);
+        }
+        EditScouts = new List<Scout>();
+        await UpdateRow.InvokeAsync(patrol);
+    }
+    private async Task SaveScout(Scout scout)
+    {
+        await ScoutRepository.Save(scout);
+        await ScoutGridRef.UpdateRow(scout);
+        EditScouts.Remove(scout);
+        await UpdateRow.InvokeAsync(patrol);
+
+    }
+    private async Task CancelEditScout(Scout scout)
+    {
+        await ScoutRepository.RevertEdits(scout);
+        EditScouts.Remove(scout);
+        ScoutGridRef.CancelEditRow(scout);
+    }
+    private async Task CancelAllScout()
+    {
+        foreach (Scout scout in EditScouts)
+        {
+            await ScoutRepository.RevertEdits(scout);
+            ScoutGridRef.CancelEditRow(scout);
+        }
+        EditScouts = new List<Scout>();
+    }
+    private async Task DeleteScout(Scout scout)
+    {
+        if (patrol != null)
+        {
+            if (patrol.Scouts.Contains(scout)){
+                patrol.Scouts.Remove(scout);
+            }
+        }
+        await ScoutRepository.Delete(scout);
+        await ScoutGridRef.Reload();
+        EditScouts.Remove(scout);
+        await UpdateRow.InvokeAsync(patrol);
+    }
+    private async Task DeleteSelectedScout()
+    {
+        if (patrol != null)
+        {
+            foreach (Scout scout in EditScouts)
+            {
+                if (patrol.Scouts.Contains(scout))
+                {
+                    patrol.Scouts.Remove(scout);
+                }
+            }
+        }
+        foreach (Scout scout in EditScouts)
+        {
+            await ScoutRepository.Delete(scout);
+            await ScoutGridRef.Reload();
+        }
+        EditScouts = new List<Scout>();
+        await UpdateRow.InvokeAsync(patrol);
+    }
+    private async Task AddScout()
+    {
+        Scout NewScout = new Scout
+        {
+            Firstname = $"Scout {Scouts.Count}",
+            Lastname = $"Scout {Scouts.Count}",
+            DateOfBirth = DateOnly.FromDateTime(DateTime.Now.AddYears(-11)),
+        };
+        if(patrol != null){
+            NewScout.PatrolId = patrol.Id;
+            patrol.Scouts.Add(NewScout);
+        }
+        await ScoutGridRef.InsertAfterRow(NewScout,Scouts.Last());
+        await UpdateRow.InvokeAsync(patrol);
+        EditScouts.Add(NewScout);
+    }
+    private void SetPL(Patrol patrol, Scout scout){
+        scout.SetPL(patrol);
+        ScoutGridRef.Reload();
+    }
+    private void SetAPL(Patrol patrol, Scout scout)
+    {
+        scout.SetAPL(patrol);
+        ScoutGridRef.Reload();
+    }
+}

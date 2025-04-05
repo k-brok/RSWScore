@@ -1,0 +1,91 @@
+﻿@page "/admin/patrol"
+@attribute [Authorize]
+@inject IPatrolRepository PatrolRepository
+@inject IEditionRepository EditionRepository
+
+<h3>PatrolManagement</h3>
+
+@if (Patrols.Any())
+{
+    <RSW.WebApp.Components.Lists.PatrolGrid />
+    //Patrols="Patrols" RSWDate="RSWDate"
+}
+else
+{
+    <p>Geen patrouilles gevonden.</p>
+}
+
+@code {
+    private List<Patrol> Patrols = new List<Patrol>();
+    [SupplyParameterFromQuery] public string EditionYear { get; set; }
+    private DateOnly? RSWDate = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Console.WriteLine($"[DEBUG] EditionYear ontvangen: {EditionYear}");
+
+        if (!string.IsNullOrEmpty(EditionYear))
+        {
+            if (EditionYear.ToLower() == "all")
+            {
+                Patrols = await PatrolRepository.GetAsync();
+                Console.WriteLine($"[DEBUG] EditionYear is 'all', Patrols geladen: {Patrols.Count}");
+            }
+            else
+            {
+                short EditionYearInt;
+                bool result = Int16.TryParse(EditionYear, out EditionYearInt);
+
+                if (!result)
+                {
+                    Console.WriteLine($"[ERROR] EditionYear '{EditionYear}' kon niet worden geconverteerd naar een short.");
+                    NotificationService.Notify(new NotificationMessage
+                        {
+                            Severity = NotificationSeverity.Error,
+                            Summary = "Editie error!",
+                            Detail = $"{EditionYear} is geen geldige input!",
+                            Duration = 4000
+                        });
+                    return;
+                }
+
+                Edition edition = await EditionRepository.GetByYearAsync(EditionYearInt);
+                if (edition == null)
+                {
+                    Console.WriteLine($"[ERROR] Edition met jaar {EditionYearInt} is NULL!");
+                    NotificationService.Notify(new NotificationMessage
+                        {
+                            Severity = NotificationSeverity.Error,
+                            Summary = "Editie error!",
+                            Detail = $"Editie met jaar {EditionYearInt} kan niet gevonden worden!",
+                            Duration = 4000
+                        });
+                    return;
+                }
+
+                if (edition.SubGroups == null)
+                {
+                    Console.WriteLine($"[ERROR] Edition {EditionYearInt} heeft geen SubGroups!");
+                    return;
+                }
+
+                Console.WriteLine($"[DEBUG] Edition {EditionYearInt} heeft {edition.SubGroups.Count} SubGroups.");
+
+                Patrols = edition.SubGroups.SelectMany(S => S.patrols).ToList();
+                Console.WriteLine($"[DEBUG] Patrols geladen uit Edition {EditionYearInt}: {Patrols.Count}");
+
+                RSWDate = edition.RSWStartDate;
+            }
+        }
+        else
+        {
+            Patrols = await PatrolRepository.GetAsync();
+            Console.WriteLine($"[DEBUG] Geen EditionYear opgegeven, Patrols direct geladen: {Patrols.Count}");
+        }
+
+        // Controleer het type van Patrols voordat het aan de component wordt doorgegeven
+        Console.WriteLine($"[DEBUG] Type van Patrols: {Patrols?.GetType()}");
+
+        await base.OnInitializedAsync();
+    }
+}

@@ -1,0 +1,119 @@
+﻿@inject ICategoryRepository CategoryRepository
+@inject IScoreRepository ScoreRepository
+
+@implements IDisposable
+<RadzenCard>
+	<RadzenDataGrid @ref=PatrolGrid TItem="Patrol" Data="@patrols" Density="Density.Compact">
+		<Columns>
+			<RadzenDataGridColumn Title="Patrol" Width="80px">
+				<Template Context="patrol">
+					@patrol.StringNumber - @patrol.Name
+				</Template>
+			</RadzenDataGridColumn>
+			@if (Category != null && SubCategories != null)
+			{
+				@foreach (Category category in _Current.Categories.Where(C => C.Id == Category.Id))
+				{
+					string width = $"{category.SubCategories.Where(C => SubCategories.Select(C => C.Name).ToList().Contains(C.Name)).SelectMany(S => S.criterias).Count() * 70}px";
+					<RadzenDataGridColumn Title="@category.Name" Width="@width" Frozen="false" Sortable="false" Filterable="false" TextAlign="TextAlign.Center">
+						<Columns>
+							@foreach (SubCategory subCategory in category.SubCategories.Where(C => SubCategories.Select(C => C.Name).ToList().Contains(C.Name)))
+							{
+								string width = $"{subCategory.criterias.Count() * 70}px";
+								<RadzenDataGridColumn Title="@subCategory.Name" Frozen="false" Sortable="false" Width="@width" Filterable="false" TextAlign="TextAlign.Center">
+									<Columns>
+										@foreach (Criteria criteria in subCategory.criterias)
+									{
+										<RadzenDataGridColumn Title="1" Frozen="false" Sortable="false" Filterable="false" MaxWidth="70px" TextAlign="TextAlign.Center">
+											<Template Context="patrol">
+												@{
+												Score CurrentScore = patrol.Scores.FirstOrDefault(S => S.CriteriaId == criteria.Id);
+												if (CurrentScore == null)
+												{
+													CurrentScore = new Score
+															{
+																PatrolId = patrol.Id,
+																CriteriaId = criteria.Id
+															};
+												}
+											}
+											<RadzenNumeric @ref=@GCID[$"{patrol.Id}-{criteria.Id}"] TValue="int" Max="@criteria.MaxScore" Value="@CurrentScore.Value" Style="max-width: 80px" Change="@(args => UpdateScoreValue(patrol, CurrentScore,(int)args))" @onkeyup="(args => OnOrderGridKeyDown(args, patrols.IndexOf(patrol), criteria.Id,
+												subCategory.criterias.IndexOf(criteria) < subCategory.criterias.Count - 1
+													? subCategory.criterias[subCategory.criterias.IndexOf(criteria) + 1].Id
+													: subCategory.criterias[0].Id))" />
+										</Template>
+									</RadzenDataGridColumn>
+									}
+								</Columns>
+							</RadzenDataGridColumn>
+							}
+						</Columns>
+					</RadzenDataGridColumn>
+				}
+			}
+		</Columns>
+	</RadzenDataGrid>
+</RadzenCard>
+@code {
+	private RadzenDataGrid<Patrol> PatrolGrid;
+	private Dictionary<string,RadzenNumeric<int>> GCID = new Dictionary<string, RadzenNumeric<int>>();
+	[Parameter] public List<Patrol> patrols { get; set; }
+
+	[Parameter] public Category Category { get; set; }
+	[Parameter] public IEnumerable<SubCategory> SubCategories { get; set; }
+
+	protected async override Task OnInitializedAsync()
+	{
+		_Current.Subscribe += UpdatePageScoreGrid;;
+		await base.OnInitializedAsync();
+	}
+	private async Task UpdateScoreValue(Patrol patrol, Score Score, int value)
+	{
+		Score.Value = value;
+
+		if (!patrol.Scores.Contains(Score))
+		{
+			patrol.Scores.Add(Score);
+		}
+		
+		_Current.Subscribe.Invoke();
+
+		await ScoreRepository.Save(Score);
+	}
+	private async void UpdatePageScoreGrid()
+	{
+		await InvokeAsync(StateHasChanged);
+	}
+	private async Task OnOrderGridKeyDown(KeyboardEventArgs e, int index, int criteria, int NextCriteria = 0)
+	{
+		if (e.Code == "Enter" || e.Code == "NumpadEnter")
+		{
+			if (index < patrols.Count - 1) // Controleer of we niet bij de laatste rij zijn
+			{
+				// Selecteer de volgende rij
+				PatrolGrid.SelectRow(patrols[index + 1]);
+
+				// Wacht tot de focus correct wordt ingesteld
+				if (GCID.TryGetValue($"{patrols[index + 1].Id}-{criteria}", out var nextNumeric) && nextNumeric != null)
+				{
+					await nextNumeric.FocusAsync();
+				}
+			}
+			else if (index == patrols.Count - 1)
+			{
+				// Selecteer de volgende rij
+				PatrolGrid.SelectRow(patrols[0]);
+
+				// Wacht tot de focus correct wordt ingesteld
+				if (GCID.TryGetValue($"{patrols[0].Id}-{NextCriteria}", out var nextNumeric) && nextNumeric != null)
+				{
+					await nextNumeric.FocusAsync();
+				}
+			}
+		}
+	}
+	public void Dispose()
+	{
+		_Current.Subscribe -= UpdatePageScoreGrid;
+	}
+}

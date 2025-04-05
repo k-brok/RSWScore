@@ -1,0 +1,95 @@
+﻿@inject ISubGroupRepository SubGroupRepository
+
+@if (ErrorMessages.Any()){
+    <RadzenCard>
+        <RadzenStack Orientation="Orientation.Vertical">
+            @foreach (string message in ErrorMessages)
+            {
+                <RadzenAlert AllowClose="false" AlertStyle="AlertStyle.Danger" Variant="Variant.Flat" Shade="Shade.Lighter">
+                    @message
+                </RadzenAlert>
+            }
+        </RadzenStack>
+    </RadzenCard>
+}
+else{
+    <RadzenDataGrid @ref="SubGroupGridRef" TItem="SubGroup" Data="SubGroups">
+        <Columns>
+            <RadzenDataGridColumn Title="Voornaam" Property="@nameof(SubGroup.Color)">
+                <EditTemplate Context="subgroup">
+                    <RadzenTextBox @bind-Value="subgroup.Color" />
+                </EditTemplate>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn Context="subgroup" Filterable="false" Sortable="false" TextAlign="TextAlign.Right" Frozen="true" FrozenPosition="FrozenColumnPosition.Right">
+                <Template Context="subgroup">
+                    <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Click="@((args) => EditSubGroup(subgroup))" />
+                </Template>
+                <EditTemplate Context="subgroup">
+                    <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat" Size="ButtonSize.Medium" Click="@((args) => SaveSubGroup(subgroup))" aria-label="Save" />
+                    <RadzenButton Icon="close" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Click="@((args) => CancelEditSubGroup(subgroup))" aria-label="Cancel" />
+                    <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" Size="ButtonSize.Medium" Shade="Shade.Lighter" class="rz-my-1 rz-ms-1" Click="@(args => DeleteSubGroup(subgroup))" aria-label="Delete" />
+                </EditTemplate>
+                <HeaderTemplate>
+                    <RadzenButton ButtonStyle="ButtonStyle.Success" Icon="add_circle" Click="@(() => AddSubGroup())" />
+                </HeaderTemplate>
+            </RadzenDataGridColumn>
+        </Columns>
+        <Template Context="Subgroup">
+            @if (Subgroup.patrols.Any()){
+                <PatrolGrid  />
+            }
+        </Template>
+    </RadzenDataGrid>
+}
+
+@code {
+    [Parameter] public List<SubGroup> SubGroups { get; set; } = null;
+    [Parameter] public Edition edition { get; set; } = null;
+
+    private RadzenDataGrid<SubGroup> SubGroupGridRef { get; set; }
+
+    private List<string> ErrorMessages { get; set; } = new List<string>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (SubGroups == null && edition == null)
+        {
+            ErrorMessages.Add("No subgroups or patrol givven!");
+        }
+        else if (edition != null)
+        {
+            SubGroups = edition.SubGroups.ToList();
+        }
+        await base.OnInitializedAsync();
+    }
+    private async Task EditSubGroup(SubGroup subgroup){
+        await SubGroupGridRef.EditRow(subgroup);
+    }
+    private async Task SaveSubGroup(SubGroup subgroup)
+    {
+        await SubGroupRepository.Save(subgroup);
+        await SubGroupGridRef.UpdateRow(subgroup);
+    }
+    private async Task CancelEditSubGroup(SubGroup subgroup)
+    {
+        await SubGroupRepository.RevertEdits(subgroup);
+        SubGroupGridRef.CancelEditRow(subgroup);
+    }
+    private async Task DeleteSubGroup(SubGroup subgroup)
+    {
+        if (edition != null)
+        {
+            if (edition.SubGroups.Contains(subgroup))
+            {
+                edition.SubGroups.Remove(subgroup);
+            }
+        }
+        await SubGroupRepository.Delete(subgroup);
+        await SubGroupGridRef.Reload();
+    }
+    private async Task AddSubGroup()
+    {
+        SubGroup NewSubGroup = new SubGroup();
+        await SubGroupGridRef.InsertRow(NewSubGroup);
+    }
+}

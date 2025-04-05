@@ -1,0 +1,46 @@
+﻿@inject RefreshCurrentScores RefreshService
+@inject IEditionRepository _editionRepository
+@inject ScoreCalculationService Calculator
+@implements IDisposable
+
+<RadzenCard>
+    <RadzenStack Orientation="Orientation.Vertical">
+        <RadzenText TextStyle="TextStyle.H3">Top 10</RadzenText>
+        <RadzenDataGrid TItem="Patrol" Data="Patrols">
+            <Columns>
+                <RadzenDataGridColumn Title="Positie" Property="@nameof(Patrol.position)" />
+                <RadzenDataGridColumn Title="Nummer" Property="@nameof(Patrol.Number)" />
+                <RadzenDataGridColumn Title="Naam" Property="@nameof(Patrol.Name)" />
+                <RadzenDataGridColumn Title="Score" Property="@nameof(Patrol.TotalScore)">
+                    <HeaderTemplate>
+                        <RadzenButton Click="@((args) => RefreshUI())" Icon="cached" />
+                    </HeaderTemplate>
+                </RadzenDataGridColumn>
+            </Columns>
+        </RadzenDataGrid>
+    </RadzenStack>
+</RadzenCard>
+
+@code {
+    private List<Patrol> Patrols = new();
+    protected override void OnInitialized()
+    {
+        Patrols = RefreshService.Top10;
+        RefreshService.OnRefreshRequested += RefreshUI;
+    }
+
+    private async void RefreshUI()
+    {
+        if (_Current.Edition != null)
+        {
+            await Calculator.UpdateEdition();
+            Patrols = _Current.Edition.SubGroups.SelectMany(S => S.patrols).OrderBy(P => P.position).Take(10).ToList();
+        }
+        InvokeAsync(StateHasChanged); // UI verversen
+    }
+
+    public void Dispose()
+    {
+        RefreshService.OnRefreshRequested -= RefreshUI;
+    }
+}

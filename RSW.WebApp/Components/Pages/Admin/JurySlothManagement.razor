@@ -1,0 +1,18 @@
+﻿
+
+@page "/Admin/JurySlot"
+@attribute [Authorize]
+
+@inject IJurySlotRepository JurySlotRepository
+<h3>JurySlothManagement</h3>
+
+<RSW.WebApp.Components.Lists.JurySlotGrid JurySlots="Slots" />
+
+@code {
+	List<JurySlot> Slots;
+	protected override async Task OnInitializedAsync()
+	{
+		Slots = await JurySlotRepository.GetAllAsync();
+		await base.OnInitializedAsync();
+	}
+}
