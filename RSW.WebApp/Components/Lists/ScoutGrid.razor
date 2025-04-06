@@ -27,8 +27,11 @@ else{
             </RadzenDataGridColumn>
             <RadzenDataGridColumn title="Geboortedatum" Property="@nameof(Scout.DateOfBirth)">
                 <EditTemplate Context="scout">
-                    <RadzenDatePicker @bind-Value="scout.DateOfBirth" />
+                    <RadzenDatePicker @bind-Value="scout.DateOfBirth" DateFormat="@SiteSettings.GetString("Date format")" />
                 </EditTemplate>
+				<Template Context="scout">
+                    @scout.DateOfBirth.ToString(SiteSettings.GetString("Date format"))
+                </Template>
             </RadzenDataGridColumn>
             @if(patrol == null){
                 <RadzenDataGridColumn title="Patrouille" Property="@nameof(Scout.PatrolId)">

@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using RSW.WebApp.Data;
 using RSW.WebApp.Entities;
 
@@ -8,16 +9,19 @@ namespace RSW.WebApp.Helpers
     {
         private readonly UserManager<ApplicationUser> _usermanager;
         private readonly RoleManager<IdentityRole> _rolemanager;
-        public InitData(UserManager<ApplicationUser> usermanager, RoleManager<IdentityRole> rolemanager)
+        private readonly ApplicationDbContext _context;
+        public InitData(UserManager<ApplicationUser> usermanager, RoleManager<IdentityRole> rolemanager, ApplicationDbContext context)
         {
             _usermanager = usermanager;
             _rolemanager = rolemanager;
+            _context = context;
         }
-        
+
         public async Task Initialize()
         {
             await SeedRoles();
             await SeedAdminUser();
+            await SeedWebSettings();
         }
         
         private readonly string[] Roles = new string[] { "Admin", "Manager", "Member" };
@@ -61,6 +65,25 @@ namespace RSW.WebApp.Helpers
             {
                 Console.WriteLine("Er bestaat al een admin-gebruiker.");
             }
+        }
+        public async Task SeedWebSettings()
+        {
+            var webSettings = new List<WebSetting>
+            {
+                new WebSetting { Key = "Date format", Value = "dd-MM-yyyy" },
+                new WebSetting { Key = "Time format", Value = "HH:mm" },
+                new WebSetting { Key = "Timezone", Value = "Central European Standard Time" }
+            };
+
+            foreach (var setting in webSettings)
+            {
+                if (!await _context.WebSettings.AnyAsync(w => w.Key == setting.Key))
+                {
+                    _context.WebSettings.Add(setting);
+                }
+            }
+
+            await _context.SaveChangesAsync();
         }
     }
 }

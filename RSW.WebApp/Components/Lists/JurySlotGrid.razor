@@ -50,25 +50,25 @@ else
             <RadzenDataGridColumn Title="Start" Property="@nameof(JurySlot.OpeningTime)" Width="200px">
                 <EditTemplate Context="slot">
                     <RadzenDatePicker TValue="DateTime"
-                                      ShowTime="true"
-                                      DateFormat="dd-MM-yyyy HH:mm"
-                                      Value="@(TimeZoneService.ConvertUtcToLocal(slot.OpeningTime))"
-                                      Change="@(async (args) => slot.OpeningTime = TimeZoneService.ConvertLocalToUtc(args.Value))" />
+                    ShowTime="true"
+                    DateFormat="@DateTimeformat"
+                    Value="@(TimeZoneService.ConvertUtcToLocal(slot.OpeningTime))"
+                    Change="@(async (args) => slot.OpeningTime = TimeZoneService.ConvertLocalToUtc(args.Value))" />
                 </EditTemplate>
                 <Template Context="slot">
-                    @TimeZoneService.ConvertUtcToLocal(slot.OpeningTime).ToString();
+                    @TimeZoneService.ConvertUtcToLocal(slot.OpeningTime).ToString(SiteSettings.GetString("Date format"));
                 </Template>
             </RadzenDataGridColumn>
             <RadzenDataGridColumn Title="Einde" Property="@nameof(JurySlot.ClosingTime)" Width="200px">
                 <EditTemplate Context="slot">
                     <RadzenDatePicker TValue="DateTime"
-                                      ShowTime="true"
-                                      DateFormat="dd-MM-yyyy HH:mm"
-                                      Value="@(TimeZoneService.ConvertUtcToLocal(slot.ClosingTime))"
-                                      Change="@(async (args) => slot.ClosingTime = TimeZoneService.ConvertLocalToUtc(args.Value))" />
+                    ShowTime="true"
+                    DateFormat="@DateTimeformat"
+                    Value="@(TimeZoneService.ConvertUtcToLocal(slot.ClosingTime))"
+                    Change="@(async (args) => slot.ClosingTime = TimeZoneService.ConvertLocalToUtc(args.Value))" />
                 </EditTemplate>
                 <Template Context="slot">
-                    @TimeZoneService.ConvertUtcToLocal(slot.ClosingTime).ToString();
+                    @TimeZoneService.ConvertUtcToLocal(slot.ClosingTime).ToString(SiteSettings.GetString("Date format"));
                 </Template>
             </RadzenDataGridColumn>
             <RadzenDataGridColumn Context="juryslot" Filterable="false" Sortable="false" TextAlign="TextAlign.Right" Frozen="true" FrozenPosition="FrozenColumnPosition.Right">
@@ -95,8 +95,11 @@ else
     private List<Edition> Editions { get; set; }
     private List<string> ErrorMessages { get; set; } = new List<string>();
 
+    private string DateTimeformat;
+
     protected override async Task OnInitializedAsync()
     {
+        DateTimeformat = $"{@SiteSettings.GetString("Date format")} {@SiteSettings.GetString("Time format")}";
         Editions = await EditionRepository.GetAllAsync();
         Categories = await CategoryRepository.GetAllAsync();
         await base.OnInitializedAsync();

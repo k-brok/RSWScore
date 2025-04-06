@@ -63,6 +63,7 @@ namespace RSW.WebApp
             builder.Services.AddScoped<ISubGroupRepository, SubGroupRepository>();
             builder.Services.AddScoped<ISignupCodeRepository, SignupCodeRepository>();
             builder.Services.AddScoped<IJurySlotRepository, JurySlotRepository>();
+            builder.Services.AddScoped<IWebSettingRepository, WebSettingRepository>();
 
             builder.Services.AddScoped<InitData>();
             builder.Services.AddScoped<GenerateExampleData>();
@@ -73,6 +74,7 @@ namespace RSW.WebApp
 
             builder.Services.AddScoped<UserStorage>();
 
+            builder.Services.AddSingleton<SettingsService>();
             builder.Services.AddSingleton<TimeZoneService>();
             builder.Services.AddSingleton<RefreshCurrentScores>();
             //builder.Services.AddHostedService(sp => sp.GetRequiredService<RefreshCurrentScores>());
@@ -117,6 +119,7 @@ namespace RSW.WebApp
             app.Services.CreateScope().ServiceProvider.GetRequiredService<CurrentEditionService>().Categories = await app.Services.CreateScope().ServiceProvider.GetRequiredService<ICategoryRepository>().GetAllAsync();
 
             app.Services.CreateScope().ServiceProvider.GetRequiredService<InitData>().Initialize();
+            app.Services.CreateScope().ServiceProvider.GetRequiredService<SettingsService>().Settings = await app.Services.CreateScope().ServiceProvider.GetRequiredService<IWebSettingRepository>().GetAllAsync();
 
             app.Run();
         }
