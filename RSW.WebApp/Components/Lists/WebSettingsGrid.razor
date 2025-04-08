@@ -1,0 +1,76 @@
+﻿@inject IWebSettingRepository WebSettingRepository
+
+@if (ErrorMessages.Any())
+{
+    <RadzenCard>
+        <RadzenStack Orientation="Orientation.Vertical">
+            @foreach (string message in ErrorMessages)
+            {
+                <RadzenAlert AllowClose="false" AlertStyle="AlertStyle.Danger" Variant="Variant.Flat" Shade="Shade.Lighter">
+                    @message
+                </RadzenAlert>
+            }
+        </RadzenStack>
+    </RadzenCard>
+}
+else
+{
+    <RadzenDataGrid @ref="WebSettingGridRef" TItem="WebSetting" Data="WebSettings">
+        <Columns>
+            <RadzenDataGridColumn Title="Naam" Property="@nameof(WebSetting.Key)">
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn Title="Waarde" Property="@nameof(WebSetting.Value)">
+                <EditTemplate Context="websetting">
+                    <RadzenTextBox @bind-Value="websetting.Value" />
+                </EditTemplate>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn Context="websetting" Filterable="false" Sortable="false" TextAlign="TextAlign.Right" Frozen="true" FrozenPosition="FrozenColumnPosition.Right">
+                <Template Context="websetting">
+                    <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Click="@((args) => EditWebSetting(websetting))" />
+                </Template>
+                <EditTemplate Context="websetting">
+                    <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat" Size="ButtonSize.Medium" Click="@((args) => SaveWebSetting(websetting))" aria-label="Save" />
+                    <RadzenButton Icon="close" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Click="@((args) => CancelEditWebSetting(websetting))" aria-label="Cancel" />
+                </EditTemplate>
+            </RadzenDataGridColumn>
+        </Columns>
+    </RadzenDataGrid>
+}
+
+@code {
+    [Parameter] public List<WebSetting> WebSettings { get; set; } = null;
+
+    private RadzenDataGrid<WebSetting> WebSettingGridRef { get; set; }
+
+    private List<string> ErrorMessages { get; set; } = new List<string>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        WebSettings = await WebSettingRepository.GetAllAsync();
+        await base.OnInitializedAsync();
+    }
+    private async Task EditWebSetting(WebSetting websetting)
+    {
+        await WebSettingGridRef.EditRow(websetting);
+    }
+    private async Task SaveWebSetting(WebSetting websetting)
+    {
+        await WebSettingRepository.Save(websetting);
+        await WebSettingGridRef.UpdateRow(websetting);
+    }
+    private async Task CancelEditWebSetting(WebSetting websetting)
+    {
+        await WebSettingRepository.RevertEdits(websetting);
+        WebSettingGridRef.CancelEditRow(websetting);
+    }
+    private async Task DeleteWebSetting(WebSetting websetting)
+    {
+        await WebSettingRepository.Delete(websetting);
+        await WebSettingGridRef.Reload();
+    }
+    private async Task AddWebSetting()
+    {
+        WebSetting NewWebSetting = new WebSetting();
+        await WebSettingGridRef.InsertRow(NewWebSetting);
+    }
+}

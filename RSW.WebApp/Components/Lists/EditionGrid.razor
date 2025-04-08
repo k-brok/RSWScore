@@ -17,13 +17,25 @@ else{
         <Columns>
             <RadzenDataGridColumn Title="RSW Start Datum" Property="@nameof(Edition.RSWStartDate)">
                 <EditTemplate Context="edition">
-                    <RadzenDatePicker @bind-Value="edition.RSWStartDate" />
+                    <RadzenDatePicker @bind-Value="edition.RSWStartDate" DateFormat="@SiteSettings.GetString("Date format")" />
                 </EditTemplate>
+                <Template Context="edition">
+                    @{
+                        DateOnly RSWDate = (DateOnly)edition.RSWStartDate;
+                    }
+                    @RSWDate.ToString(SiteSettings.GetString("Date format"))
+                </Template>
             </RadzenDataGridColumn>
-            <RadzenDataGridColumn Title="LSW Start Datum" Property="@nameof(Edition.LSWStartDate)">
+            <RadzenDataGridColumn Title="LSW Start Datum" Property="@nameof(Edition.LSWStartDate)" DateFormat="@SiteSettings.GetString("Date format")">
                 <EditTemplate Context="edition">
                     <RadzenDatePicker @bind-Value="edition.LSWStartDate" />
                 </EditTemplate>
+                <Template Context="edition">
+                    @{
+                        DateOnly LSWDate = (DateOnly)edition.LSWStartDate;
+                    }
+                    @LSWDate.ToString(SiteSettings.GetString("Date format"))
+                </Template>
             </RadzenDataGridColumn>
             <RadzenDataGridColumn Title="Thema" Property="@nameof(Edition.Theme)">
                 <EditTemplate Context="edition">

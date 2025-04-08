@@ -21,6 +21,7 @@ namespace RSW.WebApp.Data
         public DbSet<Score> Scores { get; set; }
         public DbSet<SignupCode> SignupCodes { get; set; }
         public DbSet<JurySlot> JurySlots { get; set; }
+        public DbSet<WebSetting> WebSettings { get; set; }
         protected override void OnModelCreating(ModelBuilder builder)
         {
             builder.Entity<Association>()

@@ -61,30 +61,30 @@ else
                 <EditTemplate Context="slot">
                     <RadzenDatePicker TValue="DateTime"
                     ShowTime="true"
-                    DateFormat="dd-MM-yyyy HH:mm"
+                    DateFormat="@DateTimeformat"
                     Value="@(TimeZoneService.ConvertUtcToLocal(slot.OpeningTime))"
-                    Change="@(async (args) => slot.OpeningTime = TimeZoneService.ConvertLocalToUtc(args.Value))"
+                    Change="@(async (args) => slot.OpeningTime = TimeZoneService.ConvertLocalToUtc(args.Value))" />
                     Style="display: block"
                     Name="StartDate"/>
                     <RadzenRequiredValidator Component="StartDate" Text="Start datum is niet opgegeven" Popup=true Style="position: absolute; z-index: 1000" />
                 </EditTemplate>
                 <Template Context="slot">
-                    @TimeZoneService.ConvertUtcToLocal(slot.OpeningTime).ToString();
+                    @TimeZoneService.ConvertUtcToLocal(slot.OpeningTime).ToString(DateTimeformat);
                 </Template>
             </RadzenDataGridColumn>
             <RadzenDataGridColumn Title="Einde" Property="@nameof(JurySlot.ClosingTime)" Width="250px">
                 <EditTemplate Context="slot">
                     <RadzenDatePicker TValue="DateTime"
                     ShowTime="true"
-                    DateFormat="dd-MM-yyyy HH:mm"
+                    DateFormat="@DateTimeformat"
                     Value="@(TimeZoneService.ConvertUtcToLocal(slot.ClosingTime))"
-                    Change="@(async (args) => slot.ClosingTime = TimeZoneService.ConvertLocalToUtc(args.Value))"
+                    Change="@(async (args) => slot.ClosingTime = TimeZoneService.ConvertLocalToUtc(args.Value))" />
                     Style="display: block"
                     Name="EndDate" />
                     <RadzenRequiredValidator Component="EndDate" Text="Eind datum is niet opgegeven" Popup=true Style="position: absolute; z-index: 1000" />
                 </EditTemplate>
                 <Template Context="slot">
-                    @TimeZoneService.ConvertUtcToLocal(slot.ClosingTime).ToString();
+                    @TimeZoneService.ConvertUtcToLocal(slot.ClosingTime).ToString(DateTimeformat);
                 </Template>
             </RadzenDataGridColumn>
             <RadzenDataGridColumn Width="180px" Context="juryslot" Filterable="false" Sortable="false" TextAlign="TextAlign.Right" Frozen="true" FrozenPosition="FrozenColumnPosition.Right">
@@ -112,8 +112,11 @@ else
     private List<Edition> Editions { get; set; }
     private List<string> ErrorMessages { get; set; } = new List<string>();
 
+    private string DateTimeformat;
+
     protected override async Task OnInitializedAsync()
     {
+        DateTimeformat = $"{@SiteSettings.GetString("Date format")} {@SiteSettings.GetString("Time format")}";
         Editions = await EditionRepository.GetAllAsync();
         Categories = await CategoryRepository.GetAllAsync();
         await base.OnInitializedAsync();
@@ -172,7 +175,7 @@ else
                     <RadzenLabel Text="Start tijd" Component="StartDate" />
                     <RadzenDatePicker TValue="DateTime"
                                       ShowTime="true"
-                                      DateFormat="dd-MM-yyyy HH:mm"
+                                      DateFormat="@DateTimeformat"
                                       Value="@(TimeZoneService.ConvertUtcToLocal(AddMultipleSlot.OpeningTime))"
                                       Change="@(async (args) => AddMultipleSlot.OpeningTime = TimeZoneService.ConvertLocalToUtc(args.Value))"
                                       Style="display: block"
@@ -182,7 +185,7 @@ else
                     <RadzenLabel Text="Eind tijd" Component="EndDate" />
                     <RadzenDatePicker TValue="DateTime"
                                       ShowTime="true"
-                                      DateFormat="dd-MM-yyyy HH:mm"
+                                      DateFormat="@DateTimeformat"
                                       Value="@(TimeZoneService.ConvertUtcToLocal(AddMultipleSlot.ClosingTime))"
                                       Change="@(async (args) => AddMultipleSlot.ClosingTime = TimeZoneService.ConvertLocalToUtc(args.Value))"
                                       Style="display: block"

@@ -1,15 +1,22 @@
-﻿namespace RSW.WebApp.Services
+﻿using RSW.WebApp.Interface.Repositories;
+using RSW.WebApp.Repositories;
+
+namespace RSW.WebApp.Services
 {
     public class TimeZoneService
     {
-        private readonly TimeZoneInfo _timeZone;
-
-        public TimeZoneService()
+        private TimeZoneInfo _timeZone;
+        private readonly SettingsService _webSetting;
+        public TimeZoneService(SettingsService webSetting)
         {
-            // Kies de juiste tijdzone (bijv. Amsterdam)
-            _timeZone = TimeZoneInfo.FindSystemTimeZoneById("Central European Standard Time");
+            _webSetting = webSetting;
+            FindTimezone();
         }
-
+        private async Task FindTimezone()
+        {
+            string timeZoneId = _webSetting.GetString("Timezone");
+            _timeZone = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
+        }
         public DateTime ConvertUtcToLocal(DateTime utcDate)
         {
             return TimeZoneInfo.ConvertTimeFromUtc(utcDate, _timeZone);
