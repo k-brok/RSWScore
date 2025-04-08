@@ -1,0 +1,20 @@
+﻿
+
+@page "/Admin/JurySlot"
+@attribute [Authorize]
+
+@inject IJurySlotRepository JurySlotRepository
+<h3>Aanmeld codes</h3>
+<RadzenText>Een juryformulier kan pas ingevuld worden wanneer deze open staat. bijgevoegd vindt je alle code's voor het openen van een jury formulier.
+</RadzenText>
+
+<RSW.WebApp.Components.Lists.JurySlotGrid JurySlots="Slots" />
+
+@code {
+	List<JurySlot> Slots;
+	protected override async Task OnInitializedAsync()
+	{
+		Slots = await JurySlotRepository.GetAllAsync();
+		await base.OnInitializedAsync();
+	}
+}

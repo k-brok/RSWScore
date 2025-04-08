@@ -1,0 +1,103 @@
+﻿@inject ICriteriaRepository CriteriaRepository
+
+@if (ErrorMessages.Any()){
+    <RadzenCard>
+        <RadzenStack Orientation="Orientation.Vertical">
+            @foreach (string message in ErrorMessages)
+            {
+                <RadzenAlert AllowClose="false" AlertStyle="AlertStyle.Danger" Variant="Variant.Flat" Shade="Shade.Lighter">
+                    @message
+                </RadzenAlert>
+            }
+        </RadzenStack>
+    </RadzenCard>
+}
+else{
+    <RadzenDataGrid @ref="CriteriaGridRef" TItem="Criteria" Data="Criterias">
+        <Columns>
+            <RadzenDataGridColumn Title="Naam" Property="@nameof(Criteria.Name)">
+                <EditTemplate Context="criteria">
+                    <RadzenTextBox @bind-Value="criteria.Name" />
+                </EditTemplate>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn Title="Omschrijving" Property="@nameof(Criteria.Description)">
+                <EditTemplate Context="criteria">
+                    <RadzenTextArea @bind-Value="criteria.Description" />
+                </EditTemplate>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn Property="@nameof(Criteria.MaxScore)">
+                <HeaderTemplate>
+                    Max score (Total: @Criterias.Sum(C => C.MaxScore))
+                </HeaderTemplate>
+                <EditTemplate Context="criteria">
+                    <RadzenNumeric @bind-Value="criteria.MaxScore" />
+                </EditTemplate>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn Context="criteria" Filterable="false" Sortable="false" TextAlign="TextAlign.Right" Frozen="true" FrozenPosition="FrozenColumnPosition.Right">
+                <Template Context="criteria">
+                    <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Click="@((args) => EditCriteria(criteria))" />
+                </Template>
+                <EditTemplate Context="criteria">
+                    <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat" Size="ButtonSize.Medium" Click="@((args) => SaveCriteria(criteria))" aria-label="Save" />
+                    <RadzenButton Icon="close" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Click="@((args) => CancelEditCriteria(criteria))" aria-label="Cancel" />
+                    <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" Size="ButtonSize.Medium" Shade="Shade.Lighter" class="rz-my-1 rz-ms-1" Click="@(args => DeleteCriteria(criteria))" aria-label="Delete" />
+                </EditTemplate>
+                <HeaderTemplate>
+                    <RadzenButton ButtonStyle="ButtonStyle.Success" Icon="add_circle" Click="@(() => AddCriteria())" />
+                </HeaderTemplate>
+            </RadzenDataGridColumn>
+        </Columns>
+    </RadzenDataGrid>
+}
+
+@code {
+    [Parameter] public List<Criteria> Criterias { get; set; } = null;
+    [Parameter] public SubCategory subcategory { get; set; } = null;
+
+    private RadzenDataGrid<Criteria> CriteriaGridRef { get; set; }
+
+    private DateOnly AgeDate = DateOnly.FromDateTime(DateTime.Now);
+
+    private List<string> ErrorMessages { get; set; } = new List<string>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if(Criterias == null && subcategory == null){
+            ErrorMessages.Add("No criteria or subcategory givven!");
+        }
+        else if (subcategory != null){
+            Criterias = subcategory.criterias;
+        }
+        await base.OnInitializedAsync();
+    }
+    private async Task EditCriteria(Criteria criteria){
+        await CriteriaGridRef.EditRow(criteria);
+    }
+    private async Task SaveCriteria(Criteria criteria)
+    {
+        await CriteriaRepository.Save(criteria);
+        await CriteriaGridRef.UpdateRow(criteria);
+    }
+    private async Task CancelEditCriteria(Criteria criteria)
+    {
+        await CriteriaRepository.RevertEdits(criteria);
+        CriteriaGridRef.CancelEditRow(criteria);
+    }
+    private async Task DeleteCriteria(Criteria criteria)
+    {
+        if (subcategory != null)
+        {
+            if (subcategory.criterias.Contains(criteria))
+            {
+                subcategory.criterias.Remove(criteria);
+            }
+        }
+        await CriteriaRepository.Delete(criteria);
+        await CriteriaGridRef.Reload();
+    }
+    private async Task AddCriteria()
+    {
+        Criteria NewCriteria = new Criteria();
+        await CriteriaGridRef.InsertRow(NewCriteria);
+    }
+}

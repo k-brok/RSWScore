@@ -1,0 +1,25 @@
+services: 
+  mssql:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: mssql
+    environment:
+      - SA_PASSWORD=Str0ngP@ssword
+      - ACCEPT_EULA=Y
+    ports:
+      - 1433:1433
+#    volumes:
+#      - mssql_data:/var/opt/mssql/data
+    expose:
+      - 1433
+  blazor_playground:
+    image: ${DOCKER_REGISTRY-}rswwebapp
+    build:
+      context: .
+      dockerfile: RSW.WebApp/Dockerfile
+    ports:
+      - 8080:8080
+      - 8081:8081
+    depends_on:
+      - mssql
+#volumes:
+#  mssql_data:

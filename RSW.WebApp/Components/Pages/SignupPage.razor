@@ -1,0 +1,45 @@
+﻿@page "/signup"
+@inject ISignupCodeRepository SignupCodeRepository
+@inject UserStorage UserData
+
+<RadzenCard Class="signup-card">
+    <RadzenText TextStyle="TextStyle.H1" Class="title">🚀 Groepsinschrijving</RadzenText>
+
+    @if (UserData.SignUpGroup == null)
+    {
+        <RadzenText TextStyle="TextStyle.H3" Class="subtitle">Voer je inschrijfcode in</RadzenText>
+        <RadzenTextBox @bind-Value="code" Placeholder="Inschrijfcode" Style="width: 100%;" />
+        <RadzenButton Click="CheckCode" Text="Open inschrijving" Class="signup-button" />
+    }
+    else
+    {
+        <RadzenText TextStyle="TextStyle.H3" Class="subtitle">✅ Inschrijving geopend!</RadzenText>
+        <RadzenText>Bekijk en beheer je groepsinschrijving hieronder:</RadzenText>
+        @if (UserData.SignUpGroup.Patrols.Any())
+        {
+            <RSW.WebApp.Components.Lists.PatrolGrid GroupId="UserData.SignUpGroup.Id"/>
+        }
+        else{
+            <RadzenAlert>Er zijn geen patrouilles gevonden, contacteer de organisatie!</RadzenAlert>
+        }
+    }
+</RadzenCard>
+
+@code {
+    private List<string> ExcludeColumns = new List<string> { "Groep" };
+    [SupplyParameterFromQuery] public string code { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!string.IsNullOrEmpty(code))
+        {
+            await CheckCode();
+        }
+        await base.OnInitializedAsync();
+    }
+
+    private async Task CheckCode()
+    {
+        UserData.SignUpGroup = await SignupCodeRepository.CheckCode(code);
+    }
+}

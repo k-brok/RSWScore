@@ -1,0 +1,217 @@
+﻿@inject IPatrolRepository PatrolRepository
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject TooltipService tooltipService
+@inject IGroupRepository GroupRepository
+
+@if (ErrorMessages.Any())
+{
+    <RadzenCard>
+        <RadzenStack Orientation="Orientation.Vertical">
+            @foreach (string message in ErrorMessages)
+            {
+                <RadzenAlert AllowClose="false" AlertStyle="AlertStyle.Danger" Variant="Variant.Flat" Shade="Shade.Lighter">
+                    @message
+                </RadzenAlert>
+            }
+        </RadzenStack>
+    </RadzenCard>
+}
+else
+{
+    <RadzenDataGrid @ref="PatrolGridRef" TItem="Patrol" Data="Patrols" RowUpdate="@OnUpdateRow" RowCreate="@OnCreateRow">
+        <Columns>
+            <RadzenDataGridColumn Title="Naam" Property="@nameof(Patrol.Name)">
+                <EditTemplate Context="patrol">
+                    <RadzenTextBox Name="PatrolName" @bind-Value="patrol.Name" />
+                    <RadzenRequiredValidator Text="Patrouille naam is verplicht" Component="PatrolName" Popup="true" Style="position: absolute; z-index: 1000" />
+                </EditTemplate>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn Title="Nummer" Property="@nameof(Patrol.Number)">
+                <EditTemplate Context="patrol">
+                    @if(IsAdmin){
+                        <RadzenNumeric Name="PatrolNumber" @bind-Value="patrol.Number" />
+                        
+                    }
+                    else{
+                        @patrol.Number
+                    }
+                </EditTemplate>
+            </RadzenDataGridColumn>
+            @if (IsAdmin)
+            {
+                <RadzenDataGridColumn Title="Groep">
+                    <EditTemplate Context="patrol">
+                        <RadzenDropDown @bind-Value="patrol.Group" Data="AllGroups" Name="PatrolGroup">
+                            <Template Context="group">
+                                @group.Name (@group.Association.Abbreviation)
+                            </Template>
+                        </RadzenDropDown>
+                        <RadzenCustomValidator Component="PatrolGroup" Validator="@(() => patrol.Group != null)" Text="Er is geen Groep geselcteerd" Popup="true" Style="position: absolute; z-index: 1000" />
+                    </EditTemplate>
+                    <Template Context="patrol">
+                        @patrol.Group.Name (@patrol.Group.Association.Abbreviation)
+                    </Template>
+                </RadzenDataGridColumn>
+            }
+            <RadzenDataGridColumn Title="Subkamp">
+                <Template Context="patrol">
+                    @patrol.SubGroup.Color
+                </Template>
+                <EditTemplate Context="patrol">
+                    @if (IsAdmin)
+                    {
+                        @if (patrol.SubGroup == null){
+                            @if(_Current.Edition == null){
+                                <RadzenAlert>Kan geen subkamp instellen omdat de editie ontbreekt!</RadzenAlert>
+                            }
+                            else{
+                                <RadzenDropDown @bind-Value="patrol.SubGroupId" Data="_Current.Edition.SubGroups" ValueProperty="Id" TextProperty="Color" />
+                            }
+                        }
+                        else{
+                            <RadzenDropDown @bind-Value="patrol.SubGroupId" Data="patrol.SubGroup.Edition.SubGroups" ValueProperty="Id" TextProperty="Color" />
+                        }
+                    }
+                    else
+                    {
+                        @patrol.SubGroup.Color
+                    }
+                </EditTemplate>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn Title="Aantal scouts" Property="@nameof(Patrol.Name)" Width="150px">
+                <Template Context="patrol">
+                    @patrol.Scouts.Count
+                </Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn Title="Jongste" Width="100px">
+                <Template Context="patrol">
+                    @if(patrol.IsYoungest)
+                    {
+                        <RadzenIcon class="filled-icon" Icon="done" IconColor="@Colors.Success" />
+                    }
+                </Template>
+                <EditTemplate Context="patrol">
+                    @if (IsAdmin)
+                    {
+                        <RadzenSwitch @bind-Value="patrol.IsYoungest" />
+                    }
+                    else
+                    {
+                        @if (patrol.IsYoungest)
+                        {
+                            <RadzenIcon class="filled-icon" Icon="done" IconColor="@Colors.Success" />
+                        }
+                    }
+                </EditTemplate>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn Title="Deelname" Width="100px">
+                <Template Context="patrol">
+                    @if (patrol.IsDisqualified)
+                    {
+                        <RadzenIcon Icon="warning" IconColor="@Colors.Warning" MouseEnter="@((args) => ShowDisqualifiedTooltip(patrol,args))" />
+                    }
+                    else{
+                        <RadzenIcon class="filled-icon" Icon="done" IconColor="@Colors.Success" />
+                    }
+                </Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn Width="200px" Context="patrol" Filterable="false" Sortable="false" TextAlign="TextAlign.Right" Frozen="true" FrozenPosition="FrozenColumnPosition.Right">
+                <Template Context="patrol">
+                    <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Click="@((args) => EditPatrol(patrol))" />
+                </Template>
+                <EditTemplate Context="patrol">
+                    <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat" Size="ButtonSize.Medium" Click="@((args) => SavePatrol(patrol))" aria-label="Save" />
+                    <RadzenButton Icon="close" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Click="@((args) => CancelEditPatrol(patrol))" aria-label="Cancel" />
+                    @if (IsAdmin)
+                    {
+                        <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" Size="ButtonSize.Medium" Shade="Shade.Lighter" class="rz-my-1 rz-ms-1" Click="@(args => DeletePatrol(patrol))" aria-label="Delete" />
+                    }
+                </EditTemplate>
+                <HeaderTemplate>
+                    @if (IsAdmin)
+                    {
+                        <RadzenButton ButtonStyle="ButtonStyle.Success" Icon="add_circle" Click="@(() => AddPatrol())" />
+                    }
+                </HeaderTemplate>
+            </RadzenDataGridColumn>
+        </Columns>
+        <Template Context="patrol">
+            <ScoutGrid patrol="patrol" UpdateRow="UpdateData"/>
+        </Template>
+    </RadzenDataGrid>
+}
+
+@code {
+    public List<Patrol> Patrols { get; set; } = null;
+    [Parameter] public int GroupId { get; set; } = 0;
+
+    private RadzenDataGrid<Patrol> PatrolGridRef { get; set; }
+    bool IsAdmin = false;
+
+    private List<Entities.Group> AllGroups;
+
+    private List<string> ErrorMessages { get; set; } = new List<string>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (GroupId == 0)
+        {
+            Patrols = await PatrolRepository.GetAsync();
+        }
+        else{
+            Patrols = await PatrolRepository.GetByGroupIdAsync(GroupId);
+        }
+
+        AllGroups = await GroupRepository.GetAllAsync();
+
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        IsAdmin = user.Identity.IsAuthenticated && user.IsInRole("Admin");
+
+        await base.OnInitializedAsync();
+    }
+    private async Task EditPatrol(Patrol patrol)
+    {
+        await PatrolRepository.Save(patrol);
+        await PatrolGridRef.EditRow(patrol);
+    }
+    private async Task SavePatrol(Patrol patrol)
+    {
+        await PatrolRepository.Save(patrol);
+        await PatrolGridRef.UpdateRow(patrol);
+    }
+    private async Task CancelEditPatrol(Patrol patrol)
+    {
+        await PatrolRepository.RevertEdits(patrol);
+        PatrolGridRef.CancelEditRow(patrol);
+    }
+    private async Task DeletePatrol(Patrol patrol)
+    {
+        await PatrolRepository.Delete(patrol);
+        await PatrolGridRef.Reload();
+    }
+    private async Task AddPatrol()
+    {
+        Patrol NewPatrol = new Patrol();
+        await PatrolGridRef.InsertRow(NewPatrol);
+    }
+    private async Task ShowDisqualifiedTooltip(Patrol patrol, ElementReference elementReference, TooltipOptions options = null)
+    {
+        string message = "";
+        foreach(string error in patrol.DisqualifiedMessages){
+            message += error;
+            message += "<br>";
+        }
+        tooltipService.Open(elementReference, message, options);
+    }
+    private async Task UpdateData(){
+        StateHasChanged();
+    }
+    private async Task OnUpdateRow(Patrol patrol){
+        
+    }
+    private async Task OnCreateRow(Patrol patrol)
+    {
+    }
+}

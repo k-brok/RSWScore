@@ -1,0 +1,211 @@
+﻿@using RSW.WebApp.Components.Layout
+@inject ICategoryRepository CategoryRepository
+@inject IScoreRepository ScoreRepository
+@inject IEditionRepository EditionRepository
+@layout EmptyLayout
+@page "/ScoreForm"
+@implements IDisposable
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@using Microsoft.AspNetCore.Components.Authorization
+@inject IJurySlotRepository JurySlotRepository
+
+@if (edition == null)
+{
+	<RadzenAlert>There is no active Edition, contact the administrator!</RadzenAlert>
+}
+else if (isAuthorized == false)
+{
+	<RadzenAlert>Het is nu nie mogelijk de score formulieren in te vullen. Vraag de organisatie om meer informatie!!</RadzenAlert>
+}
+else{
+	<RadzenLayout>
+		<RadzenHeader>
+			<RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0">
+				@if (string.IsNullOrEmpty(subgroup) || string.IsNullOrEmpty(category)){
+					<RadzenSidebarToggle Click="@(() => sidebar1Expanded = !sidebar1Expanded)" />
+				}
+				@{
+					string Title = $"RSW Score formulier {@edition.RSWStartDate.Year.ToString()}";
+				}
+				<RadzenLabel Text="@Title" />
+			</RadzenStack>
+			<RadzenCard>
+				<RadzenStack Orientation="Orientation.Vertical">
+					@if (CurrentCategory.SubCategories.Count > 1)
+					{
+						<RadzenFormField Text="Sub categorie" >
+							<RadzenDropDown Data="CurrentCategory.SubCategories" @bind-Value=@CurrentSubCategory TValue="SubCategory" TextProperty="Name" />
+						</RadzenFormField>
+					}
+					<RadzenStack Gap="0" Orientation="Orientation.Vertical">
+						<RadzenText TextStyle="TextStyle.Caption">Patrouille</RadzenText>
+						<RadzenSelectBar Size="ButtonSize.Medium" Data="CurrentSubGroup.patrols" @bind-Value=@CurrentPatrol TValue="Patrol" TextProperty="StringNumber" />
+					</RadzenStack>
+
+				</RadzenStack>
+			</RadzenCard>
+		</RadzenHeader>
+		<RadzenSidebar @bind-Expanded="@sidebar1Expanded">
+			<RadzenStack class="rz-mt-2">
+				@if (string.IsNullOrEmpty(subgroup))
+				{
+					@* <RadzenSelectBar Data="_ScoreForm.CurrentEdition.SubGroups" @bind-Value=@CurrentSubGroup TValue="SubGroup" TextProperty="Color" /> *@
+					<RadzenFormField Text="Sub kamp" >
+						<RadzenDropDown Data="edition.SubGroups" Value="CurrentSubGroup" TValue="SubGroup" TextProperty="Color" Change="@(Args => ChangeCurrentSubgroup((SubGroup)Args))" />
+					</RadzenFormField>
+				}
+
+				@if (string.IsNullOrEmpty(category))
+				{
+					@* <RadzenSelectBar Data="Categories" @bind-Value=@CurrentCategory TValue="Category" TextProperty="Name" /> *@
+					<RadzenFormField Text="Categorie" >
+						<RadzenDropDown Data="Categories" Value="CurrentCategory" TValue="Category" TextProperty="Name" Change="@(Args => ChangeCurrentCategory((Category)Args))" />
+					</RadzenFormField>
+				}
+			</RadzenStack>
+		</RadzenSidebar>
+		<RadzenBody @onclick="OnClickBody">
+			<RadzenStack Orientation="Orientation.Vertical">
+				@foreach (Criteria criteria in CurrentSubCategory.criterias)
+				{
+					Score CurrentScore = CurrentPatrol.Scores.FirstOrDefault(S => S.CriteriaId == criteria.Id);
+					if (CurrentScore == null)
+					{
+						CurrentScore = new Score
+						{
+							PatrolId = CurrentPatrol.Id,
+							CriteriaId = criteria.Id
+						};
+						CurrentPatrol.Scores.Add(CurrentScore);
+
+					}
+
+					<RadzenStack Gap="0" Orientation="Orientation.Vertical">
+						<RadzenText TextStyle="TextStyle.Caption">@criteria.Description</RadzenText>
+						@if (criteria.MaxScore <= 5)
+						{
+							<RadzenSelectBar TValue="int" Value="CurrentScore.Value" Change="@(args => UpdateScoreValue(CurrentPatrol, CurrentScore,(int)args))">
+								<Items>
+									@for (int i = 0; i < criteria.MaxScore + 1; i++)
+									{
+										<RadzenSelectBarItem Text="@i.ToString()" Value="@i" />
+									}
+								</Items>
+							</RadzenSelectBar>
+						}
+						else
+						{
+							<RadzenNumeric TValue="int" Value="CurrentScore.Value" Max="criteria.MaxScore" Change="@(args => UpdateScoreValue(CurrentPatrol, CurrentScore,(int)args))" />
+						}
+					</RadzenStack>
+				}
+			</RadzenStack>
+		</RadzenBody>
+	</RadzenLayout>
+}
+
+@code {
+	bool sidebar1Expanded = true;
+	[SupplyParameterFromQuery] public string subgroup { get; set; }
+	[SupplyParameterFromQuery] public string category { get; set; }
+	[SupplyParameterFromQuery] public string code { get; set; }
+
+	private ICollection<Category> Categories { get; set; }
+
+	private Category CurrentCategory { get; set; }
+	private SubCategory CurrentSubCategory { get; set; }
+
+	private SubGroup CurrentSubGroup { get; set; }
+	private Patrol CurrentPatrol { get; set; }
+
+	private Edition edition { get; set; }
+
+	private bool isAuthorized = false;
+
+	protected override async Task OnInitializedAsync()
+	{
+		_Current.Subscribe += UpdatePage;
+		Categories = await CategoryRepository.GetAllAsync();
+		edition = _Current.Edition;
+
+		if (string.IsNullOrEmpty(subgroup)) {
+			CurrentSubGroup = edition.SubGroups.First();
+		}
+		else{
+			CurrentSubGroup = edition.SubGroups.FirstOrDefault(S => S.Color.ToLower() == subgroup.ToLower());
+		}
+
+		if (string.IsNullOrEmpty(category))
+		{
+			CurrentCategory = Categories.First();
+		}
+		else
+		{
+			CurrentCategory = Categories.FirstOrDefault(S => S.Name.ToLower() == category.ToLower());
+		}
+		CurrentSubCategory = CurrentCategory.SubCategories.First();
+		CurrentPatrol = CurrentSubGroup.patrols.First();
+
+		JurySlot Slot = await JurySlotRepository.GetByCode(code);
+
+		if (Slot != null)
+		{
+			isAuthorized = true;
+			subgroup = Slot.SubGroup.Color;
+			category = Slot.Category.Name;
+
+			CurrentSubGroup = CurrentSubGroup = edition.SubGroups.FirstOrDefault(S => S.Id == Slot.SubGroup.Id);
+			if (edition.Id != Slot.Edition.Id)
+			{
+				edition = Slot.Edition;
+			}
+			CurrentCategory = Categories.FirstOrDefault(C => C.Id == Slot.Category.Id);
+		}
+
+		var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+		var user = authState.User;
+
+		if (user.Identity.IsAuthenticated)
+		{
+			isAuthorized = user.IsInRole("Admin"); // Controleer of gebruiker een "Admin" is
+		}
+
+		await base.OnInitializedAsync();
+	}
+
+	private async Task OnClickBody()
+	{
+		if (sidebar1Expanded)
+			sidebar1Expanded = false;
+	}
+	private async Task ChangeCurrentSubgroup(SubGroup subgroup){
+		CurrentSubGroup = subgroup;
+		CurrentPatrol = subgroup.patrols.First();
+	}
+	private async Task ChangeCurrentCategory(Category category)
+	{
+		CurrentCategory = category;
+		CurrentSubCategory = category.SubCategories.First();
+	}
+	private async void UpdatePage(){
+		await InvokeAsync(StateHasChanged);
+	}
+	private async Task UpdateScoreValue(Patrol patrol, Score Score, int value)
+	{
+
+		Score.Value = value;
+
+		if (!patrol.Scores.Contains(Score))
+		{
+			patrol.Scores.Add(Score);
+		}
+
+		_Current.Subscribe.Invoke();
+		await ScoreRepository.Save(Score);
+
+	}
+	public void Dispose()
+	{
+		_Current.Subscribe -= UpdatePage;
+	}
+}

@@ -1,0 +1,52 @@
+﻿@page "/Admin/ScoreForm"
+@attribute [Authorize]
+@inject IEditionRepository EditionRepository
+@inject ICategoryRepository CategoryRepository
+
+
+<h3>ScoreForm</h3>
+
+<RadzenStack Orientation="Orientation.Vertical">
+	@* <RadzenDropDown TValue="int" Value=@_Current.Edition.RSWStartDate.Year.ToString() Data="Editions" Change="@(args => ChangeEdition((int)args))"></RadzenDropDown> *@
+
+	<RadzenSelectBar Data="@OrigionalCategories" Value=@category Change="@((arg) => ChangeCategory((Category) arg))" TValue="Category" TextProperty="Name" />
+	@if (category != null && category.SubCategories.Count() > 1)
+	{
+		<RadzenSelectBar Multiple="true" Data="@category.SubCategories" @bind-Value=@SubCategories TValue="IEnumerable<SubCategory>" TextProperty="Name" />
+	}
+</RadzenStack>
+@if(_Current.Edition.SubGroups.Any()){
+	<RadzenTabs>
+		<Tabs>
+			@foreach (SubGroup subGroup in _Current.Edition.SubGroups)
+			{
+				<RadzenTabsItem Text="@subGroup.Color">
+					<RSW.WebApp.Components.Lists.PatrolScoreGrid patrols="@subGroup.patrols" Category="@category" SubCategories="@SubCategories" />
+				</RadzenTabsItem>
+			}
+			<RadzenTabsItem Text="All">
+				<RSW.WebApp.Components.Lists.PatrolScoreGrid patrols="@_Current.Edition.SubGroups.SelectMany(S => S.patrols).ToList()" Category="@category" SubCategories="@SubCategories" />
+			</RadzenTabsItem>
+		</Tabs>
+	</RadzenTabs>
+}
+
+@code {
+	private List<int> Editions { get; set; }
+
+	private Category category { get; set; }
+	private List<Category> OrigionalCategories { get; set; }
+
+	private IEnumerable<SubCategory> SubCategories { get; set; }
+
+	protected async override Task OnInitializedAsync()
+	{
+		OrigionalCategories = _Current.Categories;
+
+		await base.OnInitializedAsync();
+	}
+	private async Task ChangeCategory(Category ToCategory){
+		category = ToCategory;
+		SubCategories = category.SubCategories.Where(S => S.Id == category.SubCategories.First().Id);
+	}
+}

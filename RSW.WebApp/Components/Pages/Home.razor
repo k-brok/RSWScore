@@ -1,0 +1,36 @@
+﻿@page "/"
+@inject ScoreCalculationService _ScoreCalcService
+@inject ICategoryRepository CategoryRepository
+@inject NavigationManager nav
+
+<PageTitle>RSW-Langstraat Score systeem</PageTitle>
+
+<RadzenText TextStyle="TextStyle.H1" Class="title">🏆 RSW Score Systeem</RadzenText>
+
+<RadzenRow Gap="1.5rem">
+    <RadzenColumn Size="6">
+        <RadzenCard>
+            <RadzenText>
+                Welkom bij het <strong>RSW Score Systeem</strong>!
+                Hier kun je je groep inschrijven, scores invoeren en live de uitslagen bekijken.
+                Ben jij klaar om de strijd aan te gaan? 🚀
+            </RadzenText>
+            <RadzenButton Click="@(() => nav.NavigateTo("/signup"))" Text="Inschrijven" Style="margin-top: 1rem;" />
+        </RadzenCard>
+    </RadzenColumn>
+    <RadzenColumn>
+        <RadzenCard>
+            <RadzenText TextStyle="TextStyle.H3">📊 Top Scores</RadzenText>
+            <RSW.WebApp.Components.Lists.TopScores />
+        </RadzenCard>
+    </RadzenColumn>
+</RadzenRow>
+
+
+
+
+
+
+@code{
+
+}

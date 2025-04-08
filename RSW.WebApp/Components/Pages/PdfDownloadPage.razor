@@ -1,0 +1,192 @@
+﻿@page "/download-pdf"
+@inject IJSRuntime JS
+@inject PdfService PdfService
+@inject ScoreCalculationService _ScoreCalculation
+@inject IEditionRepository EditionRepository
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject UserStorage UserData
+@inject NavigationManager NavigationManager
+@using System.Security.Claims
+
+<RadzenCard Style="padding:20px; max-width: 600px; margin:auto;">
+    <h3><RadzenIcon Icon="picture_as_pdf" Style="font-size: 24px; margin-right: 10px;" /> PDF Downloads</h3>
+
+    @if (isLoading)
+    {
+        <RadzenProgressBar Mode="ProgressBarMode.Indeterminate" />
+        <p>De PDF's worden geladen. Wacht een moment...</p>
+    }
+
+    <div class="pdf-list">
+        @foreach (var pdf in pdfs)
+        {
+            <RadzenCard Style="margin-bottom: 10px;">
+                <div class="pdf-item">
+                    <h5>@pdf.Title</h5>
+
+                    @if (pdf.IsLoading)
+                    {
+                        <RadzenProgressBar Mode="ProgressBarMode.Indeterminate" />
+                        <p>PDF aanmaken...</p>
+                    }
+                    else if (!string.IsNullOrEmpty(pdf.PdfData))
+                    {
+                        @if (pdf.Access == AccessLevel.Public ||
+                       (pdf.Access == AccessLevel.SignupRequired && UserData.SignUpGroup != null) ||
+                       (pdf.Access == AccessLevel.AdminOnly && IsAdmin))
+                        {
+                            <RadzenButton Text="Download" Icon="download" Class="rz-button rz-button-success"
+                                          Click="() => DownloadPdf(pdf)" />
+                        }
+                        else
+                        {
+                            <RadzenAlert Text="⚠️ Je hebt geen toegang tot deze PDF." Severity="Warning" />
+                        }
+                    }
+                    else
+                    {
+                        <RadzenAlert Text="⚠️ Fout bij het genereren van de PDF. Probeer opnieuw." Severity="Error" />
+                    }
+                </div>
+            </RadzenCard>
+        }
+    </div>
+    <AuthorizeView>
+        <Authorized>
+            <RadzenCard Style="margin-top: 20px;">
+                <h4>Genereer een PDF op basis van categorie</h4>
+                <RadzenDropDown @bind-Value="selectedCategory" Data="categories" Placeholder="Selecteer een categorie"
+                                TextProperty="Name" Style="width:100%;" />
+                <RadzenButton Text="Genereer PDF" Icon="picture_as_pdf" Click="GenerateCategoryPdf"
+                              Disabled="@(selectedCategory == null)" Style="margin-top: 10px;" />
+            </RadzenCard>
+        </Authorized>
+    </AuthorizeView>
+</RadzenCard>
+
+@code {
+    private bool isLoading = true;
+    private bool IsAdmin = false;
+    private List<PdfItem> pdfs = new List<PdfItem>();
+    private List<Category> categories = new List<Category>();
+    private Category selectedCategory = null;
+
+    public class PdfItem
+    {
+        public string Title { get; set; }
+        public bool IsLoading { get; set; }
+        public string PdfData { get; set; }
+        public AccessLevel Access { get; set; }
+        public Func<Task<byte[]>> GeneratePdfFunction { get; set; } // Dynamische PDF-functie
+    }
+
+    public enum AccessLevel
+    {
+        Public,        // Iedereen mag dit downloaden
+        AdminOnly,     // Alleen admins mogen dit downloaden
+        SignupRequired // Gebruiker moet een geldige inschrijfcode hebben
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        IsAdmin = user.Identity.IsAuthenticated && user.IsInRole("Admin");
+
+        _Current.Edition = await EditionRepository.GetActive();
+        await _ScoreCalculation.UpdateEdition();
+        List<Task> tasks = new List<Task>();
+
+        categories = _Current.Categories;
+
+        pdfs.Add(new PdfItem
+            {
+                Title = $"Patrouille lijsten RSW {_Current.Edition.RSWStartDate.Year}",
+                IsLoading = true,
+                Access = AccessLevel.AdminOnly,
+                GeneratePdfFunction = () => PdfService.GenerateMultiplePatrolsPdfAsync(_Current.Edition)
+            });
+
+        if(UserData.SignUpGroup != null){
+            pdfs.Add(new PdfItem
+                {
+                    Title = $"Patrouille lijsten RSW {_Current.Edition.RSWStartDate.Year} - {UserData.SignUpGroup.Name} ({UserData.SignUpGroup.Association.Abbreviation})",
+                    IsLoading = true,
+                    Access = AccessLevel.SignupRequired,
+                    GeneratePdfFunction = () => PdfService.GenerateMultiplePatrolsPdfAsync(_Current.Edition, UserData.SignUpGroup)
+                });
+        }
+
+        pdfs.Add(new PdfItem
+            {
+                Title = $"Scorelijst RSW {_Current.Edition.RSWStartDate.Year}",
+                IsLoading = true,
+                Access = AccessLevel.AdminOnly,
+                GeneratePdfFunction = () => PdfService.GeneratePatrolsTablePdfAsync(_Current.Edition)
+            });
+
+        // pdfs.Add(new PdfItem
+        //     {
+        //         Title = $"Algemene informatie RSW {_Current.Edition.RSWStartDate.Year}",
+        //         IsLoading = true,
+        //         Access = AccessLevel.Public,
+        //         GeneratePdfFunction = () => PdfService.GenerateGeneralInfoPdfAsync(_Current.Edition)
+        //     });
+
+        foreach (var pdf in pdfs)
+        {
+            tasks.Add(GeneratePdf(pdf));
+        }
+
+        await Task.WhenAll(tasks);
+        isLoading = false;
+        StateHasChanged();
+    }
+
+    private async Task GeneratePdf(PdfItem pdfItem)
+    {
+        try
+        {
+            if (pdfItem.GeneratePdfFunction != null)
+            {
+                byte[] pdfBytes = await pdfItem.GeneratePdfFunction();
+                pdfItem.PdfData = $"data:application/pdf;base64,{Convert.ToBase64String(pdfBytes)}";
+            }
+        }
+        catch (Exception ex)
+        {
+            pdfItem.PdfData = null;
+            Console.Error.WriteLine($"Fout bij genereren PDF: {ex.Message}");
+        }
+        finally
+        {
+            pdfItem.IsLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task GenerateCategoryPdf()
+    {
+        if (selectedCategory == null)
+            return;
+
+        var pdfItem = new PdfItem
+            {
+                Title = $"PDF voor {selectedCategory.Name} - {_Current.Edition.RSWStartDate.Year}",
+                IsLoading = true,
+                Access = AccessLevel.Public,
+                GeneratePdfFunction = () => PdfService.GeneratePdfByCategoryAsync(selectedCategory, _Current.Edition)
+            };
+
+        pdfs.Add(pdfItem);
+        StateHasChanged();
+
+        await GeneratePdf(pdfItem);
+    }
+
+    private async Task DownloadPdf(PdfItem pdf)
+    {
+        await JS.InvokeVoidAsync("downloadFile", pdf.PdfData, $"{pdf.Title}.pdf");
+    }
+}

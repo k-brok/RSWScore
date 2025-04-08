@@ -1,0 +1,54 @@
+﻿
+
+@page "/admin/AanmeldCode"
+@attribute [Authorize]
+@inject IGroupRepository GroupRepository
+@inject ISignupCodeRepository SignupCodeRepository
+
+<h3>SignupCodeCreate</h3>
+
+<RadzenDropDown TValue="Entities.Group" @bind-Value=GroupCode Data="Groups">
+	<Template>
+		@((context as Entities.Group).Association.Name) - @((context as Entities.Group).Name)
+	</Template>
+</RadzenDropDown>
+
+<RadzenButton Click="GenerateCode">Creer code</RadzenButton>
+
+<RadzenDataGrid TItem="SignupCode" Data="ActiveCodes">
+	<Columns>
+		<RadzenDataGridColumn Title="Code" Property="@nameof(SignupCode.Code)" />
+		<RadzenDataGridColumn Title="Groep" >
+			<Template Context="signupcode">
+				@Groups.FirstOrDefault(G => G.Id == signupcode.GroupId).Association.Abbreviation - @Groups.FirstOrDefault(G => G.Id == signupcode.GroupId).Name
+			</Template>
+		</RadzenDataGridColumn>
+	</Columns>
+</RadzenDataGrid>
+
+@if (CodeList.Any())
+{
+	@foreach (string CodeString in CodeList){
+		@CodeString
+	}
+}
+
+@code {
+	private List<SignupCode> ActiveCodes { get; set; }
+	private List<Entities.Group> Groups { get; set; } = new List<Entities.Group>();
+
+	private Entities.Group GroupCode { get; set; }
+
+	private List<string> CodeList { get; set; } = new List<string>();
+
+	protected override async Task OnInitializedAsync()
+	{
+		ActiveCodes = await SignupCodeRepository.GetAllActive();
+		Groups = await GroupRepository.GetAllAsync();
+		await base.OnInitializedAsync();
+	}
+	private async Task GenerateCode(){
+		CodeList.Add(await SignupCodeRepository.CreateNew(GroupCode));
+		StateHasChanged();
+	}
+}

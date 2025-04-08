@@ -1,0 +1,251 @@
+﻿@inject TimeZoneService TimeZoneService
+@inject IJurySlotRepository JurySlotRepository
+@inject ICategoryRepository CategoryRepository
+@inject IEditionRepository EditionRepository
+@inject DialogService DialogService
+
+@if (ErrorMessages.Any())
+{
+    <RadzenCard>
+        <RadzenStack Orientation="Orientation.Vertical">
+            @foreach (string message in ErrorMessages)
+            {
+                <RadzenAlert AllowClose="false" AlertStyle="AlertStyle.Danger" Variant="Variant.Flat" Shade="Shade.Lighter">
+                    @message
+                </RadzenAlert>
+            }
+        </RadzenStack>
+    </RadzenCard>
+}
+else
+{
+    <RadzenDataGrid @ref="JurySlotGridRef" TItem="JurySlot" Data="JurySlots" RowCreate="@OnCreateRow" RowUpdate="@OnUpdateRow" AllowPaging="true" PageSize="20">
+        <Columns>
+            <RadzenDataGridColumn Title="Code" Property="@nameof(JurySlot.Code)" >
+                <EditTemplate Context="slot">
+                    <RadzenTextBox Name="Code" @bind-Value=slot.Code Style="width: 100%; display: block" />
+                    <RadzenCustomValidator Component="Code" Validator="@(() => CheckExisting(slot))" Text="Slot met subkamp - categorie bestaat al" Popup=true Style="position: absolute; z-index: 1000" />
+                </EditTemplate>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn Title="Editie" Width="190px">
+                <Template Context="slot">
+                    @slot.Edition.Year
+                </Template>
+                <EditTemplate Context="slot">
+                    <RadzenDropDown Data="Editions" @bind-Value=slot.Edition Name="edition" TextProperty="Year" Style="display: block" />
+                    <RadzenRequiredValidator Component="edition" Text="Editie is niet opgegeven" Popup=true Style="position: absolute; z-index: 1000" />
+                </EditTemplate>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn Title="Subkamp" Width="190px">
+                <Template Context="slot">
+                    @slot.SubGroup.Color
+                </Template>
+                <EditTemplate Context="slot">
+                    @if(slot.Edition != null){
+                        <RadzenDropDown Data="slot.Edition.SubGroups" Name="SubGroup" @bind-Value=slot.SubGroup TextProperty="Color" Style="display: block" />
+                        <RadzenRequiredValidator Component="SubGroup" Text="Subkamp is niet opgegeven" Popup=true Style="position: absolute; z-index: 1000" />
+                        <RadzenCustomValidator Component="SubGroup" Validator="@(() => CheckSubGroup(slot.SubGroup, slot.Edition))" Text="Subgroup hoot niet bij editie" Popup=true Style="position: absolute; z-index: 1000" />
+                    }
+                </EditTemplate>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn Title="Categorie" Width="190px">
+                <Template Context="slot">
+                    @slot.Category.Name
+                </Template>
+                <EditTemplate Context="slot">
+                    <RadzenDropDown Data="Categories" Name="Category" @bind-Value=slot.Category TextProperty="Name" Style="width:140px; display: block" />
+                    <RadzenRequiredValidator Component="Category" Text="Categorie is niet opgegeven" Popup=true Style="position: absolute; z-index: 1000" />
+                </EditTemplate>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn Title="Start" Property="@nameof(JurySlot.OpeningTime)" Width="250px">
+                <EditTemplate Context="slot">
+                    <RadzenDatePicker TValue="DateTime"
+                    ShowTime="true"
+                    DateFormat="dd-MM-yyyy HH:mm"
+                    Value="@(TimeZoneService.ConvertUtcToLocal(slot.OpeningTime))"
+                    Change="@(async (args) => slot.OpeningTime = TimeZoneService.ConvertLocalToUtc(args.Value))"
+                    Style="display: block"
+                    Name="StartDate"/>
+                    <RadzenRequiredValidator Component="StartDate" Text="Start datum is niet opgegeven" Popup=true Style="position: absolute; z-index: 1000" />
+                </EditTemplate>
+                <Template Context="slot">
+                    @TimeZoneService.ConvertUtcToLocal(slot.OpeningTime).ToString();
+                </Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn Title="Einde" Property="@nameof(JurySlot.ClosingTime)" Width="250px">
+                <EditTemplate Context="slot">
+                    <RadzenDatePicker TValue="DateTime"
+                    ShowTime="true"
+                    DateFormat="dd-MM-yyyy HH:mm"
+                    Value="@(TimeZoneService.ConvertUtcToLocal(slot.ClosingTime))"
+                    Change="@(async (args) => slot.ClosingTime = TimeZoneService.ConvertLocalToUtc(args.Value))"
+                    Style="display: block"
+                    Name="EndDate" />
+                    <RadzenRequiredValidator Component="EndDate" Text="Eind datum is niet opgegeven" Popup=true Style="position: absolute; z-index: 1000" />
+                </EditTemplate>
+                <Template Context="slot">
+                    @TimeZoneService.ConvertUtcToLocal(slot.ClosingTime).ToString();
+                </Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn Width="180px" Context="juryslot" Filterable="false" Sortable="false" TextAlign="TextAlign.Right" Frozen="true" FrozenPosition="FrozenColumnPosition.Right">
+                <Template Context="juryslot">
+                    <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Click="@((args) => EditJurySlot(juryslot))" />
+                </Template>
+                <EditTemplate Context="juryslot">
+                    <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat" Size="ButtonSize.Medium" Click="@((args) => SaveJurySlot(juryslot))" aria-label="Save" />
+                    <RadzenButton Icon="close" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Click="@((args) => CancelEditJurySlot(juryslot))" aria-label="Cancel" />
+                    <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" Size="ButtonSize.Medium" Shade="Shade.Lighter" class="rz-my-1 rz-ms-1" Click="@(args => DeleteJurySlot(juryslot))" aria-label="Delete" />
+                </EditTemplate>
+                <HeaderTemplate>
+                    <RadzenButton ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat" Size="ButtonSize.Medium" Icon="control_point_duplicate" Click="@(() => AddMultipleDialog())" />
+                    <RadzenButton ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat" Size="ButtonSize.Medium" Icon="add_circle" class="rz-my-1 rz-ms-1 rz-me-4" Click="@(() => AddJurySlot())" />
+                </HeaderTemplate>
+            </RadzenDataGridColumn>
+        </Columns>
+    </RadzenDataGrid>
+}
+
+@code {
+    [Parameter] public List<JurySlot> JurySlots { get; set; } = null;
+    private RadzenDataGrid<JurySlot> JurySlotGridRef { get; set; }
+    private List<Category> Categories { get; set; }
+    private List<Edition> Editions { get; set; }
+    private List<string> ErrorMessages { get; set; } = new List<string>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        Editions = await EditionRepository.GetAllAsync();
+        Categories = await CategoryRepository.GetAllAsync();
+        await base.OnInitializedAsync();
+    }
+
+    private async Task EditJurySlot(JurySlot juryslot) => await JurySlotGridRef.EditRow(juryslot);
+    private async Task SaveJurySlot(JurySlot juryslot)
+    {
+
+        await JurySlotGridRef.UpdateRow(juryslot);
+    }
+
+    private async Task CancelEditJurySlot(JurySlot juryslot)
+    {
+        await JurySlotRepository.RevertEdits(juryslot);
+        JurySlotGridRef.CancelEditRow(juryslot);
+    }
+
+    private async Task DeleteJurySlot(JurySlot juryslot)
+    {
+        await JurySlotRepository.Delete(juryslot);
+
+        if (JurySlots.Contains(juryslot))
+            JurySlots.Remove(juryslot);
+
+        await JurySlotGridRef.Reload();
+    }
+
+    private async Task AddJurySlot()
+    {
+        JurySlot NewJurySlot = new JurySlot { 
+            Code = System.Guid.NewGuid().ToString()
+        };
+        if (_Current.Edition != null)
+        {
+            NewJurySlot.Edition = Editions.FirstOrDefault(E => E.RSWStartDate == _Current.Edition.RSWStartDate);
+        }
+        await JurySlotGridRef.InsertRow(NewJurySlot);
+    }
+    private async Task AddMultipleDialog(){
+
+        JurySlot AddMultipleSlot = new JurySlot();
+        AddMultipleSlot.Edition = Editions.FirstOrDefault(E => E.RSWStartDate == _Current.Edition.RSWStartDate);
+
+        var result = await DialogService.OpenAsync("Simple Dialog", ds =>
+            @<RadzenStack Gap="1.5rem">
+                <RadzenStack Gap="0.5rem">
+                    <RadzenLabel Text="Editie" Component="edition" />
+                    <RadzenDropDown Data="Editions" @bind-Value=AddMultipleSlot.Edition Name="edition" TextProperty="Year" Style="display: block" />
+                </RadzenStack>
+        <RadzenStack Gap="0.5rem">
+            <RadzenLabel Text="Categorie" Component="Category" />
+            <RadzenDropDown Data="Categories" Name="Category" @bind-Value=AddMultipleSlot.Category TextProperty="Name" Style=" display: block" />
+        </RadzenStack>
+                <RadzenStack Gap="0.5rem">
+                    <RadzenLabel Text="Start tijd" Component="StartDate" />
+                    <RadzenDatePicker TValue="DateTime"
+                                      ShowTime="true"
+                                      DateFormat="dd-MM-yyyy HH:mm"
+                                      Value="@(TimeZoneService.ConvertUtcToLocal(AddMultipleSlot.OpeningTime))"
+                                      Change="@(async (args) => AddMultipleSlot.OpeningTime = TimeZoneService.ConvertLocalToUtc(args.Value))"
+                                      Style="display: block"
+                                      Name="StartDate" />
+                </RadzenStack>
+                <RadzenStack Gap="0.5rem">
+                    <RadzenLabel Text="Eind tijd" Component="EndDate" />
+                    <RadzenDatePicker TValue="DateTime"
+                                      ShowTime="true"
+                                      DateFormat="dd-MM-yyyy HH:mm"
+                                      Value="@(TimeZoneService.ConvertUtcToLocal(AddMultipleSlot.ClosingTime))"
+                                      Change="@(async (args) => AddMultipleSlot.ClosingTime = TimeZoneService.ConvertLocalToUtc(args.Value))"
+                                      Style="display: block"
+                                      Name="EndDate" />
+                </RadzenStack>
+
+
+                <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween">
+                    <RadzenStack Orientation="Orientation.Horizontal">
+                        <RadzenButton Text="Ok" Click="() => ds.Close(true)" Style="width: 80px;" />
+                        <RadzenButton Text="Cancel" Click="() => ds.Close(false)" ButtonStyle="ButtonStyle.Light" />
+                    </RadzenStack>
+
+                </RadzenStack>
+            </RadzenStack>
+    );
+
+        if(result){
+            foreach (SubGroup subGroup in AddMultipleSlot.Edition.SubGroups){
+                JurySlot NewJurySlot = new JurySlot();
+
+                NewJurySlot.OpeningTime = AddMultipleSlot.OpeningTime;
+                NewJurySlot.ClosingTime = AddMultipleSlot.ClosingTime;
+                NewJurySlot.SubgroupId = subGroup.Id;
+                NewJurySlot.SubGroup = subGroup;
+                NewJurySlot.EditionId = AddMultipleSlot.Edition.Id;
+                NewJurySlot.Edition = AddMultipleSlot.Edition;
+                NewJurySlot.CategoryId = AddMultipleSlot.Category.Id;
+                NewJurySlot.Category = AddMultipleSlot.Category;
+                NewJurySlot.Code = System.Guid.NewGuid().ToString();
+
+                await JurySlotGridRef.InsertRow(NewJurySlot);
+                await JurySlotGridRef.UpdateRow(NewJurySlot);
+            }
+        }
+    }
+
+    private async Task OnUpdateRow(JurySlot juryslot)
+    {
+        await JurySlotRepository.Save(juryslot);
+        if (!JurySlots.Contains(juryslot))
+            JurySlots.Add(juryslot);
+    }
+    private async Task OnCreateRow(JurySlot juryslot)
+    {
+        await JurySlotRepository.Save(juryslot);
+        if (!JurySlots.Contains(juryslot))
+            JurySlots.Add(juryslot);
+    }
+    private bool CheckSubGroup(SubGroup subGroup, Edition edition){
+        if (subGroup == null || edition == null)
+            return false;
+        if (!edition.SubGroups.Any())
+            return false;
+        if(edition.SubGroups.Select(S => S.Id).Contains(subGroup.Id))
+            return true;
+        return false;
+    }
+    private bool CheckExisting(JurySlot jurySlot){
+        if (JurySlots.Where(S => S.SubGroup.Id == jurySlot.SubGroup.Id && S.Category.Id == jurySlot.Category.Id).Count() >= 1)
+        {
+            return false;
+        }
+        return true;
+    }
+}

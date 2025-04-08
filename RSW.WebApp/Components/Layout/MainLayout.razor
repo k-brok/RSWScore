@@ -1,0 +1,44 @@
+﻿@inherits LayoutComponentBase
+
+<RadzenComponents @rendermode="InteractiveServer" />
+<RadzenLayout>
+    <RadzenHeader>
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0">
+            <RadzenSidebarToggle Click="@(() => sidebarExpanded = !sidebarExpanded)" />
+            <RadzenLabel Text="Header" />
+        </RadzenStack>
+    </RadzenHeader>
+    <RadzenSidebar Responsive="false" Style="width: max-content">
+        <RadzenPanelMenu DisplayStyle="@(sidebarExpanded ? MenuItemDisplayStyle.IconAndText : MenuItemDisplayStyle.Icon)" ShowArrow="false">
+            <RadzenPanelMenuItem Text="Overview" Path="/" Icon="home" />
+            <RadzenPanelMenuItem Text="Inschrijven" Path="/signup" />
+            <RadzenPanelMenuItem Text="Downloads" Path="/download-pdf" Icon="dashboard" />
+            <AuthorizeView>
+                <RadzenPanelMenuItem Text="Admin" Icon="auto_awesome">
+                    <RadzenPanelMenuItem Text="ScoreForm" Path="/Admin/ScoreForm" Icon="color_lens" />
+                    <RadzenPanelMenuItem Text="Patrols" Path="/admin/patrol" />
+                    <RadzenPanelMenuItem Text="Edities" Path="/admin/edition" />
+                    <RadzenPanelMenuItem Text="Criteria" Path="/admin/criteria" />
+                    <RadzenPanelMenuItem Text="Vereniging" Path="/admin/association" />
+                    <RadzenPanelMenuItem Text="Scores" Path="/admin/score" />
+                    <RadzenPanelMenuItem Text="Aanmeld codes" Path="/admin/AanmeldCode" />
+                    <RadzenPanelMenuItem Text="Jury codes" Path="/Admin/JurySlot" />
+                </RadzenPanelMenuItem>
+            </AuthorizeView>
+        </RadzenPanelMenu>
+    </RadzenSidebar>
+    <RadzenBody>
+        <div class="rz-p-4">
+            @Body
+        </div>
+    </RadzenBody>
+    <RadzenFooter>
+        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween">
+            <RadzenText>RSW Score system - Copywrite ©2025 Chunkk All rights reserved</RadzenText> <RadzenLink Path="/Account/login" Text="Admin login" />
+        </RadzenStack>
+    </RadzenFooter>
+</RadzenLayout>
+
+@code {
+    bool sidebarExpanded = true;
+}

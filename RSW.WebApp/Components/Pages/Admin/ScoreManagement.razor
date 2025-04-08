@@ -1,0 +1,16 @@
+﻿@page "/admin/score"
+@attribute [Authorize]
+@inject IScoreRepository ScoreRepository
+
+<h3>ScoreManagement</h3>
+
+<RSW.WebApp.Components.Lists.ScoreGrid Scores="Scores" />
+
+@code {
+	private List<Score> Scores { get; set; }
+	protected override async Task OnInitializedAsync()
+	{
+		Scores = await ScoreRepository.GetAllAsync();
+		await base.OnInitializedAsync();
+	}
+}

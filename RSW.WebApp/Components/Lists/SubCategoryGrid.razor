@@ -1,0 +1,104 @@
+﻿@inject ISubCategoryRepository SubCategoryRepository
+
+@if (ErrorMessages.Any()){
+    <RadzenCard>
+        <RadzenStack Orientation="Orientation.Vertical">
+            @foreach (string message in ErrorMessages)
+            {
+                <RadzenAlert AllowClose="false" AlertStyle="AlertStyle.Danger" Variant="Variant.Flat" Shade="Shade.Lighter">
+                    @message
+                </RadzenAlert>
+            }
+        </RadzenStack>
+    </RadzenCard>
+}
+else{
+    <RadzenDataGrid @ref="SubCategoryGridRef" TItem="SubCategory" Data="SubCategorys">
+        <Columns>
+            <RadzenDataGridColumn Title="Naam" Property="@nameof(SubCategory.Name)">
+                <EditTemplate Context="subcategory">
+                    <RadzenTextBox @bind-Value="subcategory.Name" />
+                </EditTemplate>
+            </RadzenDataGridColumn>
+            @if (SubCategorys.SelectMany(S => S.criterias).Any())
+            {
+                <RadzenDataGridColumn Title="Max totale score">
+                    <Template Context="subcategory">
+                        @subcategory.criterias.Sum(C => C.MaxScore)
+                    </Template>
+                </RadzenDataGridColumn>
+            }
+            <RadzenDataGridColumn Context="subcategory" Filterable="false" Sortable="false" TextAlign="TextAlign.Right" Frozen="true" FrozenPosition="FrozenColumnPosition.Right">
+                <Template Context="subcategory">
+                    <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Click="@((args) => EditSubCategory(subcategory))" />
+                </Template>
+                <EditTemplate Context="subcategory">
+                    <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat" Size="ButtonSize.Medium" Click="@((args) => SaveSubCategory(subcategory))" aria-label="Save" />
+                    <RadzenButton Icon="close" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Click="@((args) => CancelEditSubCategory(subcategory))" aria-label="Cancel" />
+                    <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" Size="ButtonSize.Medium" Shade="Shade.Lighter" class="rz-my-1 rz-ms-1" Click="@(args => DeleteSubCategory(subcategory))" aria-label="Delete" />
+                </EditTemplate>
+                <HeaderTemplate>
+                    <RadzenButton ButtonStyle="ButtonStyle.Success" Icon="add_circle" Click="@(() => AddSubCategory())" />
+                </HeaderTemplate>
+            </RadzenDataGridColumn>
+        </Columns>
+        <Template Context="subcategory">
+            @if (subcategory.criterias.Any())
+            {
+                <CriteriaGrid subcategory="subcategory" />
+            }
+        </Template>
+    </RadzenDataGrid>
+}
+
+@code {
+    [Parameter] public List<SubCategory> SubCategorys { get; set; } = null;
+    [Parameter] public Category category { get; set; } = null;
+
+    private RadzenDataGrid<SubCategory> SubCategoryGridRef { get; set; }
+
+    private List<string> ErrorMessages { get; set; } = new List<string>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (SubCategorys == null && category == null)
+        {
+            ErrorMessages.Add("No subcategorys or patrol givven!");
+        }
+        else if (category != null)
+        {
+            SubCategorys = category.SubCategories;
+        }
+        await base.OnInitializedAsync();
+    }
+    private async Task EditSubCategory(SubCategory subcategory){
+        await SubCategoryGridRef.EditRow(subcategory);
+    }
+    private async Task SaveSubCategory(SubCategory subcategory)
+    {
+        await SubCategoryRepository.Save(subcategory);
+        await SubCategoryGridRef.UpdateRow(subcategory);
+    }
+    private async Task CancelEditSubCategory(SubCategory subcategory)
+    {
+        await SubCategoryRepository.RevertEdits(subcategory);
+        SubCategoryGridRef.CancelEditRow(subcategory);
+    }
+    private async Task DeleteSubCategory(SubCategory subcategory)
+    {
+        if (category != null)
+        {
+            if (category.SubCategories.Contains(subcategory))
+            {
+                category.SubCategories.Remove(subcategory);
+            }
+        }
+        await SubCategoryRepository.Delete(subcategory);
+        await SubCategoryGridRef.Reload();
+    }
+    private async Task AddSubCategory()
+    {
+        SubCategory NewSubCategory = new SubCategory();
+        await SubCategoryGridRef.InsertRow(NewSubCategory);
+    }
+}
