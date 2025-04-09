@@ -19,27 +19,25 @@
 }
 else
 {
-    <RadzenDataGrid @ref="JurySlotGridRef" TItem="JurySlot" Data="JurySlots" RowCreate="@OnCreateRow" RowUpdate="@OnUpdateRow" AllowPaging="true" PageSize="20">
+    <RadzenDataGrid @ref="JurySlotGridRef" TItem="JurySlot" Data="JurySlots" RowCreate="@OnCreateRow" RowUpdate="@OnUpdateRow" AllowFiltering="true" FilterMode="FilterMode.Simple" AllowPaging="true" PageSize="20">
         <Columns>
-            <RadzenDataGridColumn Title="Code" Property="@nameof(JurySlot.Code)" >
+            <RadzenDataGridColumn Title="Code" Property="@nameof(JurySlot.Code)" Filterable="false">
                 <EditTemplate Context="slot">
                     <RadzenTextBox Name="Code" @bind-Value=slot.Code Style="width: 100%; display: block" />
                     <RadzenCustomValidator Component="Code" Validator="@(() => CheckExisting(slot))" Text="Slot met subkamp - categorie bestaat al" Popup=true Style="position: absolute; z-index: 1000" />
                 </EditTemplate>
             </RadzenDataGridColumn>
-            <RadzenDataGridColumn Title="Editie" Width="190px">
-                <Template Context="slot">
-                    @slot.Edition.Year
-                </Template>
+            <RadzenDataGridColumn Title="Editie" Property="Edition.Year" Width="190px" Filterable="true" FilterValue="@selectedEditionYears" FilterOperator="FilterOperator.Contains" LogicalFilterOperator="LogicalFilterOperator.Or">
                 <EditTemplate Context="slot">
                     <RadzenDropDown Data="Editions" @bind-Value=slot.Edition Name="edition" TextProperty="Year" Style="display: block" />
                     <RadzenRequiredValidator Component="edition" Text="Editie is niet opgegeven" Popup=true Style="position: absolute; z-index: 1000" />
                 </EditTemplate>
+                <FilterTemplate>
+                    <RadzenDropDown @bind-Value=@selectedEditionYears Style="width:100%;" InputAttributes="@(new Dictionary<string,object>(){ { "aria-label", "filter by Company" }})"
+                    Change=@OnSelectedEditionYearChange Data="@(Editions.Select(S => S.Year).Distinct())" AllowClear="true" Multiple="true" />
+                </FilterTemplate>
             </RadzenDataGridColumn>
-            <RadzenDataGridColumn Title="Subkamp" Width="190px">
-                <Template Context="slot">
-                    @slot.SubGroup.Color
-                </Template>
+            <RadzenDataGridColumn Title="Subkamp" Width="190px" Property="SubGroup.Color" FilterValue="@selectedSubgroupyNames" FilterOperator="FilterOperator.Contains" LogicalFilterOperator="LogicalFilterOperator.Or">
                 <EditTemplate Context="slot">
                     @if(slot.Edition != null){
                         <RadzenDropDown Data="slot.Edition.SubGroups" Name="SubGroup" @bind-Value=slot.SubGroup TextProperty="Color" Style="display: block" />
@@ -47,17 +45,22 @@ else
                         <RadzenCustomValidator Component="SubGroup" Validator="@(() => CheckSubGroup(slot.SubGroup, slot.Edition))" Text="Subgroup hoot niet bij editie" Popup=true Style="position: absolute; z-index: 1000" />
                     }
                 </EditTemplate>
+                <FilterTemplate>
+                    <RadzenDropDown @bind-Value=@selectedSubgroupyNames Style="width:100%;" InputAttributes="@(new Dictionary<string,object>(){ { "aria-label", "filter by Company" }})"
+                    Change=@OnSelectedSubGroupsNamesChange Data="@(Editions.SelectMany(e => e.SubGroups).Select(S => S.Color).Distinct())" AllowClear="true" Multiple="true" />
+                </FilterTemplate>
             </RadzenDataGridColumn>
-            <RadzenDataGridColumn Title="Categorie" Width="190px">
-                <Template Context="slot">
-                    @slot.Category.Name
-                </Template>
+            <RadzenDataGridColumn Title="Categorie" Property="Category.Name" Width="190px" Filterable="true" FilterValue="@selectedCategoryyNames" FilterOperator="FilterOperator.Contains" LogicalFilterOperator="LogicalFilterOperator.Or">
                 <EditTemplate Context="slot">
                     <RadzenDropDown Data="Categories" Name="Category" @bind-Value=slot.Category TextProperty="Name" Style="width:140px; display: block" />
                     <RadzenRequiredValidator Component="Category" Text="Categorie is niet opgegeven" Popup=true Style="position: absolute; z-index: 1000" />
                 </EditTemplate>
+                <FilterTemplate>
+                    <RadzenDropDown @bind-Value=@selectedCategoryyNames Style="width:100%;" InputAttributes="@(new Dictionary<string,object>(){ { "aria-label", "filter by Company" }})"
+                    Change=@OnSelectedCategorysNamesChange Data="@(Categories.Select(S => S.Name).Distinct())" AllowClear="true" Multiple="true" />
+                </FilterTemplate>
             </RadzenDataGridColumn>
-            <RadzenDataGridColumn Title="Start" Property="@nameof(JurySlot.OpeningTime)" Width="250px">
+            <RadzenDataGridColumn Title="Start" Property="@nameof(JurySlot.OpeningTime)" Width="250px" Filterable="false">
                 <EditTemplate Context="slot">
                     <RadzenDatePicker TValue="DateTime"
                     ShowTime="true"
@@ -69,10 +72,10 @@ else
                     <RadzenRequiredValidator Component="StartDate" Text="Start datum is niet opgegeven" Popup=true Style="position: absolute; z-index: 1000" />
                 </EditTemplate>
                 <Template Context="slot">
-                    @TimeZoneService.ConvertUtcToLocal(slot.OpeningTime).ToString(DateTimeformat);
+                    @TimeZoneService.ConvertUtcToLocal(slot.OpeningTime).ToString(DateTimeformat)
                 </Template>
             </RadzenDataGridColumn>
-            <RadzenDataGridColumn Title="Einde" Property="@nameof(JurySlot.ClosingTime)" Width="250px">
+            <RadzenDataGridColumn Title="Einde" Property="@nameof(JurySlot.ClosingTime)" Width="250px" Filterable="false">
                 <EditTemplate Context="slot">
                     <RadzenDatePicker TValue="DateTime"
                     ShowTime="true"
@@ -84,7 +87,7 @@ else
                     <RadzenRequiredValidator Component="EndDate" Text="Eind datum is niet opgegeven" Popup=true Style="position: absolute; z-index: 1000" />
                 </EditTemplate>
                 <Template Context="slot">
-                    @TimeZoneService.ConvertUtcToLocal(slot.ClosingTime).ToString(DateTimeformat);
+                    @TimeZoneService.ConvertUtcToLocal(slot.ClosingTime).ToString(DateTimeformat)
                 </Template>
             </RadzenDataGridColumn>
             <RadzenDataGridColumn Width="180px" Context="juryslot" Filterable="false" Sortable="false" TextAlign="TextAlign.Right" Frozen="true" FrozenPosition="FrozenColumnPosition.Right">
@@ -111,6 +114,10 @@ else
     private List<Category> Categories { get; set; }
     private List<Edition> Editions { get; set; }
     private List<string> ErrorMessages { get; set; } = new List<string>();
+
+    List<string> selectedSubgroupyNames;
+    List<string> selectedCategoryyNames;
+    List<int> selectedEditionYears;
 
     private string DateTimeformat;
 
@@ -159,6 +166,7 @@ else
     private async Task AddMultipleDialog(){
 
         JurySlot AddMultipleSlot = new JurySlot();
+        bool AllCategories = false;
         AddMultipleSlot.Edition = Editions.FirstOrDefault(E => E.RSWStartDate == _Current.Edition.RSWStartDate);
 
         var result = await DialogService.OpenAsync("Simple Dialog", ds =>
@@ -168,8 +176,15 @@ else
                     <RadzenDropDown Data="Editions" @bind-Value=AddMultipleSlot.Edition Name="edition" TextProperty="Year" Style="display: block" />
                 </RadzenStack>
         <RadzenStack Gap="0.5rem">
-            <RadzenLabel Text="Categorie" Component="Category" />
-            <RadzenDropDown Data="Categories" Name="Category" @bind-Value=AddMultipleSlot.Category TextProperty="Name" Style=" display: block" />
+            <RadzenStack Orientation="Orientation.Horizontal">
+                <RadzenSwitch Name="AllCategories" @bind-Value=AllCategories />
+                <RadzenLabel Component="AllCategories" Text="Alle Categorieen" />
+            </RadzenStack>
+
+            @if(!AllCategories){
+                <RadzenLabel Text="Categorie" Component="Category" />
+                <RadzenDropDown Data="Categories" Name="Category" @bind-Value=AddMultipleSlot.Category TextProperty="Name" Style=" display: block" />
+            }
         </RadzenStack>
                 <RadzenStack Gap="0.5rem">
                     <RadzenLabel Text="Start tijd" Component="StartDate" />
@@ -192,7 +207,6 @@ else
                                       Name="EndDate" />
                 </RadzenStack>
 
-
                 <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween">
                     <RadzenStack Orientation="Orientation.Horizontal">
                         <RadzenButton Text="Ok" Click="() => ds.Close(true)" Style="width: 80px;" />
@@ -205,20 +219,32 @@ else
 
         if(result){
             foreach (SubGroup subGroup in AddMultipleSlot.Edition.SubGroups){
-                JurySlot NewJurySlot = new JurySlot();
+                List<Category> categoriesToAdd = new List<Category>(); 
+                if (AllCategories){
+                    categoriesToAdd = Categories;
+                }
+                else{
+                    categoriesToAdd.Add(AddMultipleSlot.Category);
+                }
+                foreach (Category categorieToAdd in categoriesToAdd){
+                    if (categorieToAdd != null)
+                    {
+                        JurySlot NewJurySlot = new JurySlot();
 
-                NewJurySlot.OpeningTime = AddMultipleSlot.OpeningTime;
-                NewJurySlot.ClosingTime = AddMultipleSlot.ClosingTime;
-                NewJurySlot.SubgroupId = subGroup.Id;
-                NewJurySlot.SubGroup = subGroup;
-                NewJurySlot.EditionId = AddMultipleSlot.Edition.Id;
-                NewJurySlot.Edition = AddMultipleSlot.Edition;
-                NewJurySlot.CategoryId = AddMultipleSlot.Category.Id;
-                NewJurySlot.Category = AddMultipleSlot.Category;
-                NewJurySlot.Code = System.Guid.NewGuid().ToString();
+                        NewJurySlot.OpeningTime = AddMultipleSlot.OpeningTime;
+                        NewJurySlot.ClosingTime = AddMultipleSlot.ClosingTime;
+                        NewJurySlot.SubgroupId = subGroup.Id;
+                        NewJurySlot.SubGroup = subGroup;
+                        NewJurySlot.EditionId = AddMultipleSlot.Edition.Id;
+                        NewJurySlot.Edition = AddMultipleSlot.Edition;
+                        NewJurySlot.CategoryId = categorieToAdd.Id;
+                        NewJurySlot.Category = categorieToAdd;
+                        NewJurySlot.Code = System.Guid.NewGuid().ToString();
 
-                await JurySlotGridRef.InsertRow(NewJurySlot);
-                await JurySlotGridRef.UpdateRow(NewJurySlot);
+                        await JurySlotGridRef.InsertRow(NewJurySlot);
+                        await JurySlotGridRef.UpdateRow(NewJurySlot);
+                    }
+                }
             }
         }
     }
@@ -250,5 +276,26 @@ else
             return false;
         }
         return true;
+    }
+    void OnSelectedSubGroupsNamesChange(object value)
+    {
+        if (selectedSubgroupyNames != null && !selectedSubgroupyNames.Any())
+        {
+            selectedSubgroupyNames = null;
+        }
+    }
+    void OnSelectedCategorysNamesChange(object value)
+    {
+        if (selectedCategoryyNames != null && !selectedCategoryyNames.Any())
+        {
+            selectedCategoryyNames = null;
+        }
+    }
+    void OnSelectedEditionYearChange(object value)
+    {
+        if (selectedEditionYears != null && !selectedEditionYears.Any())
+        {
+            selectedEditionYears = null;
+        }
     }
 }

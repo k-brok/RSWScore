@@ -82,6 +82,9 @@ else
                 <Template Context="patrol">
                     @patrol.Scouts.Count
                 </Template>
+                <FooterTemplate>
+					Totaal: @Patrols.SelectMany(p => p.Scouts).Count().ToString()
+                </FooterTemplate>
             </RadzenDataGridColumn>
             <RadzenDataGridColumn Title="Jongste" Width="100px">
                 <Template Context="patrol">
@@ -198,12 +201,11 @@ else
     }
     private async Task ShowDisqualifiedTooltip(Patrol patrol, ElementReference elementReference, TooltipOptions options = null)
     {
-        string message = "";
-        foreach(string error in patrol.DisqualifiedMessages){
-            message += error;
-            message += "<br>";
-        }
-        tooltipService.Open(elementReference, message, options);
+        tooltipService.Open(elementReference, ds =>  @<RadzenStack Gap="0">
+        @foreach(string error in patrol.DisqualifiedMessages){
+        <RadzenText>@error</RadzenText>
+            }
+            </RadzenStack>, options);
     }
     private async Task UpdateData(){
         StateHasChanged();

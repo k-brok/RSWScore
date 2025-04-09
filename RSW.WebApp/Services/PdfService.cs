@@ -398,18 +398,20 @@ namespace RSW.WebApp.Services
             {
                 int patrolCount = subGroup.patrols.Count();
                 double totalPatrolWidth = patrolCount * patrolColWidth;
-                double criteriaColWidth = width - (2 * margin) - totalPatrolWidth;
+                double MaxScoreWidth = 30; // Breedte voor de MaxScore kolom
+                double criteriaColWidth = width - (2 * margin) - MaxScoreWidth - totalPatrolWidth;
 
                 gfx.DrawString($"{subCategory.Name} - {subGroup.Color}",
                     new XFont("Arial", 14, XFontStyleEx.Bold),
                     XBrushes.Black, new XPoint(margin, startY));
                 startY += rowHeight;
 
-                double[] columnX = new double[patrolCount + 2];
+                double[] columnX = new double[patrolCount + 3];
                 columnX[0] = margin;
                 columnX[1] = margin + criteriaColWidth;
+                columnX[2] = margin + criteriaColWidth + MaxScoreWidth;
 
-                for (int i = 2; i < columnX.Length; i++)
+                for (int i = 3; i < columnX.Length; i++)
                 {
                     columnX[i] = columnX[i - 1] + patrolColWidth;
                 }
@@ -420,11 +422,15 @@ namespace RSW.WebApp.Services
                     new XFont("Arial", 10, XFontStyleEx.Bold),
                     XBrushes.Black, new XPoint(columnX[0] + 5, startY + rowHeight - 5));
 
+                gfx.DrawString("Max",
+                    new XFont("Arial", 10, XFontStyleEx.Bold),
+                    XBrushes.Black, new XPoint(columnX[1] + 5, startY + rowHeight - 5));
+
                 for (int i = 0; i < patrolCount; i++)
                 {
                     gfx.DrawString($"P{subGroup.patrols[i].Number}",
                         new XFont("Arial", 10, XFontStyleEx.Bold),
-                        XBrushes.Black, new XPoint(columnX[i + 1] + 5, startY + rowHeight - 5));
+                        XBrushes.Black, new XPoint(columnX[i + 2] + 5, startY + rowHeight - 5));
                 }
 
                 startY += rowHeight;
@@ -437,6 +443,10 @@ namespace RSW.WebApp.Services
                     gfx.DrawString(criteria.Description,
                         new XFont("Arial", 10),
                         XBrushes.Black, new XPoint(columnX[0] + 5, startY + rowHeight - 5));
+
+                    gfx.DrawString(criteria.MaxScore.ToString(),
+                        new XFont("Arial", 10),
+                        XBrushes.Black, new XPoint(columnX[1] + 5, startY + rowHeight - 5));
 
                     for (int i = 1; i < columnX.Length - 1; i++)
                     {

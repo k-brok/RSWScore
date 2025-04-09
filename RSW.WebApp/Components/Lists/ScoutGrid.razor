@@ -113,7 +113,15 @@ else{
             {
                 if (patrol.SubGroup.Edition != null)
                 {
-                    AgeDate = patrol.SubGroup.Edition.RSWStartDate;
+                    if (patrol.SubGroup.Edition.LSWStartDate == null)
+                    {
+                        AgeDate = patrol.SubGroup.Edition.RSWStartDate;
+                    }
+                    else
+                    {
+                        AgeDate = (DateOnly)patrol.SubGroup.Edition.LSWStartDate;
+                    }
+                    
                 }
             }
         }
