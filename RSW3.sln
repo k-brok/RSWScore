@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RSW.WebApp", "RSW.WebApp\RS
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RSW.Shared", "RSW.Shared\RSW.Shared.csproj", "{30B4AA95-EF22-48F4-B068-67BDB0C199B2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RSW.API", "RSW.API\RSW.API.csproj", "{E5528234-C54C-48C6-9C5B-B768C249DD5D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -41,6 +43,18 @@ Global
 		{30B4AA95-EF22-48F4-B068-67BDB0C199B2}.Release|x64.Build.0 = Release|Any CPU
 		{30B4AA95-EF22-48F4-B068-67BDB0C199B2}.Release|x86.ActiveCfg = Release|Any CPU
 		{30B4AA95-EF22-48F4-B068-67BDB0C199B2}.Release|x86.Build.0 = Release|Any CPU
+		{E5528234-C54C-48C6-9C5B-B768C249DD5D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E5528234-C54C-48C6-9C5B-B768C249DD5D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E5528234-C54C-48C6-9C5B-B768C249DD5D}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{E5528234-C54C-48C6-9C5B-B768C249DD5D}.Debug|x64.Build.0 = Debug|Any CPU
+		{E5528234-C54C-48C6-9C5B-B768C249DD5D}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{E5528234-C54C-48C6-9C5B-B768C249DD5D}.Debug|x86.Build.0 = Debug|Any CPU
+		{E5528234-C54C-48C6-9C5B-B768C249DD5D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E5528234-C54C-48C6-9C5B-B768C249DD5D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E5528234-C54C-48C6-9C5B-B768C249DD5D}.Release|x64.ActiveCfg = Release|Any CPU
+		{E5528234-C54C-48C6-9C5B-B768C249DD5D}.Release|x64.Build.0 = Release|Any CPU
+		{E5528234-C54C-48C6-9C5B-B768C249DD5D}.Release|x86.ActiveCfg = Release|Any CPU
+		{E5528234-C54C-48C6-9C5B-B768C249DD5D}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
