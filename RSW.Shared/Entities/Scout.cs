@@ -1,16 +1,16 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 
-namespace RSW.WebApp.Entities
+namespace RSW.Shared.Entities
 {
     public class Scout : BaseEntity
     {
-        public string Firstname { get; set; }
-        public string Lastname { get; set; }
+        public required string Firstname { get; set; }
+        public required string Lastname { get; set; }
         public DateOnly DateOfBirth { get; set; }
         public bool IsPL { get; set; } = false;
         public bool IsAPL { get; set; } = false;
-        public Patrol Patrol { get; set; }
-        public int PatrolId { get; set; }
+        public Patrol Patrol { get; set; } = null!;
+        public required Guid PatrolId { get; set; }
         [NotMapped]
         public int Age
         {
@@ -41,29 +41,6 @@ namespace RSW.WebApp.Entities
             }
 
             return age;
-        }
-        public bool SetAPL(Patrol patrol)
-        {
-            if (this.IsPL)
-                return false;
-            foreach (Scout scout in patrol.Scouts.Where(S => S.IsAPL))
-                scout.IsAPL = false;
-
-            this.IsAPL = true;
-
-            return true;
-        }
-        public bool SetPL(Patrol patrol)
-        {
-            if (this.IsAPL)
-                return false;
-
-            foreach (Scout scout in patrol.Scouts.Where(S => S.IsPL))
-                scout.IsPL = false;
-
-            this.IsPL = true;
-
-            return true;
         }
     }
 }

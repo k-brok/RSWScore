@@ -1,4 +1,4 @@
-﻿namespace RSW.WebApp.Entities
+﻿namespace RSW.Shared.Entities
 {
     public class Edition : BaseEntity
     {
@@ -9,8 +9,8 @@
                 return RSWStartDate.Year;
             } }
         public String? Theme { get; set; } = string.Empty;
-        public ICollection<SubGroup> SubGroups { get; set; } = new List<SubGroup>();
+        public List<SubGroup> SubGroups { get; set; } = new List<SubGroup>();
         public bool IsActive { get; set; } = false;
-        public List<JurySlot> JurySlots { get; set; }
+        public List<JurySlot> JurySlots { get; set; } = new List<JurySlot>();
     }
 }

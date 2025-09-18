@@ -1,9 +1,9 @@
-﻿namespace RSW.WebApp.Entities
+﻿namespace RSW.Shared.Entities
 {
     public class SignupCode : BaseEntity
     {
-        public string Code { get; set; }
-        public int GroupId { get; set; }
+        public required string Code { get; set; }
+        public Guid GroupId { get; set; }
         public DateTime ExpiryDate { get; set; }
         public bool Lock { get; set; }
     }

@@ -1,15 +1,15 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 
-namespace RSW.WebApp.Entities
+namespace RSW.Shared.Entities
 {
     public class Patrol : BaseEntity
     {
-        public string Name { get; set; }
+        public required string Name { get; set; }
         public int? Number { get; set; } = null;
-        public int? SubGroupId { get; set; } = null;
-        public SubGroup? SubGroup { get; set; } = null;
+        public Guid SubGroupId { get; set; }
+        public SubGroup SubGroup { get; set; } = null!;
         public int GroupId { get; set; }
-        public Group Group { get; set; }
+        public Group Group { get; set; } = null!;
         public List<Score> Scores { get; set; } = new List<Score>();
         public decimal? TotalScore { get; set; } = null;
         public int? position { get; set; } = null;
@@ -86,7 +86,6 @@ namespace RSW.WebApp.Entities
         [NotMapped] public List<string> DisqualifiedMessages { get; set; } = new List<string>();
         public bool IsYoungest { get; set; } = false;
         public List<Scout> Scouts { get; set; } = new List<Scout>();
-        [NotMapped] public string StringNumber { get { return this.Number.ToString(); } }
         
     }
 }
