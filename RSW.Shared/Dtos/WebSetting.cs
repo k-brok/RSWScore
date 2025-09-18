@@ -1,0 +1,14 @@
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace RSW.Shared.Dto
+{
+    public class WebSettingDto : BaseEntityDto
+    {
+        [Required]
+        public required string Key { get; set; }
+        public string Value { get; set; } = string.Empty;
+        public string? Description { get; set; } = string.Empty;
+        public string? ValueType { get; set; } = string.Empty;
+        public string? Category { get; set; } = string.Empty;
+    }
+}
