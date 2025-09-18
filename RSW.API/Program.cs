@@ -1,4 +1,6 @@
 
+using JVVApp.API.Data;
+
 namespace RSW.API;
 
 public class Program
@@ -6,6 +8,12 @@ public class Program
     public static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
+
+        builder.Services.AddDbContext<AppDbContext>(options =>
+            options
+                .UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"))
+                .LogTo(Console.WriteLine, LogLevel.Information)
+        );
 
         // Add services to the container.
         builder.Services.AddAuthorization();
