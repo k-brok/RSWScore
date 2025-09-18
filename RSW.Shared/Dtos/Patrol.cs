@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using RSW.Shared.Entities;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace RSW.Shared.Dto
 {
@@ -12,5 +13,37 @@ namespace RSW.Shared.Dto
         public int? position { get; set; } = null;
         public bool IsYoungest { get; set; } = false;
         
+    }
+    public static class PatrolExtensions
+    {
+        public static PatrolDto ToDto(this Patrol patrol)
+        {
+            return new PatrolDto
+            {
+                Id = patrol.Id,
+                Name = patrol.Name,
+                Number = patrol.Number,
+                SubGroupId = patrol.SubGroupId,
+                GroupId = patrol.GroupId,
+                TotalScore = patrol.TotalScore,
+                position = patrol.position,
+                IsYoungest = patrol.IsYoungest
+            };
+        }
+
+        public static Patrol ToEntity(this PatrolDto patrol)
+        {
+            return new Patrol
+            {
+                Id = patrol.Id,
+                Name = patrol.Name,
+                Number = patrol.Number,
+                SubGroupId = patrol.SubGroupId,
+                GroupId = patrol.GroupId,
+                TotalScore = patrol.TotalScore,
+                position = patrol.position,
+                IsYoungest = patrol.IsYoungest
+            };
+        }
     }
 }
