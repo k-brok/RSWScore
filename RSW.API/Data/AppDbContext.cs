@@ -25,3 +25,4 @@ namespace JVVApp.API.Data
         public DbSet<SubGroup> SubGroups { get; set; } = null!;
         public DbSet<WebSetting> WebSettings { get; set; } = null!;
     }
+}
