@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using RSW.Shared.Entities;
 
-namespace JVVApp.API.Data
+namespace RSW.API.Data
 {
     public class AppDbContext : IdentityDbContext<ApplicationUser>
     {
