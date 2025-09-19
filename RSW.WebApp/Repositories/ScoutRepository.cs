@@ -1,7 +1,7 @@
 ﻿using System.Xml.Linq;
 using Microsoft.EntityFrameworkCore;
 using RSW.WebApp.Data;
-using RSW.WebApp.Entities;
+using RSW.Shared.Entities;
 using RSW.WebApp.Interface.Repositories;
 
 namespace RSW.WebApp.Repositories
@@ -18,13 +18,13 @@ namespace RSW.WebApp.Repositories
             return await _Context.Scouts
                 .ToListAsync();
         }
-        public async Task<Scout> GetAsync(int Id)
+        public async Task<Scout> GetAsync(Guid Id)
         {
             return await _Context.Scouts.FirstOrDefaultAsync(P => P.Id == Id);
         }
         public async Task Save(Scout scout)
         {
-            if(scout.Id == 0)
+            if(scout.Id == Guid.Empty)
             {
                 _Context.Scouts.Add(scout);
                 

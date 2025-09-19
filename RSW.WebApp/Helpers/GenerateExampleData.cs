@@ -1,5 +1,5 @@
 ﻿using System.Xml.Linq;
-using RSW.WebApp.Entities;
+using RSW.Shared.Entities;
 using RSW.WebApp.Interface.Repositories;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
@@ -90,19 +90,23 @@ namespace RSW.WebApp.Helpers
 
                 Edition2027.SubGroups.Add(new SubGroup
                 {
-                    Color = "Rood"
+                    Color = "Rood",
+                    EditionId = Edition2027.Id
                 });
                 Edition2027.SubGroups.Add(new SubGroup
                 {
-                    Color = "Groen"
+                    Color = "Groen",
+                    EditionId = Edition2027.Id
                 });
                 Edition2027.SubGroups.Add(new SubGroup
                 {
-                    Color = "Blauw"
+                    Color = "Blauw",
+                    EditionId = Edition2027.Id
                 });
                 Edition2027.SubGroups.Add(new SubGroup
                 {
-                    Color = "Geel"
+                    Color = "Geel",
+                    EditionId = Edition2027.Id
                 });
                 if (await _editionRepository.GetByYearAsync(Edition2027.RSWStartDate.Year) == null)
                 {
@@ -119,19 +123,23 @@ namespace RSW.WebApp.Helpers
 
                 Edition2026.SubGroups.Add(new SubGroup
                 {
-                    Color = "Rood"
+                    Color = "Rood",
+                    EditionId = Edition2026.Id
                 });
                 Edition2026.SubGroups.Add(new SubGroup
                 {
-                    Color = "Groen"
+                    Color = "Groen",
+                    EditionId = Edition2026.Id
                 });
                 Edition2026.SubGroups.Add(new SubGroup
                 {
-                    Color = "Blauw"
+                    Color = "Blauw",
+                    EditionId = Edition2026.Id
                 });
                 Edition2026.SubGroups.Add(new SubGroup
                 {
-                    Color = "Geel"
+                    Color = "Geel",
+                    EditionId = Edition2026.Id
                 });
 
                 if (await _editionRepository.GetByYearAsync(Edition2026.RSWStartDate.Year) == null)
@@ -149,19 +157,23 @@ namespace RSW.WebApp.Helpers
 
                 Edition2025.SubGroups.Add(new SubGroup
                 {
-                    Color = "Rood"
+                    Color = "Rood",
+                    EditionId = Edition2025.Id
                 });
                 Edition2025.SubGroups.Add(new SubGroup
                 {
-                    Color = "Groen"
+                    Color = "Groen",
+                    EditionId = Edition2025.Id
                 });
                 Edition2025.SubGroups.Add(new SubGroup
                 {
-                    Color = "Blauw"
+                    Color = "Blauw",
+                    EditionId = Edition2025.Id
                 });
                 Edition2025.SubGroups.Add(new SubGroup
                 {
-                    Color = "Geel"
+                    Color = "Geel",
+                    EditionId = Edition2025.Id
                 });
 
                 if (await _editionRepository.GetByYearAsync(Edition2025.RSWStartDate.Year) == null)
@@ -360,7 +372,7 @@ namespace RSW.WebApp.Helpers
                     var NewSubCategory = NewCategory.SubCategories.FirstOrDefault(S => S.Name == SubCategoryName);
                     if(NewSubCategory == null)
                     {
-                        NewSubCategory = new SubCategory { Name = SubCategoryName };
+                        NewSubCategory = new SubCategory { Name = SubCategoryName , CategoryId = NewCategory.Id };
                         NewCategory.SubCategories.Add(NewSubCategory);
                     }
 
@@ -442,8 +454,7 @@ namespace RSW.WebApp.Helpers
 
                     if (CurrentSubGroup.patrols.FirstOrDefault(P => P.Name == Name) == null)
                     {
-                        Patrol NewPatrol = new Patrol();
-                        NewPatrol.Name = Name;
+                        Patrol NewPatrol = new Patrol { Name = Name};
                         NewPatrol.Group = CurrentGroup;
                         NewPatrol.SubGroup = CurrentSubGroup;
                         NewPatrol.Number = number;

@@ -79,7 +79,7 @@ else{
     }
     private async Task AddAssociation()
     {
-        Association NewAssociation = new Association();
+        Association NewAssociation = new Association{Name = "Association"};
         await AssociationGridRef.InsertRow(NewAssociation);
     }
 }

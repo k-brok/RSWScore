@@ -8,7 +8,7 @@ using PdfSharp.Drawing;
 using PdfSharp.Pdf;
 using PdfSharp.Pdf.IO;
 using PdfSharp.Fonts;
-using RSW.WebApp.Entities;
+using RSW.Shared.Entities;
 using PdfSharp.Snippets.Font;
 using Microsoft.AspNetCore.Components.Forms;
 using PdfSharp.Drawing.Layout;

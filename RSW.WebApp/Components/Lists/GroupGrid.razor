@@ -13,9 +13,9 @@
     </RadzenCard>
 }
 else{
-    <RadzenDataGrid @ref="GroupGridRef" TItem="Entities.Group" Data="Groups">
+    <RadzenDataGrid @ref="GroupGridRef" TItem="Shared.Entities.Group" Data="Groups">
         <Columns>
-            <RadzenDataGridColumn Title="Naam" Property="@nameof(Entities.Group.Name)">
+            <RadzenDataGridColumn Title="Naam" Property="@nameof(Shared.Entities.Group.Name)">
                 <EditTemplate Context="group">
                     <RadzenTextBox @bind-Value="group.Name" />
                 </EditTemplate>
@@ -38,10 +38,10 @@ else{
 }
 
 @code {
-    [Parameter] public List<Entities.Group> Groups { get; set; } = null;
+    [Parameter] public List<Shared.Entities.Group> Groups { get; set; } = null;
     [Parameter] public Association association { get; set; } = null;
 
-    private RadzenDataGrid<Entities.Group> GroupGridRef { get; set; }
+    private RadzenDataGrid<Shared.Entities.Group> GroupGridRef { get; set; }
 
     private List<string> ErrorMessages { get; set; } = new List<string>();
 
@@ -57,21 +57,21 @@ else{
         }
         await base.OnInitializedAsync();
     }
-    private async Task EditGroup(Entities.Group group)
+    private async Task EditGroup(Shared.Entities.Group group)
     {
         await GroupGridRef.EditRow(group);
     }
-    private async Task SaveGroup(Entities.Group group)
+    private async Task SaveGroup(Shared.Entities.Group group)
     {
         await GroupRepository.Save(group);
         await GroupGridRef.UpdateRow(group);
     }
-    private async Task CancelEditGroup(Entities.Group group)
+    private async Task CancelEditGroup(Shared.Entities.Group group)
     {
         await GroupRepository.RevertEdits(group);
         GroupGridRef.CancelEditRow(group);
     }
-    private async Task DeleteGroup(Entities.Group group)
+    private async Task DeleteGroup(Shared.Entities.Group group)
     {
         if (association != null)
         {
@@ -85,7 +85,7 @@ else{
     }
     private async Task AddGroup()
     {
-        Entities.Group NewGroup = new Entities.Group();
+        Shared.Entities.Group NewGroup = new Shared.Entities.Group{Name = "Nieuwe groep"};
         await GroupGridRef.InsertRow(NewGroup);
     }
 }

@@ -146,18 +146,18 @@ else
 
 @code {
     public List<Patrol> Patrols { get; set; } = null;
-    [Parameter] public int GroupId { get; set; } = 0;
+    [Parameter] public Guid GroupId { get; set; } = Guid.Empty;
 
     private RadzenDataGrid<Patrol> PatrolGridRef { get; set; }
     bool IsAdmin = false;
 
-    private List<Entities.Group> AllGroups;
+    private List<Shared.Entities.Group> AllGroups;
 
     private List<string> ErrorMessages { get; set; } = new List<string>();
 
     protected override async Task OnInitializedAsync()
     {
-        if (GroupId == 0)
+        if (GroupId == Guid.Empty)
         {
             Patrols = await PatrolRepository.GetAsync();
         }
@@ -196,7 +196,7 @@ else
     }
     private async Task AddPatrol()
     {
-        Patrol NewPatrol = new Patrol();
+        Patrol NewPatrol = new Patrol{ Name = "Nieuw Patrouille"};
         await PatrolGridRef.InsertRow(NewPatrol);
     }
     private async Task ShowDisqualifiedTooltip(Patrol patrol, ElementReference elementReference, TooltipOptions options = null)

@@ -6,7 +6,7 @@ using Radzen;
 using RSW.WebApp.Components;
 using RSW.WebApp.Components.Account;
 using RSW.WebApp.Data;
-using RSW.WebApp.Entities;
+using RSW.Shared.Entities;
 using RSW.WebApp.Helpers;
 using RSW.WebApp.Interface.Repositories;
 using RSW.WebApp.Repositories;

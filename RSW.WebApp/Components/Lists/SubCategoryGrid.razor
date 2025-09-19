@@ -98,7 +98,7 @@ else{
     }
     private async Task AddSubCategory()
     {
-        SubCategory NewSubCategory = new SubCategory();
+        SubCategory NewSubCategory = new SubCategory { Name = "Nieuwe sub categorie", CategoryId = category .Id};
         await SubCategoryGridRef.InsertRow(NewSubCategory);
     }
 }

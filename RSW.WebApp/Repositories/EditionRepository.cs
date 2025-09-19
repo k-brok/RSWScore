@@ -1,7 +1,7 @@
 ﻿using System.Xml.Linq;
 using Microsoft.EntityFrameworkCore;
 using RSW.WebApp.Data;
-using RSW.WebApp.Entities;
+using RSW.Shared.Entities;
 using RSW.WebApp.Interface.Repositories;
 
 namespace RSW.WebApp.Repositories
@@ -38,7 +38,7 @@ namespace RSW.WebApp.Repositories
         public async Task Save(Edition edition)
         {
             try{
-                if (edition.Id == 0)
+                if (edition.Id == Guid.Empty)
                 {
                     _Context.Editions.Add(edition);
                 }

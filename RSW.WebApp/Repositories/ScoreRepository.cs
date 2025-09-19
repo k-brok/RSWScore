@@ -1,7 +1,7 @@
 ﻿using System.Xml.Linq;
 using Microsoft.EntityFrameworkCore;
 using RSW.WebApp.Data;
-using RSW.WebApp.Entities;
+using RSW.Shared.Entities;
 using RSW.WebApp.Interface.Repositories;
 
 namespace RSW.WebApp.Repositories
@@ -17,7 +17,7 @@ namespace RSW.WebApp.Repositories
         {
             return await _Context.Scores.ToListAsync();
         }
-        public async Task<Score> GetAsync(int Id)
+        public async Task<Score> GetAsync(Guid Id)
         {
             return await _Context.Scores.FirstOrDefaultAsync(S => S.Id == Id);
         }
@@ -41,13 +41,13 @@ namespace RSW.WebApp.Repositories
 
         public async Task<List<Score>> GetAsync(Patrol patrol, Category category)
         {
-            List<int> CategoryCriteriaId = category.SubCategories.SelectMany(S => S.criterias).Select(C => C.Id).ToList();
+            List<Guid> CategoryCriteriaId = category.SubCategories.SelectMany(S => S.criterias).Select(C => C.Id).ToList();
             return await _Context.Scores.Where(A => A.PatrolId == patrol.Id && CategoryCriteriaId.Contains(A.CriteriaId)).ToListAsync();
         }
 
         public async Task Save(Score score)
         {
-            if(score.Id == 0)
+            if(score.Id == Guid.Empty)
             {
                 Score CurrentScore = await _Context.Scores.FirstOrDefaultAsync(S => S.PatrolId == score.PatrolId && S.CriteriaId == score.CriteriaId);
                 if(CurrentScore == null)

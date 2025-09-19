@@ -165,7 +165,7 @@ else
     }
     private async Task AddMultipleDialog(){
 
-        JurySlot AddMultipleSlot = new JurySlot();
+        JurySlot AddMultipleSlot = new JurySlot{Code = Guid.NewGuid().ToString()};
         bool AllCategories = false;
         AddMultipleSlot.Edition = Editions.FirstOrDefault(E => E.RSWStartDate == _Current.Edition.RSWStartDate);
 
@@ -229,7 +229,7 @@ else
                 foreach (Category categorieToAdd in categoriesToAdd){
                     if (categorieToAdd != null)
                     {
-                        JurySlot NewJurySlot = new JurySlot();
+                        JurySlot NewJurySlot = new JurySlot { Code = System.Guid.NewGuid().ToString()};
 
                         NewJurySlot.OpeningTime = AddMultipleSlot.OpeningTime;
                         NewJurySlot.ClosingTime = AddMultipleSlot.ClosingTime;
@@ -239,7 +239,6 @@ else
                         NewJurySlot.Edition = AddMultipleSlot.Edition;
                         NewJurySlot.CategoryId = categorieToAdd.Id;
                         NewJurySlot.Category = categorieToAdd;
-                        NewJurySlot.Code = System.Guid.NewGuid().ToString();
 
                         await JurySlotGridRef.InsertRow(NewJurySlot);
                         await JurySlotGridRef.UpdateRow(NewJurySlot);

@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
-using RSW.WebApp.Entities;
+using RSW.Shared.Entities;
 
 namespace RSW.WebApp.Components.Account
 {

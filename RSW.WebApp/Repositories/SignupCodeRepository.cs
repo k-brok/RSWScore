@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using RSW.WebApp.Data;
-using RSW.WebApp.Entities;
+using RSW.Shared.Entities;
 using RSW.WebApp.Interface.Repositories;
 
 namespace RSW.WebApp.Repositories
@@ -12,7 +12,7 @@ namespace RSW.WebApp.Repositories
         {
             _Context = applicationDbContext;
         }
-        public async Task<Entities.Group> CheckCode(string Code)
+        public async Task<Shared.Entities.Group> CheckCode(string Code)
         {
             SignupCode signupCode = _Context.SignupCodes.FirstOrDefault(S => S.Code == Code);
             if (signupCode == null)
@@ -39,9 +39,9 @@ namespace RSW.WebApp.Repositories
             return Returngroup;
         }
 
-        public async Task<string> CreateNew(Entities.Group group)
+        public async Task<string> CreateNew(Shared.Entities.Group group)
         {
-            SignupCode NewSignupCode = new SignupCode();
+            SignupCode NewSignupCode = new SignupCode { Code = System.Guid.NewGuid().ToString() };
             if (group != null)
             {
                 NewSignupCode.GroupId = group.Id;

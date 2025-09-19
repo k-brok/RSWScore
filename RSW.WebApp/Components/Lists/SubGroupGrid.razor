@@ -89,7 +89,7 @@ else{
     }
     private async Task AddSubGroup()
     {
-        SubGroup NewSubGroup = new SubGroup();
+        SubGroup NewSubGroup = new SubGroup { Color = "Kleur", EditionId = edition .Id};
         await SubGroupGridRef.InsertRow(NewSubGroup);
     }
 }

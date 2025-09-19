@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using RSW.WebApp.Data;
-using RSW.WebApp.Entities;
+using RSW.Shared.Entities;
 using RSW.WebApp.Interface.Repositories;
 
 namespace RSW.WebApp.Repositories
@@ -24,7 +24,7 @@ namespace RSW.WebApp.Repositories
 
         public async Task Save(WebSetting websetting)
         {
-            if (websetting.Id == 0)
+            if (websetting.Id == Guid.Empty)
             {
                 _Context.WebSettings.Add(websetting);
             }
