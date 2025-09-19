@@ -6,8 +6,8 @@ namespace RSW.Shared.Entities
     {
         public required string Name { get; set; }
         public int? Number { get; set; } = null;
-        public Guid SubGroupId { get; set; }
-        public SubGroup SubGroup { get; set; } = null!;
+        public Guid? SubGroupId { get; set; } = null;
+        public SubGroup? SubGroup { get; set; } = null;
         public Guid GroupId { get; set; }
         public Group Group { get; set; } = null!;
         public List<Score> Scores { get; set; } = new List<Score>();

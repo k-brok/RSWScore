@@ -6,36 +6,36 @@ using RSW.Shared.Interfaces;
 
 namespace RSW.API.Endpoints
 {
-    public static class PatrolEndpoints
+    public static class JurySlotEndpoints
     {
-        public static void MapPatrolEndpoints(this WebApplication app)
+        public static void MapJurySlotEndpoints(this WebApplication app)
         {
-            var Patrol = app.MapGroup("/api/Patrol").WithTags("Patrol");
+            var JurySlot = app.MapGroup("/api/JurySlot").WithTags("JurySlot");
 
-            Patrol.MapGet("/", async (IPatrolService service) =>
+            JurySlot.MapGet("/", async (IJurySlotService service) =>
             {
                 return Results.Ok(await service.GetAllAsync());
             }).AllowAnonymous();
 
-            Patrol.MapGet("/{id:guid}", async (Guid id, IPatrolService service) =>
+            JurySlot.MapGet("/{id:guid}", async (Guid id, IJurySlotService service) =>
             {
                 var found = await service.GetByIdAsync(id);
                 return found is not null ? Results.Ok(found) : Results.NotFound();
             }).AllowAnonymous();
 
-            Patrol.MapPost("/", async (PatrolCreateDto dto, IPatrolService service) =>
+            JurySlot.MapPost("/", async (JurySlotCreateDto dto, IJurySlotService service) =>
             {
                 var created = await service.CreateAsync(dto);
-                return Results.Created($"/api/Patrol/{created.Id}", created);
+                return Results.Created($"/api/JurySlot/{created.Id}", created);
             });
 
-            Patrol.MapPut("/{id:guid}", async (Guid id, PatrolUpdateDto dto, IPatrolService service) =>
+            JurySlot.MapPut("/{id:guid}", async (Guid id, JurySlotUpdateDto dto, IJurySlotService service) =>
             {
                 var updated = await service.UpdateAsync(id, dto);
                 return updated is not null ? Results.Ok(updated) : Results.NotFound();
             });
 
-            Patrol.MapDelete("/{id:guid}", async (Guid id, IPatrolService service) =>
+            JurySlot.MapDelete("/{id:guid}", async (Guid id, IJurySlotService service) =>
             {
                 var success = await service.DeleteAsync(id);
                 return success ? Results.Ok() : Results.NotFound();

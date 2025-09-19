@@ -1,29 +1,33 @@
-﻿namespace RSW.Shared.Dto
+﻿using System;
+using System.ComponentModel.DataAnnotations;
+
+namespace RSW.Shared.Dto
 {
-    public class SubGroupDto : BaseEntityDto
+    // Voor aanmaken
+    public class SubGroupCreateDto
     {
-        public required string Color { get; set; }
-        public required Guid EditionId { get; set; }
+        [Required]
+        public string Color { get; set; } = string.Empty;
+
+        [Required]
+        public Guid EditionId { get; set; }
     }
-    public static class SubGroupExtensions
+
+    // Voor bijwerken
+    public class SubGroupUpdateDto
     {
-        public static SubGroupDto ToDto(this Entities.SubGroup subgroup)
-        {
-            return new SubGroupDto
-            {
-                Id = subgroup.Id,
-                Color = subgroup.Color,
-                EditionId = subgroup.EditionId
-            };
-        }
-        public static Entities.SubGroup ToEntity(this SubGroupDto subgroup)
-        {
-            return new Entities.SubGroup
-            {
-                Id = subgroup.Id,
-                Color = subgroup.Color,
-                EditionId = subgroup.EditionId
-            };
-        }
+        [Required]
+        public string Color { get; set; } = string.Empty;
+
+        [Required]
+        public Guid EditionId { get; set; }
+    }
+
+    // Voor terugsturen naar de client
+    public class SubGroupReadDto : BaseEntityDto
+    {
+        public string Color { get; set; } = string.Empty;
+
+        public Guid EditionId { get; set; }
     }
 }

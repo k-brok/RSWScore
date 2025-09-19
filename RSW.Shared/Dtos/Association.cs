@@ -1,32 +1,24 @@
-﻿using RSW.Shared.Entities;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace RSW.Shared.Dto
 {
-    public class AssociationDto : BaseEntityDto
+    public class AssociationCreateDto
     {
-        public required string Name { get; set; }
+        [Required]
+        public string Name { get; set; } = string.Empty;
+
         public string Abbreviation { get; set; } = string.Empty;
     }
-    public static class AssociationExtensions
+    public class AssociationUpdateDto
     {
-        public static AssociationDto ToDto(this Association association)
-        {
-            return new AssociationDto
-            {
-                Id = association.Id,
-                Name = association.Name,
-                Abbreviation = association.Abbreviation
-            };
-        }
+        [Required]
+        public string Name { get; set; } = string.Empty;
 
-        public static Association ToEntity(this AssociationDto association)
-        {
-            return new Association
-            {
-                Id = association.Id,
-                Name = association.Name,
-                Abbreviation = association.Abbreviation
-            };
-        }
+        public string Abbreviation { get; set; } = string.Empty;
+    }
+    public class AssociationReadDto : BaseEntityDto
+    {
+        public string Name { get; set; } = string.Empty;
+        public string Abbreviation { get; set; } = string.Empty;
     }
 }

@@ -1,45 +1,61 @@
-﻿using RSW.Shared.Entities;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace RSW.Shared.Dto
 {
-    public class ScoutDto : BaseEntityDto
+    // Voor aanmaken
+    public class ScoutCreateDto
     {
-        public required string Firstname { get; set; }
-        public required string Lastname { get; set; }
-        public DateOnly DateOfBirth { get; set; }
-        public bool IsPL { get; set; } = false;
-        public bool IsAPL { get; set; } = false;
-        public required Guid PatrolId { get; set; }
-    }
-    public static class ScoutExtensions
-    {
-        public static ScoutDto ToDto(this Scout scout)
-        {
-            return new ScoutDto
-            {
-                Id = scout.Id,
-                Firstname = scout.Firstname,
-                Lastname = scout.Lastname,
-                DateOfBirth = scout.DateOfBirth,
-                IsPL = scout.IsPL,
-                IsAPL = scout.IsAPL,
-                PatrolId = scout.PatrolId
-            };
-        }
+        [Required]
+        public string Firstname { get; set; } = string.Empty;
 
-        public static Scout ToEntity(this ScoutDto scout)
-        {
-            return new Scout
-            {
-                Id = scout.Id,
-                Firstname = scout.Firstname,
-                Lastname = scout.Lastname,
-                DateOfBirth = scout.DateOfBirth,
-                IsPL = scout.IsPL,
-                IsAPL = scout.IsAPL,
-                PatrolId = scout.PatrolId
-            };
-        }
+        [Required]
+        public string Lastname { get; set; } = string.Empty;
+
+        [Required]
+        public DateOnly DateOfBirth { get; set; }
+
+        public bool IsPL { get; set; } = false;
+
+        public bool IsAPL { get; set; } = false;
+
+        [Required]
+        public Guid PatrolId { get; set; }
+    }
+
+    // Voor bijwerken
+    public class ScoutUpdateDto
+    {
+        [Required]
+        public string Firstname { get; set; } = string.Empty;
+
+        [Required]
+        public string Lastname { get; set; } = string.Empty;
+
+        [Required]
+        public DateOnly DateOfBirth { get; set; }
+
+        public bool IsPL { get; set; } = false;
+
+        public bool IsAPL { get; set; } = false;
+
+        [Required]
+        public Guid PatrolId { get; set; }
+    }
+
+    // Voor terugsturen naar de client
+    public class ScoutReadDto : BaseEntityDto
+    {
+        public string Firstname { get; set; } = string.Empty;
+
+        public string Lastname { get; set; } = string.Empty;
+
+        public DateOnly DateOfBirth { get; set; }
+
+        public bool IsPL { get; set; } = false;
+
+        public bool IsAPL { get; set; } = false;
+
+        public Guid PatrolId { get; set; }
     }
 }

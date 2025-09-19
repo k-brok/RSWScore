@@ -1,38 +1,39 @@
-﻿using RSW.Shared.Entities;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace RSW.Shared.Dto
 {
-    public class CriteriaDto : BaseEntityDto
+    public class CriteriaCreateDto
     {
-        public string? Name { get; set; }
+        [Required]
+        public string Name { get; set; } = string.Empty;
+
         public string Description { get; set; } = string.Empty;
-        public int MaxScore { get; set; }
+
+        public int MaxScore { get; set; } = 0;
+
+        [Required]
         public Guid SubCategoryId { get; set; }
     }
-    public static class CriteriaExtensions
+    public class CriteriaUpdateDto
     {
-        public static CriteriaDto ToDto(this Criteria criteria)
-        {
-            return new CriteriaDto
-            {
-                Id = criteria.Id,
-                Name = criteria.Name,
-                Description = criteria.Description,
-                SubCategoryId = criteria.SubCategoryId,
-                MaxScore = criteria.MaxScore
-            };
-        }
+        [Required]
+        public string Name { get; set; } = string.Empty;
 
-        public static Criteria ToEntity(this CriteriaDto criteria)
-        {
-            return new Criteria
-            {
-                Id = criteria.Id,
-                Name = criteria.Name,
-                Description = criteria.Description,
-                SubCategoryId = criteria.SubCategoryId,
-                MaxScore = criteria.MaxScore
-            };
-        }
+        public string Description { get; set; } = string.Empty;
+
+        public int MaxScore { get; set; } = 0;
+
+        [Required]
+        public Guid SubCategoryId { get; set; }
+    }
+    public class CriteriaReadDto : BaseEntityDto
+    {
+        public string Name { get; set; } = string.Empty;
+
+        public string Description { get; set; } = string.Empty;
+
+        public int MaxScore { get; set; } = 0;
+
+        public Guid SubCategoryId { get; set; }
     }
 }

@@ -1,38 +1,45 @@
-﻿using RSW.Shared.Entities;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace RSW.Shared.Dto
 {
-    public class SignupCodeDto : BaseEntityDto
+    // Voor aanmaken
+    public class SignupCodeCreateDto
     {
-        public required string Code { get; set; }
-        public Guid GroupId { get; set; }
-        public DateTime ExpiryDate { get; set; }
-        public bool Lock { get; set; }
-    }
-    public static class SignupCodeExtensions
-    {
-        public static SignupCodeDto ToDto(this SignupCode signupcode)
-        {
-            return new SignupCodeDto
-            {
-                Id = signupcode.Id,
-                Code = signupcode.Code,
-                GroupId = signupcode.GroupId,
-                ExpiryDate = signupcode.ExpiryDate,
-                Lock = signupcode.Lock
-            };
-        }
+        [Required]
+        public string Code { get; set; } = string.Empty;
 
-        public static SignupCode ToEntity(this SignupCodeDto signupcode)
-        {
-            return new SignupCode
-            {
-                Id = signupcode.Id,
-                Code = signupcode.Code,
-                GroupId = signupcode.GroupId,
-                ExpiryDate = signupcode.ExpiryDate,
-                Lock = signupcode.Lock
-            };
-        }
+        [Required]
+        public Guid GroupId { get; set; }
+
+        public DateTime ExpiryDate { get; set; } = DateTime.UtcNow.AddDays(7);
+
+        public bool Lock { get; set; } = false;
+    }
+
+    // Voor bijwerken
+    public class SignupCodeUpdateDto
+    {
+        [Required]
+        public string Code { get; set; } = string.Empty;
+
+        [Required]
+        public Guid GroupId { get; set; }
+
+        public DateTime ExpiryDate { get; set; } = DateTime.UtcNow.AddDays(7);
+
+        public bool Lock { get; set; } = false;
+    }
+
+    // Voor terugsturen naar de client
+    public class SignupCodeReadDto : BaseEntityDto
+    {
+        public string Code { get; set; } = string.Empty;
+
+        public Guid GroupId { get; set; }
+
+        public DateTime ExpiryDate { get; set; }
+
+        public bool Lock { get; set; }
     }
 }

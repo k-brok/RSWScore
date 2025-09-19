@@ -1,49 +1,35 @@
-﻿using RSW.Shared.Entities;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace RSW.Shared.Dto
 {
-    public class PatrolDto : BaseEntityDto
+    // Voor aanmaken
+    public class PatrolCreateDto
     {
-        public required string Name { get; set; }
-        public int? Number { get; set; } = null;
-        public Guid SubGroupId { get; set; }
+        [Required]
+        public string Name { get; set; } = string.Empty;
+        [Required]
         public Guid GroupId { get; set; }
-        public decimal? TotalScore { get; set; } = null;
-        public int? position { get; set; } = null;
         public bool IsYoungest { get; set; } = false;
-        
     }
-    public static class PatrolExtensions
+    public class PatrolUpdateDto
     {
-        public static PatrolDto ToDto(this Patrol patrol)
-        {
-            return new PatrolDto
-            {
-                Id = patrol.Id,
-                Name = patrol.Name,
-                Number = patrol.Number,
-                SubGroupId = patrol.SubGroupId,
-                GroupId = patrol.GroupId,
-                TotalScore = patrol.TotalScore,
-                position = patrol.position,
-                IsYoungest = patrol.IsYoungest
-            };
-        }
+        [Required]
+        public string Name { get; set; } = string.Empty;
+        public int? Number { get; set; }
+        public Guid? SubGroupId { get; set; }
+        [Required]
+        public Guid GroupId { get; set; }
+        public bool IsYoungest { get; set; } = false;
+    }
 
-        public static Patrol ToEntity(this PatrolDto patrol)
-        {
-            return new Patrol
-            {
-                Id = patrol.Id,
-                Name = patrol.Name,
-                Number = patrol.Number,
-                SubGroupId = patrol.SubGroupId,
-                GroupId = patrol.GroupId,
-                TotalScore = patrol.TotalScore,
-                position = patrol.position,
-                IsYoungest = patrol.IsYoungest
-            };
-        }
+    public class PatrolReadDto : BaseEntityDto
+    {
+        public string Name { get; set; } = string.Empty;
+        public int? Number { get; set; }
+        public Guid? SubGroupId { get; set; }
+        public Guid GroupId { get; set; }
+        public decimal? TotalScore { get; set; }
+        public int? Position { get; set; }
+        public bool IsYoungest { get; set; }
     }
 }

@@ -6,36 +6,36 @@ using RSW.Shared.Interfaces;
 
 namespace RSW.API.Endpoints
 {
-    public static class PatrolEndpoints
+    public static class WebSettingEndpoints
     {
-        public static void MapPatrolEndpoints(this WebApplication app)
+        public static void MapWebSettingEndpoints(this WebApplication app)
         {
-            var Patrol = app.MapGroup("/api/Patrol").WithTags("Patrol");
+            var WebSetting = app.MapGroup("/api/Setting").WithTags("Settings");
 
-            Patrol.MapGet("/", async (IPatrolService service) =>
+            WebSetting.MapGet("/", async (IWebSettingService service) =>
             {
                 return Results.Ok(await service.GetAllAsync());
             }).AllowAnonymous();
 
-            Patrol.MapGet("/{id:guid}", async (Guid id, IPatrolService service) =>
+            WebSetting.MapGet("/{id:guid}", async (Guid id, IWebSettingService service) =>
             {
                 var found = await service.GetByIdAsync(id);
                 return found is not null ? Results.Ok(found) : Results.NotFound();
             }).AllowAnonymous();
 
-            Patrol.MapPost("/", async (PatrolCreateDto dto, IPatrolService service) =>
+            WebSetting.MapPost("/", async (WebSettingCreateDto dto, IWebSettingService service) =>
             {
                 var created = await service.CreateAsync(dto);
-                return Results.Created($"/api/Patrol/{created.Id}", created);
+                return Results.Created($"/api/WebSetting/{created.Id}", created);
             });
 
-            Patrol.MapPut("/{id:guid}", async (Guid id, PatrolUpdateDto dto, IPatrolService service) =>
+            WebSetting.MapPut("/{id:guid}", async (Guid id, WebSettingUpdateDto dto, IWebSettingService service) =>
             {
                 var updated = await service.UpdateAsync(id, dto);
                 return updated is not null ? Results.Ok(updated) : Results.NotFound();
             });
 
-            Patrol.MapDelete("/{id:guid}", async (Guid id, IPatrolService service) =>
+            WebSetting.MapDelete("/{id:guid}", async (Guid id, IWebSettingService service) =>
             {
                 var success = await service.DeleteAsync(id);
                 return success ? Results.Ok() : Results.NotFound();

@@ -1,35 +1,32 @@
-﻿using RSW.Shared.Entities;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace RSW.Shared.Dto
 {
-    public class CategoryDto : BaseEntityDto
+    // Voor aanmaken
+    public class CategoryCreateDto
     {
-        public required string Name { get; set; }
-        public int Weight { get; set; }
-        public List<SubCategoryDto> SubCategories { get; set; } = new List<SubCategoryDto>();
-    }
-    public static class CategoryExtensions
-    {
-        public static CategoryDto ToDto(this Category category)
-        {
-            return new CategoryDto
-            {
-                Id = category.Id,
-                Name = category.Name,
-                Weight = category.Weight,
-                SubCategories = category.SubCategories.Select(sc => sc.ToDto()).ToList()
-            };
-        }
+        [Required]
+        public string Name { get; set; } = string.Empty;
 
-        public static Category ToEntity(this CategoryDto category)
-        {
-            return new Category
-            {
-                Id = category.Id,
-                Name = category.Name,
-                Weight = category.Weight,
-                SubCategories = category.SubCategories.Select(sc => sc.ToEntity()).ToList()
-            };
-        }
+        public int Weight { get; set; } = 0;
+    }
+
+    // Voor bijwerken
+    public class CategoryUpdateDto
+    {
+        [Required]
+        public string Name { get; set; } = string.Empty;
+
+        public int Weight { get; set; } = 0;
+    }
+
+    // Voor teruggeven aan de client
+    public class CategoryReadDto : BaseEntityDto
+    {
+        public string Name { get; set; } = string.Empty;
+
+        public int Weight { get; set; } = 0;
+
+        public List<SubCategoryReadDto> SubCategories { get; set; } = new();
     }
 }

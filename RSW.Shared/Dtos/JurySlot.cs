@@ -1,44 +1,51 @@
-﻿using RSW.Shared.Entities;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace RSW.Shared.Dto
 {
-    public class JurySlotDto : BaseEntityDto
+    public class JurySlotCreateDto
     {
         public DateTime OpeningTime { get; set; } = DateTime.UtcNow;
+
         public DateTime ClosingTime { get; set; } = DateTime.UtcNow.AddHours(2);
-        public required string Code { get; set; }
+
+        [Required]
+        public string Code { get; set; } = string.Empty;
+
+        [Required]
+        public Guid CategoryId { get; set; }
+
+        [Required]
+        public Guid SubgroupId { get; set; }
+
+        [Required]
+        public Guid EditionId { get; set; }
+    }
+    public class JurySlotUpdateDto
+    {
+        public DateTime OpeningTime { get; set; } = DateTime.UtcNow;
+
+        public DateTime ClosingTime { get; set; } = DateTime.UtcNow.AddHours(2);
+
+        [Required]
+        public string Code { get; set; } = string.Empty;
+
+        [Required]
+        public Guid CategoryId { get; set; }
+
+        [Required]
+        public Guid SubgroupId { get; set; }
+
+        [Required]
+        public Guid EditionId { get; set; }
+    }
+    public class JurySlotReadDto : BaseEntityDto
+    {
+        public DateTime OpeningTime { get; set; }
+        public DateTime ClosingTime { get; set; }
+        public string Code { get; set; } = string.Empty;
         public Guid CategoryId { get; set; }
         public Guid SubgroupId { get; set; }
         public Guid EditionId { get; set; }
-    }
-    public static class JurySlotExtensions
-    {
-        public static JurySlotDto ToDto(this JurySlot juryslot)
-        {
-            return new JurySlotDto
-            {
-                Id = juryslot.Id,
-                OpeningTime = juryslot.OpeningTime,
-                ClosingTime = juryslot.ClosingTime,
-                Code = juryslot.Code,
-                CategoryId = juryslot.CategoryId,
-                SubgroupId = juryslot.SubgroupId,
-                EditionId = juryslot.EditionId
-            };
-        }
-
-        public static JurySlot ToEntity(this JurySlotDto juryslot)
-        {
-            return new JurySlot
-            {
-                Id = juryslot.Id,
-                OpeningTime = juryslot.OpeningTime,
-                ClosingTime = juryslot.ClosingTime,
-                Code = juryslot.Code,
-                CategoryId = juryslot.CategoryId,
-                SubgroupId = juryslot.SubgroupId,
-                EditionId = juryslot.EditionId
-            };
-        }
     }
 }

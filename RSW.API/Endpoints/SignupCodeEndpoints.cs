@@ -6,36 +6,36 @@ using RSW.Shared.Interfaces;
 
 namespace RSW.API.Endpoints
 {
-    public static class PatrolEndpoints
+    public static class SignupCodeEndpoints
     {
-        public static void MapPatrolEndpoints(this WebApplication app)
+        public static void MapSignupCodeEndpoints(this WebApplication app)
         {
-            var Patrol = app.MapGroup("/api/Patrol").WithTags("Patrol");
+            var SignupCode = app.MapGroup("/api/SignupCode").WithTags("SignupCode");
 
-            Patrol.MapGet("/", async (IPatrolService service) =>
+            SignupCode.MapGet("/", async (ISignupCodeService service) =>
             {
                 return Results.Ok(await service.GetAllAsync());
             }).AllowAnonymous();
 
-            Patrol.MapGet("/{id:guid}", async (Guid id, IPatrolService service) =>
+            SignupCode.MapGet("/{id:guid}", async (Guid id, ISignupCodeService service) =>
             {
                 var found = await service.GetByIdAsync(id);
                 return found is not null ? Results.Ok(found) : Results.NotFound();
             }).AllowAnonymous();
 
-            Patrol.MapPost("/", async (PatrolCreateDto dto, IPatrolService service) =>
+            SignupCode.MapPost("/", async (SignupCodeCreateDto dto, ISignupCodeService service) =>
             {
                 var created = await service.CreateAsync(dto);
-                return Results.Created($"/api/Patrol/{created.Id}", created);
+                return Results.Created($"/api/SignupCode/{created.Id}", created);
             });
 
-            Patrol.MapPut("/{id:guid}", async (Guid id, PatrolUpdateDto dto, IPatrolService service) =>
+            SignupCode.MapPut("/{id:guid}", async (Guid id, SignupCodeUpdateDto dto, ISignupCodeService service) =>
             {
                 var updated = await service.UpdateAsync(id, dto);
                 return updated is not null ? Results.Ok(updated) : Results.NotFound();
             });
 
-            Patrol.MapDelete("/{id:guid}", async (Guid id, IPatrolService service) =>
+            SignupCode.MapDelete("/{id:guid}", async (Guid id, ISignupCodeService service) =>
             {
                 var success = await service.DeleteAsync(id);
                 return success ? Results.Ok() : Results.NotFound();
