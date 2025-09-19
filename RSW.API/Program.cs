@@ -5,6 +5,7 @@ using RSW.API.Services;
 using RSW.Shared.Interfaces;
 using AutoMapper;
 using Microsoft.Extensions.DependencyInjection;
+using RSW.Shared.Mapper;
 
 namespace RSW.API;
 
