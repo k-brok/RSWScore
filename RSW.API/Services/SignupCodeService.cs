@@ -36,10 +36,7 @@ namespace RSW.API.Services
             var entity = new SignupCode
             {
                 Id = Guid.NewGuid(),
-                Code = dto.Code,
-                ExpiryDate = dto.ExpiryDate,
                 GroupId = dto.GroupId,
-                Lock = dto.Lock
             };
 
             _context.SignupCodes.Add(entity);
@@ -53,7 +50,6 @@ namespace RSW.API.Services
             var existing = await _context.SignupCodes.FirstOrDefaultAsync(e => e.Id == id);
             if (existing == null) return null;
 
-            existing.Code = dto.Code;
             existing.ExpiryDate = dto.ExpiryDate;
             existing.GroupId = dto.GroupId;
             existing.Lock = dto.Lock;
