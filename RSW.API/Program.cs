@@ -42,6 +42,8 @@ public class Program
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
 
+        builder.Services.AddSignalR();
+
         var app = builder.Build();
 
         // Configure the HTTP request pipeline.
@@ -68,6 +70,8 @@ public class Program
         app.MapSubCategoryEndpoints();
         app.MapSubGroupEndpoints();
         app.MapWebSettingEndpoints();
+
+        app.MapHub<UpdatesHub>("/hubs/updates");
 
         app.Run();
     }

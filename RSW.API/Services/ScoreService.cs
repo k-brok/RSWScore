@@ -1,4 +1,5 @@
 using AutoMapper;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using RSW.API.Data;
 using RSW.Shared.Dto;
@@ -11,11 +12,13 @@ namespace RSW.API.Services
     {
         private readonly AppDbContext _context;
         private readonly IMapper _mapper;
+        private readonly IHubContext<UpdatesHub> _hub;
 
-        public ScoreService(AppDbContext context, IMapper mapper)
+        public ScoreService(AppDbContext context, IMapper mapper, IHubContext<UpdatesHub> hub)
         {
             _context = context;
             _mapper = mapper;
+            _hub = hub;
         }
 
         public async Task<IEnumerable<ScoreReadDto>> GetAllAsync()
@@ -57,6 +60,9 @@ namespace RSW.API.Services
             existing.Value = dto.Value;
 
             await _context.SaveChangesAsync();
+
+            await _hub.Clients.All.SendAsync("ScoreUpdate", existing);
+
             return _mapper.Map<ScoreReadDto>(existing);
         }
         public async Task<bool> DeleteAsync(Guid id)
