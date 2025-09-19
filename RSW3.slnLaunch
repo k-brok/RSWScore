@@ -1,0 +1,15 @@
+[
+  {
+    "Name": "New Profile",
+    "Projects": [
+      {
+        "Path": "RSW.API\\RSW.API.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "RSW.APP\\RSW.APP.csproj",
+        "Action": "Start"
+      }
+    ]
+  }
+]
