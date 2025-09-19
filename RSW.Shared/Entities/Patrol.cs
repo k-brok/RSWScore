@@ -8,7 +8,7 @@ namespace RSW.Shared.Entities
         public int? Number { get; set; } = null;
         public Guid SubGroupId { get; set; }
         public SubGroup SubGroup { get; set; } = null!;
-        public int GroupId { get; set; }
+        public Guid GroupId { get; set; }
         public Group Group { get; set; } = null!;
         public List<Score> Scores { get; set; } = new List<Score>();
         public decimal? TotalScore { get; set; } = null;

@@ -8,7 +8,7 @@ namespace RSW.Shared.Dto
         public required string Name { get; set; }
         public int? Number { get; set; } = null;
         public Guid SubGroupId { get; set; }
-        public int GroupId { get; set; }
+        public Guid GroupId { get; set; }
         public decimal? TotalScore { get; set; } = null;
         public int? position { get; set; } = null;
         public bool IsYoungest { get; set; } = false;
