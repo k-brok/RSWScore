@@ -45,6 +45,15 @@ public class Program
 
         builder.Services.AddSignalR();
 
+        var appBaseUrl = builder.Configuration["AppBaseUrl"];
+        builder.Services.AddCors(options =>
+        {
+            options.AddPolicy("AllowBlazorClient",
+                policy => policy.WithOrigins(appBaseUrl!)
+                                .AllowAnyHeader()
+                                .AllowAnyMethod());
+        });
+
         var app = builder.Build();
 
         // Configure the HTTP request pipeline.
@@ -56,6 +65,7 @@ public class Program
 
         app.UseHttpsRedirection();
 
+        app.UseCors("AllowBlazorClient");
         app.UseAuthorization();
 
         app.MapAssociationEndpoints();
