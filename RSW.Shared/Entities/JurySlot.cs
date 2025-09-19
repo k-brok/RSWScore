@@ -4,7 +4,6 @@
     {
         public DateTime OpeningTime { get; set; } = DateTime.UtcNow;
         public DateTime ClosingTime { get; set; } = DateTime.UtcNow.AddHours(2);
-        public required string Code { get; set; }
         public Category Category { get; set; } = null!;
         public Guid CategoryId { get; set; }
         public SubGroup SubGroup { get; set; } = null!;

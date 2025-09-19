@@ -38,7 +38,6 @@ namespace RSW.API.Services
                 Id = Guid.NewGuid(),
                 CategoryId = dto.CategoryId,
                 ClosingTime = dto.ClosingTime,
-                Code = dto.Code,
                 EditionId = dto.EditionId,
                 OpeningTime = dto.OpeningTime,
                 SubgroupId = dto.SubgroupId
@@ -57,7 +56,6 @@ namespace RSW.API.Services
 
             existing.CategoryId = dto.CategoryId;
             existing.ClosingTime = dto.ClosingTime;
-            existing.Code = dto.Code;
             existing.EditionId = dto.EditionId;
             existing.OpeningTime = dto.OpeningTime;
             existing.SubgroupId = dto.SubgroupId;
