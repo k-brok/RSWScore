@@ -70,7 +70,7 @@ else
     }
     private async Task AddWebSetting()
     {
-        WebSetting NewWebSetting = new WebSetting();
+        WebSetting NewWebSetting = new WebSetting{Key = "key"};
         await WebSettingGridRef.InsertRow(NewWebSetting);
     }
 }

@@ -1,4 +1,4 @@
-﻿using RSW.WebApp.Entities;
+﻿using RSW.Shared.Entities;
 using RSW.WebApp.Interface.Repositories;
 
 namespace RSW.WebApp.Services

@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Primitives;
 using RSW.WebApp.Components.Account.Pages;
 using RSW.WebApp.Components.Account.Pages.Manage;
-using RSW.WebApp.Entities;
+using RSW.Shared.Entities;
 
 namespace Microsoft.AspNetCore.Routing
 {

@@ -1,7 +1,7 @@
 ﻿using System.Xml.Linq;
 using Microsoft.EntityFrameworkCore;
 using RSW.WebApp.Data;
-using RSW.WebApp.Entities;
+using RSW.Shared.Entities;
 using RSW.WebApp.Interface.Repositories;
 
 namespace RSW.WebApp.Repositories
@@ -26,7 +26,7 @@ namespace RSW.WebApp.Repositories
         {
             return await _Context.Groups.Include(G => G.Association).FirstOrDefaultAsync(A => A.Name == name && A.Association.Id == association.Id);
         }
-        public async Task<Group> GetAsync(int Id)
+        public async Task<Group> GetAsync(Guid Id)
         {
             return await _Context.Groups.Include(G => G.Association).FirstOrDefaultAsync(A => A.Id == Id);
         }
@@ -41,7 +41,7 @@ namespace RSW.WebApp.Repositories
         }
         public async Task Save(Group group)
         {
-            if(group.Id == 0)
+            if(group.Id == Guid.Empty)
             {
                 _Context.Groups.Add(group);
             }

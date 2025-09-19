@@ -7,7 +7,7 @@
 		<Columns>
 			<RadzenDataGridColumn Title="Patrol" Width="80px">
 				<Template Context="patrol">
-					@patrol.StringNumber - @patrol.Name
+					@patrol.Number.ToString() - @patrol.Name
 				</Template>
 			</RadzenDataGridColumn>
 			@if (Category != null && SubCategories != null)
@@ -37,10 +37,6 @@
 															};
 												}
 											}
-											<RadzenNumeric @ref=@GCID[$"{patrol.Id}-{criteria.Id}"] TValue="int" Max="@criteria.MaxScore" Value="@CurrentScore.Value" Style="max-width: 80px" Change="@(args => UpdateScoreValue(patrol, CurrentScore,(int)args))" @onkeyup="(args => OnOrderGridKeyDown(args, patrols.IndexOf(patrol), criteria.Id,
-												subCategory.criterias.IndexOf(criteria) < subCategory.criterias.Count - 1
-													? subCategory.criterias[subCategory.criterias.IndexOf(criteria) + 1].Id
-													: subCategory.criterias[0].Id))" />
 										</Template>
 									</RadzenDataGridColumn>
 									}

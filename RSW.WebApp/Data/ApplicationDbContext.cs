@@ -3,7 +3,7 @@ using System.Data.Common;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using RSW.WebApp.Entities;
+using RSW.Shared.Entities;
 
 namespace RSW.WebApp.Data
 {

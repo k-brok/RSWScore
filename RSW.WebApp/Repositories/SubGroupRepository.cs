@@ -1,7 +1,7 @@
 ﻿using System.Xml.Linq;
 using Microsoft.EntityFrameworkCore;
 using RSW.WebApp.Data;
-using RSW.WebApp.Entities;
+using RSW.Shared.Entities;
 
 namespace RSW.WebApp.Repositories
 {
@@ -19,7 +19,7 @@ namespace RSW.WebApp.Repositories
 
         public async Task Save(SubGroup association)
         {
-            if(association.Id == 0)
+            if(association.Id == Guid.Empty)
             {
                 _Context.SubGroups.Add(association);
             }

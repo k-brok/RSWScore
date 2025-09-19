@@ -1,4 +1,4 @@
-﻿using RSW.WebApp.Entities;
+﻿using RSW.Shared.Entities;
 
 namespace RSW.WebApp.Interface.Repositories
 {
@@ -9,7 +9,7 @@ namespace RSW.WebApp.Interface.Repositories
         Task<List<Score>> GetAsync(Patrol patrol);
         Task<List<Score>> GetAsync(Patrol patrol, Category category);
         Task Save(Score score);
-        Task<Score> GetAsync(int Id);
+        Task<Score> GetAsync(Guid Id);
         Task RevertEdits(Score score);
         Task Delete(Score score);
     }

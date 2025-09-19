@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using RSW.WebApp.Data;
-using RSW.WebApp.Entities;
+using RSW.Shared.Entities;
 using RSW.WebApp.Interface.Repositories;
 
 namespace RSW.WebApp.Repositories
@@ -46,7 +46,7 @@ namespace RSW.WebApp.Repositories
 
         public async Task Save(JurySlot association)
         {
-            if (association.Id == 0)
+            if (association.Id == Guid.Empty)
             {
                 _context.JurySlots.Add(association);
             }

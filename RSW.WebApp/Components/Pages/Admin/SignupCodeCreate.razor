@@ -7,9 +7,9 @@
 
 <h3>SignupCodeCreate</h3>
 
-<RadzenDropDown TValue="Entities.Group" @bind-Value=GroupCode Data="Groups">
+<RadzenDropDown TValue="Shared.Entities.Group" @bind-Value=GroupCode Data="Groups">
 	<Template>
-		@((context as Entities.Group).Association.Name) - @((context as Entities.Group).Name)
+		@((context as Shared.Entities.Group).Association.Name) - @((context as Shared.Entities.Group).Name)
 	</Template>
 </RadzenDropDown>
 
@@ -34,10 +34,10 @@
 }
 
 @code {
-	private List<SignupCode> ActiveCodes { get; set; }
-	private List<Entities.Group> Groups { get; set; } = new List<Entities.Group>();
+    private List<SignupCode> ActiveCodes { get; set; }
+    private List<Shared.Entities.Group> Groups { get; set; } = new List<Shared.Entities.Group>();
 
-	private Entities.Group GroupCode { get; set; }
+	private Shared.Entities.Group GroupCode { get; set; }
 
 	private List<string> CodeList { get; set; } = new List<string>();
 

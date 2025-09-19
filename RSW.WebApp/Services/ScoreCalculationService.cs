@@ -1,4 +1,4 @@
-﻿using RSW.WebApp.Entities;
+﻿using RSW.Shared.Entities;
 using RSW.WebApp.Repositories;
 
 namespace RSW.WebApp.Services
@@ -24,7 +24,7 @@ namespace RSW.WebApp.Services
         public async Task<int> CalculatePoints(Patrol patrol, Category category)
         {
             int CalcPoints = 0;
-            List<int> CriteriaIds = category.SubCategories.SelectMany(S => S.criterias).Select(C => C.Id).ToList();
+            List<Guid> CriteriaIds = category.SubCategories.SelectMany(S => S.criterias).Select(C => C.Id).ToList();
             if (patrol.Scores.Any())
             {
                 foreach (Score score in patrol.Scores.Where(S => CriteriaIds.Contains(S.CriteriaId)))

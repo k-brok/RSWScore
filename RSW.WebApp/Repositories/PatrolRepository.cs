@@ -2,7 +2,7 @@
 using System.Xml.Linq;
 using Microsoft.EntityFrameworkCore;
 using RSW.WebApp.Data;
-using RSW.WebApp.Entities;
+using RSW.Shared.Entities;
 using RSW.WebApp.Interface.Repositories;
 
 namespace RSW.WebApp.Repositories
@@ -23,13 +23,13 @@ namespace RSW.WebApp.Repositories
                         .ThenInclude(E => E.SubGroups)
                 .ToListAsync();
         }
-        public async Task<Patrol> GetAsync(int Id)
+        public async Task<Patrol> GetAsync(Guid Id)
         {
             return await _Context.Patrols.Include(P => P.Scouts).FirstOrDefaultAsync(P => P.Id == Id);
         }
         public async Task Save(Patrol patrol)
         {
-            if(patrol.Id == 0)
+            if(patrol.Id == Guid.Empty)
             {
                 _Context.Patrols.Add(patrol);
                 
@@ -94,10 +94,10 @@ namespace RSW.WebApp.Repositories
         }
         public async Task<List<Patrol>> GetAsync(List<SubGroup> subGroups)
         {
-            return await _Context.Patrols.Where(P => subGroups.Select(S => S.Id).ToList().Contains((int)P.SubGroupId)).ToListAsync();
+            return await _Context.Patrols.Where(P => subGroups.Select(S => S.Id).ToList().Contains((Guid)P.SubGroupId)).ToListAsync();
         }
 
-        public async Task<List<Patrol>> GetByGroupIdAsync(int GroupId)
+        public async Task<List<Patrol>> GetByGroupIdAsync(Guid GroupId)
         {
             return await _Context.Patrols
                 .Include(P => P.Scouts)

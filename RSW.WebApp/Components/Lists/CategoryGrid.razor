@@ -88,7 +88,7 @@ else{
     }
     private async Task AddCategory()
     {
-        Category NewCategory = new Category();
+        Category NewCategory = new Category { Name = "Naam" };
         await CategoryGridRef.InsertRow(NewCategory);
     }
 }

@@ -201,6 +201,7 @@ else{
     {
         Scout NewScout = new Scout
         {
+            PatrolId = Guid.Empty,
             Firstname = $"Scout {Scouts.Count}",
             Lastname = $"Scout {Scouts.Count}",
             DateOfBirth = DateOnly.FromDateTime(DateTime.Now.AddYears(-11)),
@@ -214,12 +215,12 @@ else{
         EditScouts.Add(NewScout);
     }
     private void SetPL(Patrol patrol, Scout scout){
-        scout.SetPL(patrol);
+        //scout.SetPL(patrol);
         ScoutGridRef.Reload();
     }
     private void SetAPL(Patrol patrol, Scout scout)
     {
-        scout.SetAPL(patrol);
+        //scout.SetAPL(patrol);
         ScoutGridRef.Reload();
     }
 }

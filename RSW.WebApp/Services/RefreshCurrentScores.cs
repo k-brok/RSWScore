@@ -3,7 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using RSW.WebApp.Entities;
+using RSW.Shared.Entities;
 using RSW.WebApp.Repositories;
 
 namespace RSW.WebApp.Services

@@ -1,0 +1,31 @@
+﻿using System.ComponentModel.DataAnnotations;
+using RSW.Shared.Entities;
+
+namespace RSW.Shared.Dto
+{
+    public class EditionCreateDto
+    {
+        [Required]
+        public DateOnly RSWStartDate { get; set; }
+        public DateOnly? LSWStartDate { get; set; }
+        public string? Theme { get; set; }
+    }
+
+    public class EditionUpdateDto
+    {
+        [Required]
+        public Guid Id { get; set; }
+        [Required]
+        public DateOnly RSWStartDate { get; set; }
+        public DateOnly? LSWStartDate { get; set; }
+        public string? Theme { get; set; }
+    }
+
+    public class EditionReadDto : BaseEntityDto
+    {
+        public DateOnly RSWStartDate { get; set; }
+        public DateOnly? LSWStartDate { get; set; }
+        public string? Theme { get; set; }
+        public bool IsActive { get; set; }
+    }
+}
