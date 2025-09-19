@@ -61,5 +61,10 @@ namespace RSW.APP.Services
             var response = await _httpClient.DeleteAsync($"{Endpoint}/{id}");
             return response.IsSuccessStatusCode;
         }
+
+        public async Task<SignupCodeReadDto?> ValidateAsync(Guid id)
+        {
+            return await _httpClient.GetFromJsonAsync<SignupCodeReadDto>($"{Endpoint}/validate/{id}");
+        }
     }
 }

@@ -70,6 +70,22 @@ namespace RSW.API.Services
             await _context.SaveChangesAsync();
             return true;
         }
+
+        public async Task<SignupCodeReadDto?> ValidateAsync(Guid id)
+        {
+            var entity = await _context.SignupCodes.FirstOrDefaultAsync(e => e.Id == id);
+
+            if (entity == null)
+                return null;
+
+            if (entity.Lock)
+                return null;
+
+            if (entity.ExpiryDate < DateTime.UtcNow)
+                return null;
+
+            return _mapper.Map<SignupCodeReadDto>(entity);
+        }
     }
 
 }

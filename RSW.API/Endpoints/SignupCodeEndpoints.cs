@@ -40,6 +40,11 @@ namespace RSW.API.Endpoints
                 var success = await service.DeleteAsync(id);
                 return success ? Results.Ok() : Results.NotFound();
             });
+            SignupCode.MapGet("/validate/{id:guid}", async (Guid id, ISignupCodeService service) =>
+            {
+                var found = await service.ValidateAsync(id);
+                return found is not null ? Results.Ok(found) : Results.NotFound();
+            }).AllowAnonymous();
         }
     }
 }

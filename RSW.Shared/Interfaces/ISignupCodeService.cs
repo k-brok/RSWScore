@@ -9,5 +9,6 @@ namespace RSW.Shared.Interfaces
         Task<SignupCodeReadDto> CreateAsync(SignupCodeCreateDto dto);
         Task<SignupCodeReadDto?> UpdateAsync(Guid id, SignupCodeUpdateDto dto);
         Task<bool> DeleteAsync(Guid id);
+        Task<SignupCodeReadDto?> ValidateAsync(Guid id);
     }
 }
