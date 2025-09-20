@@ -16,42 +16,42 @@ namespace RSW.APP.Services
             _httpClient = httpClient;
         }
 
-        public async Task<IEnumerable<ScoreReadDto>> GetAllAsync()
+        public async Task<IEnumerable<ScoreDto>> GetAllAsync()
         {
-            var result = await _httpClient.GetFromJsonAsync<List<ScoreReadDto>>(Endpoint);
+            var result = await _httpClient.GetFromJsonAsync<List<ScoreDto>>(Endpoint);
 
-            return result ?? new List<ScoreReadDto>();
+            return result ?? new List<ScoreDto>();
         }
 
-        public async Task<ScoreReadDto?> GetByIdAsync(Guid id)
+        public async Task<ScoreDto?> GetByIdAsync(Guid id)
         {
-            return await _httpClient.GetFromJsonAsync<ScoreReadDto>($"{Endpoint}/{id}");
+            return await _httpClient.GetFromJsonAsync<ScoreDto>($"{Endpoint}/{id}");
         }
 
-        public async Task<IEnumerable<GroupReadDto>> GetGroupsAsync(Guid id)
+        public async Task<IEnumerable<GroupDto>> GetGroupsAsync(Guid id)
         {
             throw new NotImplementedException();
         }
 
-        public async Task<ScoreReadDto> CreateAsync(ScoreCreateDto dto)
+        public async Task<ScoreDto> CreateAsync(ScoreCreateDto dto)
         {
             var response = await _httpClient.PostAsJsonAsync(Endpoint, dto);
 
             if (response.IsSuccessStatusCode)
             {
-                return await response.Content.ReadFromJsonAsync<ScoreReadDto>();
+                return await response.Content.ReadFromJsonAsync<ScoreDto>();
             }
 
             return null;
         }
 
-        public async Task<ScoreReadDto?> UpdateAsync(Guid id, ScoreUpdateDto dto)
+        public async Task<ScoreDto?> UpdateAsync(Guid id, ScoreDto dto)
         {
             var response = await _httpClient.PutAsJsonAsync($"{Endpoint}/{id}", dto);
 
             if (response.IsSuccessStatusCode)
             {
-                return await response.Content.ReadFromJsonAsync<ScoreReadDto>();
+                return await response.Content.ReadFromJsonAsync<ScoreDto>();
             }
 
             return null;

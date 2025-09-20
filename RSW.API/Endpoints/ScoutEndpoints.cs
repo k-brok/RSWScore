@@ -29,7 +29,7 @@ namespace RSW.API.Endpoints
                 return Results.Created($"/api/Scout/{created.Id}", created);
             });
 
-            Scout.MapPut("/{id:guid}", async (Guid id, ScoutUpdateDto dto, IScoutService service) =>
+            Scout.MapPut("/{id:guid}", async (Guid id, ScoutDto dto, IScoutService service) =>
             {
                 var updated = await service.UpdateAsync(id, dto);
                 return updated is not null ? Results.Ok(updated) : Results.NotFound();

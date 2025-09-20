@@ -4,10 +4,10 @@ namespace RSW.Shared.Interfaces
 {
     public interface IScoutService
     {
-        Task<IEnumerable<ScoutReadDto>> GetAllAsync();
-        Task<ScoutReadDto?> GetByIdAsync(Guid id);
-        Task<ScoutReadDto> CreateAsync(ScoutCreateDto dto);
-        Task<ScoutReadDto?> UpdateAsync(Guid id, ScoutUpdateDto dto);
+        Task<IEnumerable<ScoutDto>> GetAllAsync();
+        Task<ScoutDto?> GetByIdAsync(Guid id);
+        Task<ScoutDto> CreateAsync(ScoutCreateDto dto);
+        Task<ScoutDto?> UpdateAsync(Guid id, ScoutDto dto);
         Task<bool> DeleteAsync(Guid id);
     }
 }

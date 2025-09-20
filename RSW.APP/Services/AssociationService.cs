@@ -16,42 +16,42 @@ namespace RSW.APP.Services
             _httpClient = httpClient;
         }
 
-        public async Task<IEnumerable<AssociationReadDto>> GetAllAsync()
+        public async Task<IEnumerable<AssociationDto>> GetAllAsync()
         {
-            var result = await _httpClient.GetFromJsonAsync<List<AssociationReadDto>>(Endpoint);
+            var result = await _httpClient.GetFromJsonAsync<List<AssociationDto>>(Endpoint);
 
-            return result ?? new List<AssociationReadDto>();
+            return result ?? new List<AssociationDto>();
         }
 
-        public async Task<AssociationReadDto?> GetByIdAsync(Guid id)
+        public async Task<AssociationDto?> GetByIdAsync(Guid id)
         {
-            return await _httpClient.GetFromJsonAsync<AssociationReadDto>($"{Endpoint}/{id}");
+            return await _httpClient.GetFromJsonAsync<AssociationDto>($"{Endpoint}/{id}");
         }
 
-        public async Task<IEnumerable<GroupReadDto>> GetGroupsAsync(Guid id)
+        public async Task<IEnumerable<GroupDto>> GetGroupsAsync(Guid id)
         {
             throw new NotImplementedException();
         }
 
-        public async Task<AssociationReadDto> CreateAsync(AssociationCreateDto dto)
+        public async Task<AssociationDto> CreateAsync(AssociationCreateDto dto)
         {
             var response = await _httpClient.PostAsJsonAsync(Endpoint, dto);
 
             if (response.IsSuccessStatusCode)
             {
-                return await response.Content.ReadFromJsonAsync<AssociationReadDto>();
+                return await response.Content.ReadFromJsonAsync<AssociationDto>();
             }
 
             return null;
         }
 
-        public async Task<AssociationReadDto?> UpdateAsync(Guid id, AssociationUpdateDto dto)
+        public async Task<AssociationDto?> UpdateAsync(Guid id, AssociationDto dto)
         {
             var response = await _httpClient.PutAsJsonAsync($"{Endpoint}/{id}", dto);
 
             if (response.IsSuccessStatusCode)
             {
-                return await response.Content.ReadFromJsonAsync<AssociationReadDto>();
+                return await response.Content.ReadFromJsonAsync<AssociationDto>();
             }
 
             return null;

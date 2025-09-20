@@ -4,10 +4,10 @@ namespace RSW.Shared.Interfaces
 {
     public interface ICriteriaService
     {
-        Task<IEnumerable<CriteriaReadDto>> GetAllAsync();
-        Task<CriteriaReadDto?> GetByIdAsync(Guid id);
-        Task<CriteriaReadDto> CreateAsync(CriteriaCreateDto dto);
-        Task<CriteriaReadDto?> UpdateAsync(Guid id, CriteriaUpdateDto dto);
+        Task<IEnumerable<CriteriaDto>> GetAllAsync();
+        Task<CriteriaDto?> GetByIdAsync(Guid id);
+        Task<CriteriaDto> CreateAsync(CriteriaCreateDto dto);
+        Task<CriteriaDto?> UpdateAsync(Guid id, CriteriaDto dto);
         Task<bool> DeleteAsync(Guid id);
     }
 }

@@ -9,15 +9,9 @@ namespace RSW.Shared.Dto
 
         public string Abbreviation { get; set; } = string.Empty;
     }
-    public class AssociationUpdateDto
+    public class AssociationDto : BaseEntityDto
     {
         [Required]
-        public string Name { get; set; } = string.Empty;
-
-        public string Abbreviation { get; set; } = string.Empty;
-    }
-    public class AssociationReadDto : BaseEntityDto
-    {
         public string Name { get; set; } = string.Empty;
         public string Abbreviation { get; set; } = string.Empty;
     }

@@ -29,7 +29,7 @@ namespace RSW.API.Endpoints
                 return Results.Created($"/api/JurySlot/{created.Id}", created);
             });
 
-            JurySlot.MapPut("/{id:guid}", async (Guid id, JurySlotUpdateDto dto, IJurySlotService service) =>
+            JurySlot.MapPut("/{id:guid}", async (Guid id, JurySlotDto dto, IJurySlotService service) =>
             {
                 var updated = await service.UpdateAsync(id, dto);
                 return updated is not null ? Results.Ok(updated) : Results.NotFound();

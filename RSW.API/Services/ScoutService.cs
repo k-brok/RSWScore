@@ -18,28 +18,26 @@ namespace RSW.API.Services
             _mapper = mapper;
         }
 
-        public async Task<IEnumerable<ScoutReadDto>> GetAllAsync()
+        public async Task<IEnumerable<ScoutDto>> GetAllAsync()
         {
             return await _context.Scouts
-                .Select(e => _mapper.Map<ScoutReadDto>(e))
+                .Select(e => _mapper.Map<ScoutDto>(e))
                 .ToListAsync();
         }
 
-        public async Task<ScoutReadDto?> GetByIdAsync(Guid id)
+        public async Task<ScoutDto?> GetByIdAsync(Guid id)
         {
             var entity = await _context.Scouts.FirstOrDefaultAsync(e => e.Id == id);
-            return _mapper.Map<ScoutReadDto>(entity);
+            return _mapper.Map<ScoutDto>(entity);
         }
 
-        public async Task<ScoutReadDto> CreateAsync(ScoutCreateDto dto)
+        public async Task<ScoutDto> CreateAsync(ScoutCreateDto dto)
         {
             var entity = new Scout
             {
                 Id = Guid.NewGuid(),
                 Firstname = dto.Firstname,
                 Lastname = dto.Lastname,
-                IsAPL = dto.IsAPL,
-                IsPL = dto.IsPL,
                 PatrolId = dto.PatrolId,
                 DateOfBirth = dto.DateOfBirth
             };
@@ -47,10 +45,10 @@ namespace RSW.API.Services
             _context.Scouts.Add(entity);
             await _context.SaveChangesAsync();
 
-            return _mapper.Map<ScoutReadDto>(entity);
+            return _mapper.Map<ScoutDto>(entity);
         }
 
-        public async Task<ScoutReadDto?> UpdateAsync(Guid id, ScoutUpdateDto dto)
+        public async Task<ScoutDto?> UpdateAsync(Guid id, ScoutDto dto)
         {
             var existing = await _context.Scouts.FirstOrDefaultAsync(e => e.Id == id);
             if (existing == null) return null;
@@ -63,7 +61,7 @@ namespace RSW.API.Services
             existing.DateOfBirth = dto.DateOfBirth;
 
             await _context.SaveChangesAsync();
-            return _mapper.Map<ScoutReadDto>(existing);
+            return _mapper.Map<ScoutDto>(existing);
         }
         public async Task<bool> DeleteAsync(Guid id)
         {

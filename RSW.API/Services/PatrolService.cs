@@ -18,20 +18,20 @@ namespace RSW.API.Services
             _mapper = mapper;
         }
 
-        public async Task<IEnumerable<PatrolReadDto>> GetAllAsync()
+        public async Task<IEnumerable<PatrolDto>> GetAllAsync()
         {
             return await _context.Patrols
-                .Select(e => _mapper.Map<PatrolReadDto>(e))
+                .Select(e => _mapper.Map<PatrolDto>(e))
                 .ToListAsync();
         }
 
-        public async Task<PatrolReadDto?> GetByIdAsync(Guid id)
+        public async Task<PatrolDto?> GetByIdAsync(Guid id)
         {
             var entity = await _context.Patrols.FirstOrDefaultAsync(e => e.Id == id);
-            return _mapper.Map<PatrolReadDto>(entity);
+            return _mapper.Map<PatrolDto>(entity);
         }
 
-        public async Task<PatrolReadDto> CreateAsync(PatrolCreateDto dto)
+        public async Task<PatrolDto> CreateAsync(PatrolCreateDto dto)
         {
             var entity = new Patrol
             {
@@ -44,10 +44,10 @@ namespace RSW.API.Services
             _context.Patrols.Add(entity);
             await _context.SaveChangesAsync();
 
-            return _mapper.Map<PatrolReadDto>(entity);
+            return _mapper.Map<PatrolDto>(entity);
         }
 
-        public async Task<PatrolReadDto?> UpdateAsync(Guid id, PatrolUpdateDto dto)
+        public async Task<PatrolDto?> UpdateAsync(Guid id, PatrolDto dto)
         {
             var existing = await _context.Patrols.FirstOrDefaultAsync(e => e.Id == id);
             if (existing == null) return null;
@@ -59,7 +59,7 @@ namespace RSW.API.Services
             existing.SubGroupId = dto.SubGroupId;
 
             await _context.SaveChangesAsync();
-            return _mapper.Map<PatrolReadDto>(existing);
+            return _mapper.Map<PatrolDto>(existing);
         }
         public async Task<bool> DeleteAsync(Guid id)
         {

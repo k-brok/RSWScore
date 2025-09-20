@@ -29,7 +29,7 @@ namespace RSW.API.Endpoints
                 return Results.Created($"/api/SignupCode/{created.Id}", created);
             });
 
-            SignupCode.MapPut("/{id:guid}", async (Guid id, SignupCodeUpdateDto dto, ISignupCodeService service) =>
+            SignupCode.MapPut("/{id:guid}", async (Guid id, SignupCodeDto dto, ISignupCodeService service) =>
             {
                 var updated = await service.UpdateAsync(id, dto);
                 return updated is not null ? Results.Ok(updated) : Results.NotFound();

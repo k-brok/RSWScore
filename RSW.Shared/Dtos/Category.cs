@@ -10,23 +10,13 @@ namespace RSW.Shared.Dto
 
         public int Weight { get; set; } = 0;
     }
-
-    // Voor bijwerken
-    public class CategoryUpdateDto
+    public class CategoryDto : BaseEntityDto
     {
         [Required]
         public string Name { get; set; } = string.Empty;
 
         public int Weight { get; set; } = 0;
-    }
 
-    // Voor teruggeven aan de client
-    public class CategoryReadDto : BaseEntityDto
-    {
-        public string Name { get; set; } = string.Empty;
-
-        public int Weight { get; set; } = 0;
-
-        public List<SubCategoryReadDto> SubCategories { get; set; } = new();
+        public List<SubCategoryDto> SubCategories { get; set; } = new();
     }
 }

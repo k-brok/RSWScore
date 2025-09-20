@@ -4,10 +4,11 @@ namespace RSW.Shared.Interfaces
 {
     public interface IGroupService
     {
-        Task<IEnumerable<GroupReadDto>> GetAllAsync();
-        Task<GroupReadDto?> GetByIdAsync(Guid id);
-        Task<GroupReadDto> CreateAsync(GroupCreateDto dto);
-        Task<GroupReadDto?> UpdateAsync(Guid id, GroupUpdateDto dto);
+        Task<IEnumerable<GroupDto>> GetAllAsync();
+        Task<GroupDto?> GetByIdAsync(Guid id);
+        Task<GroupDto> CreateAsync(GroupCreateDto dto);
+        Task<GroupDto?> UpdateAsync(Guid id, GroupDto dto);
         Task<bool> DeleteAsync(Guid id);
+        Task<List<PatrolDto>>? GetPatrolsAsync(Guid id);
     }
 }

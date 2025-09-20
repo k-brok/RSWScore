@@ -18,26 +18,26 @@ namespace RSW.API.Services
             _mapper = mapper;
         }
 
-        public async Task<IEnumerable<EditionReadDto>> GetAllAsync()
+        public async Task<IEnumerable<EditionDto>> GetAllAsync()
         {
             return await _context.Editions
-                .Select(e => _mapper.Map<EditionReadDto>(e))
+                .Select(e => _mapper.Map<EditionDto>(e))
                 .ToListAsync();
         }
 
-        public async Task<EditionReadDto?> GetByIdAsync(Guid id)
+        public async Task<EditionDto?> GetByIdAsync(Guid id)
         {
             var entity = await _context.Editions.FirstOrDefaultAsync(e => e.Id == id);
-            return _mapper.Map<EditionReadDto>(entity);
+            return _mapper.Map<EditionDto>(entity);
         }
 
-        public async Task<EditionReadDto?> GetActiveAsync()
+        public async Task<EditionDto?> GetActiveAsync()
         {
             var entity = await _context.Editions.FirstOrDefaultAsync(e => e.IsActive);
-            return _mapper.Map<EditionReadDto>(entity);
+            return _mapper.Map<EditionDto>(entity);
         }
 
-        public async Task<EditionReadDto> CreateAsync(EditionCreateDto dto)
+        public async Task<EditionDto> CreateAsync(EditionCreateDto dto)
         {
             var entity = new Edition
             {
@@ -51,10 +51,10 @@ namespace RSW.API.Services
             _context.Editions.Add(entity);
             await _context.SaveChangesAsync();
 
-            return _mapper.Map<EditionReadDto>(entity);
+            return _mapper.Map<EditionDto>(entity);
         }
 
-        public async Task<EditionReadDto?> UpdateAsync(Guid id, EditionUpdateDto dto)
+        public async Task<EditionDto?> UpdateAsync(Guid id, EditionDto dto)
         {
             var existing = await _context.Editions.FirstOrDefaultAsync(e => e.Id == id);
             if (existing == null) return null;
@@ -64,10 +64,10 @@ namespace RSW.API.Services
             existing.Theme = dto.Theme;
 
             await _context.SaveChangesAsync();
-            return _mapper.Map<EditionReadDto>(existing);
+            return _mapper.Map<EditionDto>(existing);
         }
 
-        public async Task<EditionReadDto?> ActivateAsync(Guid id)
+        public async Task<EditionDto?> ActivateAsync(Guid id)
         {
             var newActive = await _context.Editions.FirstOrDefaultAsync(e => e.Id == id);
             if (newActive == null) return null;
@@ -79,7 +79,7 @@ namespace RSW.API.Services
             newActive.IsActive = true;
             await _context.SaveChangesAsync();
 
-            return _mapper.Map<EditionReadDto>(newActive);
+            return _mapper.Map<EditionDto>(newActive);
         }
 
         public async Task<bool> DeleteAsync(Guid id)

@@ -18,20 +18,20 @@ namespace RSW.API.Services
             _mapper = mapper;
         }
 
-        public async Task<IEnumerable<CategoryReadDto>> GetAllAsync()
+        public async Task<IEnumerable<CategoryDto>> GetAllAsync()
         {
             return await _context.Categories
-                .Select(e => _mapper.Map<CategoryReadDto>(e))
+                .Select(e => _mapper.Map<CategoryDto>(e))
                 .ToListAsync();
         }
 
-        public async Task<CategoryReadDto?> GetByIdAsync(Guid id)
+        public async Task<CategoryDto?> GetByIdAsync(Guid id)
         {
             var entity = await _context.Categories.FirstOrDefaultAsync(e => e.Id == id);
-            return _mapper.Map<CategoryReadDto>(entity);
+            return _mapper.Map<CategoryDto>(entity);
         }
 
-        public async Task<CategoryReadDto> CreateAsync(CategoryCreateDto dto)
+        public async Task<CategoryDto> CreateAsync(CategoryCreateDto dto)
         {
             var entity = new Category
             {
@@ -43,10 +43,10 @@ namespace RSW.API.Services
             _context.Categories.Add(entity);
             await _context.SaveChangesAsync();
 
-            return _mapper.Map<CategoryReadDto>(entity);
+            return _mapper.Map<CategoryDto>(entity);
         }
 
-        public async Task<CategoryReadDto?> UpdateAsync(Guid id, CategoryUpdateDto dto)
+        public async Task<CategoryDto?> UpdateAsync(Guid id, CategoryDto dto)
         {
             var existing = await _context.Categories.FirstOrDefaultAsync(e => e.Id == id);
             if (existing == null) return null;
@@ -55,7 +55,7 @@ namespace RSW.API.Services
             existing.Weight = dto.Weight;
 
             await _context.SaveChangesAsync();
-            return _mapper.Map<CategoryReadDto>(existing);
+            return _mapper.Map<CategoryDto>(existing);
         }
         public async Task<bool> DeleteAsync(Guid id)
         {

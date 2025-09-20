@@ -4,10 +4,10 @@ namespace RSW.Shared.Interfaces
 {
     public interface IPatrolService
     {
-        Task<IEnumerable<PatrolReadDto>> GetAllAsync();
-        Task<PatrolReadDto?> GetByIdAsync(Guid id);
-        Task<PatrolReadDto> CreateAsync(PatrolCreateDto dto);
-        Task<PatrolReadDto?> UpdateAsync(Guid id, PatrolUpdateDto dto);
+        Task<IEnumerable<PatrolDto>> GetAllAsync();
+        Task<PatrolDto?> GetByIdAsync(Guid id);
+        Task<PatrolDto> CreateAsync(PatrolCreateDto dto);
+        Task<PatrolDto?> UpdateAsync(Guid id, PatrolDto dto);
         Task<bool> DeleteAsync(Guid id);
     }
 }

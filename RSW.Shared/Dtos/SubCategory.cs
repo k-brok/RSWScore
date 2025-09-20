@@ -12,23 +12,13 @@ namespace RSW.Shared.Dto
         public Guid CategoryId { get; set; }
     }
 
-    // Voor bijwerken
-    public class SubCategoryUpdateDto
+    public class SubCategoryDto : BaseEntityDto
     {
         [Required]
         public string Name { get; set; } = string.Empty;
-
         [Required]
         public Guid CategoryId { get; set; }
-    }
 
-    // Voor teruggeven aan de client
-    public class SubCategoryReadDto : BaseEntityDto
-    {
-        public string Name { get; set; } = string.Empty;
-
-        public Guid CategoryId { get; set; }
-
-        public List<CriteriaReadDto> Criterias { get; set; } = new();
+        public List<CriteriaDto> Criterias { get; set; } = new();
     }
 }

@@ -16,42 +16,42 @@ namespace RSW.APP.Services
             _httpClient = httpClient;
         }
 
-        public async Task<IEnumerable<CategoryReadDto>> GetAllAsync()
+        public async Task<IEnumerable<CategoryDto>> GetAllAsync()
         {
-            var result = await _httpClient.GetFromJsonAsync<List<CategoryReadDto>>(Endpoint);
+            var result = await _httpClient.GetFromJsonAsync<List<CategoryDto>>(Endpoint);
 
-            return result ?? new List<CategoryReadDto>();
+            return result ?? new List<CategoryDto>();
         }
 
-        public async Task<CategoryReadDto?> GetByIdAsync(Guid id)
+        public async Task<CategoryDto?> GetByIdAsync(Guid id)
         {
-            return await _httpClient.GetFromJsonAsync<CategoryReadDto>($"{Endpoint}/{id}");
+            return await _httpClient.GetFromJsonAsync<CategoryDto>($"{Endpoint}/{id}");
         }
 
-        public async Task<IEnumerable<GroupReadDto>> GetGroupsAsync(Guid id)
+        public async Task<IEnumerable<GroupDto>> GetGroupsAsync(Guid id)
         {
             throw new NotImplementedException();
         }
 
-        public async Task<CategoryReadDto> CreateAsync(CategoryCreateDto dto)
+        public async Task<CategoryDto> CreateAsync(CategoryCreateDto dto)
         {
             var response = await _httpClient.PostAsJsonAsync(Endpoint, dto);
 
             if (response.IsSuccessStatusCode)
             {
-                return await response.Content.ReadFromJsonAsync<CategoryReadDto>();
+                return await response.Content.ReadFromJsonAsync<CategoryDto>();
             }
 
             return null;
         }
 
-        public async Task<CategoryReadDto?> UpdateAsync(Guid id, CategoryUpdateDto dto)
+        public async Task<CategoryDto?> UpdateAsync(Guid id, CategoryDto dto)
         {
             var response = await _httpClient.PutAsJsonAsync($"{Endpoint}/{id}", dto);
 
             if (response.IsSuccessStatusCode)
             {
-                return await response.Content.ReadFromJsonAsync<CategoryReadDto>();
+                return await response.Content.ReadFromJsonAsync<CategoryDto>();
             }
 
             return null;

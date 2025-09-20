@@ -29,7 +29,7 @@ namespace RSW.API.Endpoints
                 return Results.Created($"/api/Criteria/{created.Id}", created);
             });
 
-            Criteria.MapPut("/{id:guid}", async (Guid id, CriteriaUpdateDto dto, ICriteriaService service) =>
+            Criteria.MapPut("/{id:guid}", async (Guid id, CriteriaDto dto, ICriteriaService service) =>
             {
                 var updated = await service.UpdateAsync(id, dto);
                 return updated is not null ? Results.Ok(updated) : Results.NotFound();

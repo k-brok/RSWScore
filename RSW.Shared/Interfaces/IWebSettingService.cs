@@ -4,10 +4,10 @@ namespace RSW.Shared.Interfaces
 {
     public interface IWebSettingService
     {
-        Task<IEnumerable<WebSettingReadDto>> GetAllAsync();
-        Task<WebSettingReadDto?> GetByIdAsync(Guid id);
-        Task<WebSettingReadDto> CreateAsync(WebSettingCreateDto dto);
-        Task<WebSettingReadDto?> UpdateAsync(Guid id, WebSettingUpdateDto dto);
+        Task<IEnumerable<WebSettingDto>> GetAllAsync();
+        Task<WebSettingDto?> GetByIdAsync(Guid id);
+        Task<WebSettingDto> CreateAsync(WebSettingCreateDto dto);
+        Task<WebSettingDto?> UpdateAsync(Guid id, WebSettingDto dto);
         Task<bool> DeleteAsync(Guid id);
     }
 }

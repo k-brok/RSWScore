@@ -16,42 +16,42 @@ namespace RSW.APP.Services
             _httpClient = httpClient;
         }
 
-        public async Task<IEnumerable<SignupCodeReadDto>> GetAllAsync()
+        public async Task<IEnumerable<SignupCodeDto>> GetAllAsync()
         {
-            var result = await _httpClient.GetFromJsonAsync<List<SignupCodeReadDto>>(Endpoint);
+            var result = await _httpClient.GetFromJsonAsync<List<SignupCodeDto>>(Endpoint);
 
-            return result ?? new List<SignupCodeReadDto>();
+            return result ?? new List<SignupCodeDto>();
         }
 
-        public async Task<SignupCodeReadDto?> GetByIdAsync(Guid id)
+        public async Task<SignupCodeDto?> GetByIdAsync(Guid id)
         {
-            return await _httpClient.GetFromJsonAsync<SignupCodeReadDto>($"{Endpoint}/{id}");
+            return await _httpClient.GetFromJsonAsync<SignupCodeDto>($"{Endpoint}/{id}");
         }
 
-        public async Task<IEnumerable<GroupReadDto>> GetGroupsAsync(Guid id)
+        public async Task<IEnumerable<GroupDto>> GetGroupsAsync(Guid id)
         {
             throw new NotImplementedException();
         }
 
-        public async Task<SignupCodeReadDto> CreateAsync(SignupCodeCreateDto dto)
+        public async Task<SignupCodeDto> CreateAsync(SignupCodeCreateDto dto)
         {
             var response = await _httpClient.PostAsJsonAsync(Endpoint, dto);
 
             if (response.IsSuccessStatusCode)
             {
-                return await response.Content.ReadFromJsonAsync<SignupCodeReadDto>();
+                return await response.Content.ReadFromJsonAsync<SignupCodeDto>();
             }
 
             return null;
         }
 
-        public async Task<SignupCodeReadDto?> UpdateAsync(Guid id, SignupCodeUpdateDto dto)
+        public async Task<SignupCodeDto?> UpdateAsync(Guid id, SignupCodeDto dto)
         {
             var response = await _httpClient.PutAsJsonAsync($"{Endpoint}/{id}", dto);
 
             if (response.IsSuccessStatusCode)
             {
-                return await response.Content.ReadFromJsonAsync<SignupCodeReadDto>();
+                return await response.Content.ReadFromJsonAsync<SignupCodeDto>();
             }
 
             return null;
@@ -62,9 +62,9 @@ namespace RSW.APP.Services
             return response.IsSuccessStatusCode;
         }
 
-        public async Task<SignupCodeReadDto?> ValidateAsync(Guid id)
+        public async Task<SignupCodeDto?> ValidateAsync(Guid id)
         {
-            return await _httpClient.GetFromJsonAsync<SignupCodeReadDto>($"{Endpoint}/validate/{id}");
+            return await _httpClient.GetFromJsonAsync<SignupCodeDto>($"{Endpoint}/validate/{id}");
         }
     }
 }

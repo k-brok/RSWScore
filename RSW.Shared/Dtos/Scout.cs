@@ -15,16 +15,12 @@ namespace RSW.Shared.Dto
         [Required]
         public DateOnly DateOfBirth { get; set; }
 
-        public bool IsPL { get; set; } = false;
-
-        public bool IsAPL { get; set; } = false;
-
         [Required]
         public Guid PatrolId { get; set; }
     }
 
     // Voor bijwerken
-    public class ScoutUpdateDto
+    public class ScoutDto : BaseEntityDto
     {
         [Required]
         public string Firstname { get; set; } = string.Empty;
@@ -35,27 +31,11 @@ namespace RSW.Shared.Dto
         [Required]
         public DateOnly DateOfBirth { get; set; }
 
-        public bool IsPL { get; set; } = false;
+        public bool IsPL { get; } = false;
 
-        public bool IsAPL { get; set; } = false;
+        public bool IsAPL { get; } = false;
 
         [Required]
-        public Guid PatrolId { get; set; }
-    }
-
-    // Voor terugsturen naar de client
-    public class ScoutReadDto : BaseEntityDto
-    {
-        public string Firstname { get; set; } = string.Empty;
-
-        public string Lastname { get; set; } = string.Empty;
-
-        public DateOnly DateOfBirth { get; set; }
-
-        public bool IsPL { get; set; } = false;
-
-        public bool IsAPL { get; set; } = false;
-
         public Guid PatrolId { get; set; }
     }
 }

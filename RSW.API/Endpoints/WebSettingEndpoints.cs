@@ -29,7 +29,7 @@ namespace RSW.API.Endpoints
                 return Results.Created($"/api/WebSetting/{created.Id}", created);
             });
 
-            WebSetting.MapPut("/{id:guid}", async (Guid id, WebSettingUpdateDto dto, IWebSettingService service) =>
+            WebSetting.MapPut("/{id:guid}", async (Guid id, WebSettingDto dto, IWebSettingService service) =>
             {
                 var updated = await service.UpdateAsync(id, dto);
                 return updated is not null ? Results.Ok(updated) : Results.NotFound();

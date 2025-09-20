@@ -18,20 +18,20 @@ namespace RSW.API.Services
             _mapper = mapper;
         }
 
-        public async Task<IEnumerable<AssociationReadDto>> GetAllAsync()
+        public async Task<IEnumerable<AssociationDto>> GetAllAsync()
         {
             return await _context.Associations
-                .Select(e => _mapper.Map<AssociationReadDto>(e))
+                .Select(e => _mapper.Map<AssociationDto>(e))
                 .ToListAsync();
         }
 
-        public async Task<AssociationReadDto?> GetByIdAsync(Guid id)
+        public async Task<AssociationDto?> GetByIdAsync(Guid id)
         {
             var entity = await _context.Associations.FirstOrDefaultAsync(e => e.Id == id);
-            return _mapper.Map<AssociationReadDto>(entity);
+            return _mapper.Map<AssociationDto>(entity);
         }
 
-        public async Task<AssociationReadDto> CreateAsync(AssociationCreateDto dto)
+        public async Task<AssociationDto> CreateAsync(AssociationCreateDto dto)
         {
             var entity = new Association
             {
@@ -43,10 +43,10 @@ namespace RSW.API.Services
             _context.Associations.Add(entity);
             await _context.SaveChangesAsync();
 
-            return _mapper.Map<AssociationReadDto>(entity);
+            return _mapper.Map<AssociationDto>(entity);
         }
 
-        public async Task<AssociationReadDto?> UpdateAsync(Guid id, AssociationUpdateDto dto)
+        public async Task<AssociationDto?> UpdateAsync(Guid id, AssociationDto dto)
         {
             var existing = await _context.Associations.FirstOrDefaultAsync(e => e.Id == id);
             if (existing == null) return null;
@@ -55,7 +55,7 @@ namespace RSW.API.Services
             existing.Abbreviation = dto.Abbreviation;
 
             await _context.SaveChangesAsync();
-            return _mapper.Map<AssociationReadDto>(existing);
+            return _mapper.Map<AssociationDto>(existing);
         }
         public async Task<bool> DeleteAsync(Guid id)
         {
@@ -67,9 +67,9 @@ namespace RSW.API.Services
             return true;
         }
 
-        public async Task<IEnumerable<GroupReadDto>> GetGroupsAsync(Guid id)
+        public async Task<IEnumerable<GroupDto>> GetGroupsAsync(Guid id)
         {
-            return await _context.Groups.Where(g => g.AssociationId == id).Select(g => _mapper.Map<GroupReadDto>(g)).ToListAsync();
+            return await _context.Groups.Where(g => g.AssociationId == id).Select(g => _mapper.Map<GroupDto>(g)).ToListAsync();
         }
     }
 

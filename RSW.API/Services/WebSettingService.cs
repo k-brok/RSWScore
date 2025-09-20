@@ -18,20 +18,20 @@ namespace RSW.API.Services
             _mapper = mapper;
         }
 
-        public async Task<IEnumerable<WebSettingReadDto>> GetAllAsync()
+        public async Task<IEnumerable<WebSettingDto>> GetAllAsync()
         {
             return await _context.WebSettings
-                .Select(e => _mapper.Map<WebSettingReadDto>(e))
+                .Select(e => _mapper.Map<WebSettingDto>(e))
                 .ToListAsync();
         }
 
-        public async Task<WebSettingReadDto?> GetByIdAsync(Guid id)
+        public async Task<WebSettingDto?> GetByIdAsync(Guid id)
         {
             var entity = await _context.WebSettings.FirstOrDefaultAsync(e => e.Id == id);
-            return _mapper.Map<WebSettingReadDto>(entity);
+            return _mapper.Map<WebSettingDto>(entity);
         }
 
-        public async Task<WebSettingReadDto> CreateAsync(WebSettingCreateDto dto)
+        public async Task<WebSettingDto> CreateAsync(WebSettingCreateDto dto)
         {
             var entity = new WebSetting
             {
@@ -46,10 +46,10 @@ namespace RSW.API.Services
             _context.WebSettings.Add(entity);
             await _context.SaveChangesAsync();
 
-            return _mapper.Map<WebSettingReadDto>(entity);
+            return _mapper.Map<WebSettingDto>(entity);
         }
 
-        public async Task<WebSettingReadDto?> UpdateAsync(Guid id, WebSettingUpdateDto dto)
+        public async Task<WebSettingDto?> UpdateAsync(Guid id, WebSettingDto dto)
         {
             var existing = await _context.WebSettings.FirstOrDefaultAsync(e => e.Id == id);
             if (existing == null) return null;
@@ -61,7 +61,7 @@ namespace RSW.API.Services
             existing.ValueType = dto.ValueType;
 
             await _context.SaveChangesAsync();
-            return _mapper.Map<WebSettingReadDto>(existing);
+            return _mapper.Map<WebSettingDto>(existing);
         }
         public async Task<bool> DeleteAsync(Guid id)
         {

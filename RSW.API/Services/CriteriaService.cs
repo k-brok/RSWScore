@@ -18,20 +18,20 @@ namespace RSW.API.Services
             _mapper = mapper;
         }
 
-        public async Task<IEnumerable<CriteriaReadDto>> GetAllAsync()
+        public async Task<IEnumerable<CriteriaDto>> GetAllAsync()
         {
             return await _context.Criterias
-                .Select(e => _mapper.Map<CriteriaReadDto>(e))
+                .Select(e => _mapper.Map<CriteriaDto>(e))
                 .ToListAsync();
         }
 
-        public async Task<CriteriaReadDto?> GetByIdAsync(Guid id)
+        public async Task<CriteriaDto?> GetByIdAsync(Guid id)
         {
             var entity = await _context.Criterias.FirstOrDefaultAsync(e => e.Id == id);
-            return _mapper.Map<CriteriaReadDto>(entity);
+            return _mapper.Map<CriteriaDto>(entity);
         }
 
-        public async Task<CriteriaReadDto> CreateAsync(CriteriaCreateDto dto)
+        public async Task<CriteriaDto> CreateAsync(CriteriaCreateDto dto)
         {
             var entity = new Criteria
             {
@@ -44,10 +44,10 @@ namespace RSW.API.Services
             _context.Criterias.Add(entity);
             await _context.SaveChangesAsync();
 
-            return _mapper.Map<CriteriaReadDto>(entity);
+            return _mapper.Map<CriteriaDto>(entity);
         }
 
-        public async Task<CriteriaReadDto?> UpdateAsync(Guid id, CriteriaUpdateDto dto)
+        public async Task<CriteriaDto?> UpdateAsync(Guid id, CriteriaDto dto)
         {
             var existing = await _context.Criterias.FirstOrDefaultAsync(e => e.Id == id);
             if (existing == null) return null;
@@ -57,7 +57,7 @@ namespace RSW.API.Services
             existing.SubCategoryId = dto.SubCategoryId;
 
             await _context.SaveChangesAsync();
-            return _mapper.Map<CriteriaReadDto>(existing);
+            return _mapper.Map<CriteriaDto>(existing);
         }
         public async Task<bool> DeleteAsync(Guid id)
         {

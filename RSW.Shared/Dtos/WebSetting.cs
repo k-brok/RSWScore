@@ -19,23 +19,9 @@ namespace RSW.Shared.Dto
     }
 
     // Voor bijwerken
-    public class WebSettingUpdateDto
+    public class WebSettingDto : BaseEntityDto
     {
         [Required]
-        public string Key { get; set; } = string.Empty;
-
-        public string Value { get; set; } = string.Empty;
-
-        public string? Description { get; set; } = string.Empty;
-
-        public string? ValueType { get; set; } = string.Empty;
-
-        public string? Category { get; set; } = string.Empty;
-    }
-
-    // Voor teruggeven aan de client
-    public class WebSettingReadDto : BaseEntityDto
-    {
         public string Key { get; set; } = string.Empty;
 
         public string Value { get; set; } = string.Empty;

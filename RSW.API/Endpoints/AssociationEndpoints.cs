@@ -29,7 +29,7 @@ namespace RSW.API.Endpoints
                 return Results.Created($"/api/Association/{created.Id}", created);
             });
 
-            group.MapPut("/{id:guid}", async (Guid id, AssociationUpdateDto dto, IAssociationService service) =>
+            group.MapPut("/{id:guid}", async (Guid id, AssociationDto dto, IAssociationService service) =>
             {
                 var updated = await service.UpdateAsync(id, dto);
                 return updated is not null ? Results.Ok(updated) : Results.NotFound();

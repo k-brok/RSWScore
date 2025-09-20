@@ -33,7 +33,7 @@ namespace RSW.API.Endpoints
                 return Results.Created($"/api/edition/{created.Id}", created);
             });
 
-            group.MapPut("/{id:guid}", async (Guid id, EditionUpdateDto dto, IEditionService service) =>
+            group.MapPut("/{id:guid}", async (Guid id, EditionDto dto, IEditionService service) =>
             {
                 var updated = await service.UpdateAsync(id, dto);
                 return updated is not null ? Results.Ok(updated) : Results.NotFound();

@@ -3,7 +3,6 @@ using System.ComponentModel.DataAnnotations;
 
 namespace RSW.Shared.Dto
 {
-    // Voor aanmaken
     public class SubGroupCreateDto
     {
         [Required]
@@ -13,21 +12,12 @@ namespace RSW.Shared.Dto
         public Guid EditionId { get; set; }
     }
 
-    // Voor bijwerken
-    public class SubGroupUpdateDto
+    public class SubGroupDto : BaseEntityDto
     {
         [Required]
         public string Color { get; set; } = string.Empty;
 
         [Required]
-        public Guid EditionId { get; set; }
-    }
-
-    // Voor terugsturen naar de client
-    public class SubGroupReadDto : BaseEntityDto
-    {
-        public string Color { get; set; } = string.Empty;
-
         public Guid EditionId { get; set; }
     }
 }

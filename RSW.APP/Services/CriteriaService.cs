@@ -16,42 +16,42 @@ namespace RSW.APP.Services
             _httpClient = httpClient;
         }
 
-        public async Task<IEnumerable<CriteriaReadDto>> GetAllAsync()
+        public async Task<IEnumerable<CriteriaDto>> GetAllAsync()
         {
-            var result = await _httpClient.GetFromJsonAsync<List<CriteriaReadDto>>(Endpoint);
+            var result = await _httpClient.GetFromJsonAsync<List<CriteriaDto>>(Endpoint);
 
-            return result ?? new List<CriteriaReadDto>();
+            return result ?? new List<CriteriaDto>();
         }
 
-        public async Task<CriteriaReadDto?> GetByIdAsync(Guid id)
+        public async Task<CriteriaDto?> GetByIdAsync(Guid id)
         {
-            return await _httpClient.GetFromJsonAsync<CriteriaReadDto>($"{Endpoint}/{id}");
+            return await _httpClient.GetFromJsonAsync<CriteriaDto>($"{Endpoint}/{id}");
         }
 
-        public async Task<IEnumerable<GroupReadDto>> GetGroupsAsync(Guid id)
+        public async Task<IEnumerable<GroupDto>> GetGroupsAsync(Guid id)
         {
             throw new NotImplementedException();
         }
 
-        public async Task<CriteriaReadDto> CreateAsync(CriteriaCreateDto dto)
+        public async Task<CriteriaDto> CreateAsync(CriteriaCreateDto dto)
         {
             var response = await _httpClient.PostAsJsonAsync(Endpoint, dto);
 
             if (response.IsSuccessStatusCode)
             {
-                return await response.Content.ReadFromJsonAsync<CriteriaReadDto>();
+                return await response.Content.ReadFromJsonAsync<CriteriaDto>();
             }
 
             return null;
         }
 
-        public async Task<CriteriaReadDto?> UpdateAsync(Guid id, CriteriaUpdateDto dto)
+        public async Task<CriteriaDto?> UpdateAsync(Guid id, CriteriaDto dto)
         {
             var response = await _httpClient.PutAsJsonAsync($"{Endpoint}/{id}", dto);
 
             if (response.IsSuccessStatusCode)
             {
-                return await response.Content.ReadFromJsonAsync<CriteriaReadDto>();
+                return await response.Content.ReadFromJsonAsync<CriteriaDto>();
             }
 
             return null;

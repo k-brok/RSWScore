@@ -16,42 +16,42 @@ namespace RSW.APP.Services
             _httpClient = httpClient;
         }
 
-        public async Task<IEnumerable<PatrolReadDto>> GetAllAsync()
+        public async Task<IEnumerable<PatrolDto>> GetAllAsync()
         {
-            var result = await _httpClient.GetFromJsonAsync<List<PatrolReadDto>>(Endpoint);
+            var result = await _httpClient.GetFromJsonAsync<List<PatrolDto>>(Endpoint);
 
-            return result ?? new List<PatrolReadDto>();
+            return result ?? new List<PatrolDto>();
         }
 
-        public async Task<PatrolReadDto?> GetByIdAsync(Guid id)
+        public async Task<PatrolDto?> GetByIdAsync(Guid id)
         {
-            return await _httpClient.GetFromJsonAsync<PatrolReadDto>($"{Endpoint}/{id}");
+            return await _httpClient.GetFromJsonAsync<PatrolDto>($"{Endpoint}/{id}");
         }
 
-        public async Task<IEnumerable<GroupReadDto>> GetGroupsAsync(Guid id)
+        public async Task<IEnumerable<GroupDto>> GetGroupsAsync(Guid id)
         {
             throw new NotImplementedException();
         }
 
-        public async Task<PatrolReadDto> CreateAsync(PatrolCreateDto dto)
+        public async Task<PatrolDto> CreateAsync(PatrolCreateDto dto)
         {
             var response = await _httpClient.PostAsJsonAsync(Endpoint, dto);
 
             if (response.IsSuccessStatusCode)
             {
-                return await response.Content.ReadFromJsonAsync<PatrolReadDto>();
+                return await response.Content.ReadFromJsonAsync<PatrolDto>();
             }
 
             return null;
         }
 
-        public async Task<PatrolReadDto?> UpdateAsync(Guid id, PatrolUpdateDto dto)
+        public async Task<PatrolDto?> UpdateAsync(Guid id, PatrolDto dto)
         {
             var response = await _httpClient.PutAsJsonAsync($"{Endpoint}/{id}", dto);
 
             if (response.IsSuccessStatusCode)
             {
-                return await response.Content.ReadFromJsonAsync<PatrolReadDto>();
+                return await response.Content.ReadFromJsonAsync<PatrolDto>();
             }
 
             return null;

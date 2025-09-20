@@ -11,19 +11,11 @@ namespace RSW.Shared.Dto
         public Guid AssociationId { get; set; }
     }
 
-    public class GroupUpdateDto
+    public class GroupDto : BaseEntityDto
     {
         [Required]
         public string Name { get; set; } = string.Empty;
-
         [Required]
-        public Guid AssociationId { get; set; }
-    }
-
-    public class GroupReadDto : BaseEntityDto
-    {
-        public string Name { get; set; } = string.Empty;
-
         public Guid AssociationId { get; set; }
     }
 }

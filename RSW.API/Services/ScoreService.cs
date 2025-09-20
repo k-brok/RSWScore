@@ -21,20 +21,20 @@ namespace RSW.API.Services
             _hub = hub;
         }
 
-        public async Task<IEnumerable<ScoreReadDto>> GetAllAsync()
+        public async Task<IEnumerable<ScoreDto>> GetAllAsync()
         {
             return await _context.Scores
-                .Select(e => _mapper.Map<ScoreReadDto>(e))
+                .Select(e => _mapper.Map<ScoreDto>(e))
                 .ToListAsync();
         }
 
-        public async Task<ScoreReadDto?> GetByIdAsync(Guid id)
+        public async Task<ScoreDto?> GetByIdAsync(Guid id)
         {
             var entity = await _context.Scores.FirstOrDefaultAsync(e => e.Id == id);
-            return _mapper.Map<ScoreReadDto>(entity);
+            return _mapper.Map<ScoreDto>(entity);
         }
 
-        public async Task<ScoreReadDto> CreateAsync(ScoreCreateDto dto)
+        public async Task<ScoreDto> CreateAsync(ScoreCreateDto dto)
         {
             var entity = new Score
             {
@@ -47,10 +47,10 @@ namespace RSW.API.Services
             _context.Scores.Add(entity);
             await _context.SaveChangesAsync();
 
-            return _mapper.Map<ScoreReadDto>(entity);
+            return _mapper.Map<ScoreDto>(entity);
         }
 
-        public async Task<ScoreReadDto?> UpdateAsync(Guid id, ScoreUpdateDto dto)
+        public async Task<ScoreDto?> UpdateAsync(Guid id, ScoreDto dto)
         {
             var existing = await _context.Scores.FirstOrDefaultAsync(e => e.Id == id);
             if (existing == null) return null;
@@ -63,7 +63,7 @@ namespace RSW.API.Services
 
             await _hub.Clients.All.SendAsync("ScoreUpdate", existing);
 
-            return _mapper.Map<ScoreReadDto>(existing);
+            return _mapper.Map<ScoreDto>(existing);
         }
         public async Task<bool> DeleteAsync(Guid id)
         {

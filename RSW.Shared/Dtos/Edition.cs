@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using RSW.Shared.Entities;
 
 namespace RSW.Shared.Dto
@@ -10,22 +11,12 @@ namespace RSW.Shared.Dto
         public DateOnly? LSWStartDate { get; set; }
         public string? Theme { get; set; }
     }
-
-    public class EditionUpdateDto
+    public class EditionDto : BaseEntityDto
     {
-        [Required]
-        public Guid Id { get; set; }
         [Required]
         public DateOnly RSWStartDate { get; set; }
         public DateOnly? LSWStartDate { get; set; }
         public string? Theme { get; set; }
-    }
-
-    public class EditionReadDto : BaseEntityDto
-    {
-        public DateOnly RSWStartDate { get; set; }
-        public DateOnly? LSWStartDate { get; set; }
-        public string? Theme { get; set; }
-        public bool IsActive { get; set; }
+        public bool IsActive { get;}
     }
 }

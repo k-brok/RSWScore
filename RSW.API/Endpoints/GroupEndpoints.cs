@@ -29,7 +29,7 @@ namespace RSW.API.Endpoints
                 return Results.Created($"/api/Group/{created.Id}", created);
             });
 
-            group.MapPut("/{id:guid}", async (Guid id, GroupUpdateDto dto, IGroupService service) =>
+            group.MapPut("/{id:guid}", async (Guid id, GroupDto dto, IGroupService service) =>
             {
                 var updated = await service.UpdateAsync(id, dto);
                 return updated is not null ? Results.Ok(updated) : Results.NotFound();
@@ -40,6 +40,11 @@ namespace RSW.API.Endpoints
                 var success = await service.DeleteAsync(id);
                 return success ? Results.Ok() : Results.NotFound();
             });
+
+            group.MapGet("/{id:guid}/patrols", async (Guid id, IGroupService service) =>
+            {
+                return Results.Ok(await service.GetPatrolsAsync(id));
+            }).AllowAnonymous();
         }
     }
 }

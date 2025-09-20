@@ -29,7 +29,7 @@ namespace RSW.API.Endpoints
                 return Results.Created($"/api/Score/{created.Id}", created);
             });
 
-            Score.MapPut("/{id:guid}", async (Guid id, ScoreUpdateDto dto, IScoreService service) =>
+            Score.MapPut("/{id:guid}", async (Guid id, ScoreDto dto, IScoreService service) =>
             {
                 var updated = await service.UpdateAsync(id, dto);
                 return updated is not null ? Results.Ok(updated) : Results.NotFound();

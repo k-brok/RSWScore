@@ -18,20 +18,20 @@ namespace RSW.API.Services
             _mapper = mapper;
         }
 
-        public async Task<IEnumerable<SubCategoryReadDto>> GetAllAsync()
+        public async Task<IEnumerable<SubCategoryDto>> GetAllAsync()
         {
             return await _context.SubCategories
-                .Select(e => _mapper.Map<SubCategoryReadDto>(e))
+                .Select(e => _mapper.Map<SubCategoryDto>(e))
                 .ToListAsync();
         }
 
-        public async Task<SubCategoryReadDto?> GetByIdAsync(Guid id)
+        public async Task<SubCategoryDto?> GetByIdAsync(Guid id)
         {
             var entity = await _context.SubCategories.FirstOrDefaultAsync(e => e.Id == id);
-            return _mapper.Map<SubCategoryReadDto>(entity);
+            return _mapper.Map<SubCategoryDto>(entity);
         }
 
-        public async Task<SubCategoryReadDto> CreateAsync(SubCategoryCreateDto dto)
+        public async Task<SubCategoryDto> CreateAsync(SubCategoryCreateDto dto)
         {
             var entity = new SubCategory
             {
@@ -43,10 +43,10 @@ namespace RSW.API.Services
             _context.SubCategories.Add(entity);
             await _context.SaveChangesAsync();
 
-            return _mapper.Map<SubCategoryReadDto>(entity);
+            return _mapper.Map<SubCategoryDto>(entity);
         }
 
-        public async Task<SubCategoryReadDto?> UpdateAsync(Guid id, SubCategoryUpdateDto dto)
+        public async Task<SubCategoryDto?> UpdateAsync(Guid id, SubCategoryDto dto)
         {
             var existing = await _context.SubCategories.FirstOrDefaultAsync(e => e.Id == id);
             if (existing == null) return null;
@@ -55,7 +55,7 @@ namespace RSW.API.Services
             existing.CategoryId = dto.CategoryId;
             
             await _context.SaveChangesAsync();
-            return _mapper.Map<SubCategoryReadDto>(existing);
+            return _mapper.Map<SubCategoryDto>(existing);
         }
         public async Task<bool> DeleteAsync(Guid id)
         {

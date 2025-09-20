@@ -29,7 +29,7 @@ namespace RSW.API.Endpoints
                 return Results.Created($"/api/SubGroup/{created.Id}", created);
             });
 
-            SubGroup.MapPut("/{id:guid}", async (Guid id, SubGroupUpdateDto dto, ISubGroupService service) =>
+            SubGroup.MapPut("/{id:guid}", async (Guid id, SubGroupDto dto, ISubGroupService service) =>
             {
                 var updated = await service.UpdateAsync(id, dto);
                 return updated is not null ? Results.Ok(updated) : Results.NotFound();

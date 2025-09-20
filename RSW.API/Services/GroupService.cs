@@ -18,20 +18,20 @@ namespace RSW.API.Services
             _mapper = mapper;
         }
 
-        public async Task<IEnumerable<GroupReadDto>> GetAllAsync()
+        public async Task<IEnumerable<GroupDto>> GetAllAsync()
         {
             return await _context.Groups
-                .Select(e => _mapper.Map<GroupReadDto>(e))
+                .Select(e => _mapper.Map<GroupDto>(e))
                 .ToListAsync();
         }
 
-        public async Task<GroupReadDto?> GetByIdAsync(Guid id)
+        public async Task<GroupDto?> GetByIdAsync(Guid id)
         {
             var entity = await _context.Groups.FirstOrDefaultAsync(e => e.Id == id);
-            return _mapper.Map<GroupReadDto>(entity);
+            return _mapper.Map<GroupDto>(entity);
         }
 
-        public async Task<GroupReadDto> CreateAsync(GroupCreateDto dto)
+        public async Task<GroupDto> CreateAsync(GroupCreateDto dto)
         {
             var entity = new Group
             {
@@ -43,10 +43,10 @@ namespace RSW.API.Services
             _context.Groups.Add(entity);
             await _context.SaveChangesAsync();
 
-            return _mapper.Map<GroupReadDto>(entity);
+            return _mapper.Map<GroupDto>(entity);
         }
 
-        public async Task<GroupReadDto?> UpdateAsync(Guid id, GroupUpdateDto dto)
+        public async Task<GroupDto?> UpdateAsync(Guid id, GroupDto dto)
         {
             var existing = await _context.Groups.FirstOrDefaultAsync(e => e.Id == id);
             if (existing == null) return null;
@@ -55,7 +55,7 @@ namespace RSW.API.Services
             existing.AssociationId = dto.AssociationId;
 
             await _context.SaveChangesAsync();
-            return _mapper.Map<GroupReadDto>(existing);
+            return _mapper.Map<GroupDto>(existing);
         }
         public async Task<bool> DeleteAsync(Guid id)
         {
@@ -65,6 +65,15 @@ namespace RSW.API.Services
             _context.Groups.Remove(found);
             await _context.SaveChangesAsync();
             return true;
+        }
+
+        public async Task<List<PatrolDto>>? GetPatrolsAsync(Guid id)
+        {
+            var existing = await _context.Groups.FirstOrDefaultAsync(e => e.Id == id);
+                if (existing == null) return null;
+
+            var patrols = await _context.Patrols.Where(p => p.GroupId == id).ToListAsync();
+            return patrols.Select(p => _mapper.Map<PatrolDto>(p)).ToList();
         }
     }
 

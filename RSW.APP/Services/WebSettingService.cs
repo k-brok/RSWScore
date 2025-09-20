@@ -16,42 +16,42 @@ namespace RSW.APP.Services
             _httpClient = httpClient;
         }
 
-        public async Task<IEnumerable<WebSettingReadDto>> GetAllAsync()
+        public async Task<IEnumerable<WebSettingDto>> GetAllAsync()
         {
-            var result = await _httpClient.GetFromJsonAsync<List<WebSettingReadDto>>(Endpoint);
+            var result = await _httpClient.GetFromJsonAsync<List<WebSettingDto>>(Endpoint);
 
-            return result ?? new List<WebSettingReadDto>();
+            return result ?? new List<WebSettingDto>();
         }
 
-        public async Task<WebSettingReadDto?> GetByIdAsync(Guid id)
+        public async Task<WebSettingDto?> GetByIdAsync(Guid id)
         {
-            return await _httpClient.GetFromJsonAsync<WebSettingReadDto>($"{Endpoint}/{id}");
+            return await _httpClient.GetFromJsonAsync<WebSettingDto>($"{Endpoint}/{id}");
         }
 
-        public async Task<IEnumerable<GroupReadDto>> GetGroupsAsync(Guid id)
+        public async Task<IEnumerable<GroupDto>> GetGroupsAsync(Guid id)
         {
             throw new NotImplementedException();
         }
 
-        public async Task<WebSettingReadDto> CreateAsync(WebSettingCreateDto dto)
+        public async Task<WebSettingDto> CreateAsync(WebSettingCreateDto dto)
         {
             var response = await _httpClient.PostAsJsonAsync(Endpoint, dto);
 
             if (response.IsSuccessStatusCode)
             {
-                return await response.Content.ReadFromJsonAsync<WebSettingReadDto>();
+                return await response.Content.ReadFromJsonAsync<WebSettingDto>();
             }
 
             return null;
         }
 
-        public async Task<WebSettingReadDto?> UpdateAsync(Guid id, WebSettingUpdateDto dto)
+        public async Task<WebSettingDto?> UpdateAsync(Guid id, WebSettingDto dto)
         {
             var response = await _httpClient.PutAsJsonAsync($"{Endpoint}/{id}", dto);
 
             if (response.IsSuccessStatusCode)
             {
-                return await response.Content.ReadFromJsonAsync<WebSettingReadDto>();
+                return await response.Content.ReadFromJsonAsync<WebSettingDto>();
             }
 
             return null;

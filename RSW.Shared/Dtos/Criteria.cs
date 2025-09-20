@@ -14,7 +14,7 @@ namespace RSW.Shared.Dto
         [Required]
         public Guid SubCategoryId { get; set; }
     }
-    public class CriteriaUpdateDto
+    public class CriteriaDto : BaseEntityDto
     {
         [Required]
         public string Name { get; set; } = string.Empty;
@@ -22,18 +22,7 @@ namespace RSW.Shared.Dto
         public string Description { get; set; } = string.Empty;
 
         public int MaxScore { get; set; } = 0;
-
         [Required]
-        public Guid SubCategoryId { get; set; }
-    }
-    public class CriteriaReadDto : BaseEntityDto
-    {
-        public string Name { get; set; } = string.Empty;
-
-        public string Description { get; set; } = string.Empty;
-
-        public int MaxScore { get; set; } = 0;
-
         public Guid SubCategoryId { get; set; }
     }
 }

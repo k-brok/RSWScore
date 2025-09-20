@@ -16,22 +16,12 @@ namespace RSW.Shared.Dto
     }
 
     // Voor bijwerken
-    public class ScoreUpdateDto
+    public class ScoreDto : BaseEntityDto
     {
         [Required]
         public Guid PatrolId { get; set; }
 
         [Required]
-        public Guid CriteriaId { get; set; }
-
-        public int Value { get; set; } = 0;
-    }
-
-    // Voor terugsturen naar de client
-    public class ScoreReadDto : BaseEntityDto
-    {
-        public Guid PatrolId { get; set; }
-
         public Guid CriteriaId { get; set; }
 
         public int Value { get; set; } = 0;

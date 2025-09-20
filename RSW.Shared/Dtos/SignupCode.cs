@@ -12,7 +12,7 @@ namespace RSW.Shared.Dto
     }
 
     // Voor bijwerken
-    public class SignupCodeUpdateDto
+    public class SignupCodeDto : BaseEntityDto
     {
 
         [Required]
@@ -21,16 +21,5 @@ namespace RSW.Shared.Dto
         public DateTime ExpiryDate { get; set; } = DateTime.UtcNow.AddDays(7);
 
         public bool Lock { get; set; } = false;
-    }
-
-    // Voor terugsturen naar de client
-    public class SignupCodeReadDto : BaseEntityDto
-    {
-
-        public Guid GroupId { get; set; }
-
-        public DateTime ExpiryDate { get; set; }
-
-        public bool Lock { get; set; }
     }
 }

@@ -18,20 +18,20 @@ namespace RSW.API.Services
             _mapper = mapper;
         }
 
-        public async Task<IEnumerable<SubGroupReadDto>> GetAllAsync()
+        public async Task<IEnumerable<SubGroupDto>> GetAllAsync()
         {
             return await _context.SubGroups
-                .Select(e => _mapper.Map<SubGroupReadDto>(e))
+                .Select(e => _mapper.Map<SubGroupDto>(e))
                 .ToListAsync();
         }
 
-        public async Task<SubGroupReadDto?> GetByIdAsync(Guid id)
+        public async Task<SubGroupDto?> GetByIdAsync(Guid id)
         {
             var entity = await _context.SubGroups.FirstOrDefaultAsync(e => e.Id == id);
-            return _mapper.Map<SubGroupReadDto>(entity);
+            return _mapper.Map<SubGroupDto>(entity);
         }
 
-        public async Task<SubGroupReadDto> CreateAsync(SubGroupCreateDto dto)
+        public async Task<SubGroupDto> CreateAsync(SubGroupCreateDto dto)
         {
             var entity = new SubGroup
             {
@@ -43,10 +43,10 @@ namespace RSW.API.Services
             _context.SubGroups.Add(entity);
             await _context.SaveChangesAsync();
 
-            return _mapper.Map<SubGroupReadDto>(entity);
+            return _mapper.Map<SubGroupDto>(entity);
         }
 
-        public async Task<SubGroupReadDto?> UpdateAsync(Guid id, SubGroupUpdateDto dto)
+        public async Task<SubGroupDto?> UpdateAsync(Guid id, SubGroupDto dto)
         {
             var existing = await _context.SubGroups.FirstOrDefaultAsync(e => e.Id == id);
             if (existing == null) return null;
@@ -55,7 +55,7 @@ namespace RSW.API.Services
             existing.EditionId = dto.EditionId;
 
             await _context.SaveChangesAsync();
-            return _mapper.Map<SubGroupReadDto>(existing);
+            return _mapper.Map<SubGroupDto>(existing);
         }
         public async Task<bool> DeleteAsync(Guid id)
         {

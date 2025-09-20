@@ -16,42 +16,42 @@ namespace RSW.APP.Services
             _httpClient = httpClient;
         }
 
-        public async Task<IEnumerable<SubGroupReadDto>> GetAllAsync()
+        public async Task<IEnumerable<SubGroupDto>> GetAllAsync()
         {
-            var result = await _httpClient.GetFromJsonAsync<List<SubGroupReadDto>>(Endpoint);
+            var result = await _httpClient.GetFromJsonAsync<List<SubGroupDto>>(Endpoint);
 
-            return result ?? new List<SubGroupReadDto>();
+            return result ?? new List<SubGroupDto>();
         }
 
-        public async Task<SubGroupReadDto?> GetByIdAsync(Guid id)
+        public async Task<SubGroupDto?> GetByIdAsync(Guid id)
         {
-            return await _httpClient.GetFromJsonAsync<SubGroupReadDto>($"{Endpoint}/{id}");
+            return await _httpClient.GetFromJsonAsync<SubGroupDto>($"{Endpoint}/{id}");
         }
 
-        public async Task<IEnumerable<GroupReadDto>> GetGroupsAsync(Guid id)
+        public async Task<IEnumerable<GroupDto>> GetGroupsAsync(Guid id)
         {
             throw new NotImplementedException();
         }
 
-        public async Task<SubGroupReadDto> CreateAsync(SubGroupCreateDto dto)
+        public async Task<SubGroupDto> CreateAsync(SubGroupCreateDto dto)
         {
             var response = await _httpClient.PostAsJsonAsync(Endpoint, dto);
 
             if (response.IsSuccessStatusCode)
             {
-                return await response.Content.ReadFromJsonAsync<SubGroupReadDto>();
+                return await response.Content.ReadFromJsonAsync<SubGroupDto>();
             }
 
             return null;
         }
 
-        public async Task<SubGroupReadDto?> UpdateAsync(Guid id, SubGroupUpdateDto dto)
+        public async Task<SubGroupDto?> UpdateAsync(Guid id, SubGroupDto dto)
         {
             var response = await _httpClient.PutAsJsonAsync($"{Endpoint}/{id}", dto);
 
             if (response.IsSuccessStatusCode)
             {
-                return await response.Content.ReadFromJsonAsync<SubGroupReadDto>();
+                return await response.Content.ReadFromJsonAsync<SubGroupDto>();
             }
 
             return null;

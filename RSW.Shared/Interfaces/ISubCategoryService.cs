@@ -4,10 +4,10 @@ namespace RSW.Shared.Interfaces
 {
     public interface ISubCategoryService
     {
-        Task<IEnumerable<SubCategoryReadDto>> GetAllAsync();
-        Task<SubCategoryReadDto?> GetByIdAsync(Guid id);
-        Task<SubCategoryReadDto> CreateAsync(SubCategoryCreateDto dto);
-        Task<SubCategoryReadDto?> UpdateAsync(Guid id, SubCategoryUpdateDto dto);
+        Task<IEnumerable<SubCategoryDto>> GetAllAsync();
+        Task<SubCategoryDto?> GetByIdAsync(Guid id);
+        Task<SubCategoryDto> CreateAsync(SubCategoryCreateDto dto);
+        Task<SubCategoryDto?> UpdateAsync(Guid id, SubCategoryDto dto);
         Task<bool> DeleteAsync(Guid id);
     }
 }

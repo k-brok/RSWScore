@@ -16,42 +16,42 @@ namespace RSW.APP.Services
             _httpClient = httpClient;
         }
 
-        public async Task<IEnumerable<JurySlotReadDto>> GetAllAsync()
+        public async Task<IEnumerable<JurySlotDto>> GetAllAsync()
         {
-            var result = await _httpClient.GetFromJsonAsync<List<JurySlotReadDto>>(Endpoint);
+            var result = await _httpClient.GetFromJsonAsync<List<JurySlotDto>>(Endpoint);
 
-            return result ?? new List<JurySlotReadDto>();
+            return result ?? new List<JurySlotDto>();
         }
 
-        public async Task<JurySlotReadDto?> GetByIdAsync(Guid id)
+        public async Task<JurySlotDto?> GetByIdAsync(Guid id)
         {
-            return await _httpClient.GetFromJsonAsync<JurySlotReadDto>($"{Endpoint}/{id}");
+            return await _httpClient.GetFromJsonAsync<JurySlotDto>($"{Endpoint}/{id}");
         }
 
-        public async Task<IEnumerable<GroupReadDto>> GetGroupsAsync(Guid id)
+        public async Task<IEnumerable<GroupDto>> GetGroupsAsync(Guid id)
         {
             throw new NotImplementedException();
         }
 
-        public async Task<JurySlotReadDto> CreateAsync(JurySlotCreateDto dto)
+        public async Task<JurySlotDto> CreateAsync(JurySlotCreateDto dto)
         {
             var response = await _httpClient.PostAsJsonAsync(Endpoint, dto);
 
             if (response.IsSuccessStatusCode)
             {
-                return await response.Content.ReadFromJsonAsync<JurySlotReadDto>();
+                return await response.Content.ReadFromJsonAsync<JurySlotDto>();
             }
 
             return null;
         }
 
-        public async Task<JurySlotReadDto?> UpdateAsync(Guid id, JurySlotUpdateDto dto)
+        public async Task<JurySlotDto?> UpdateAsync(Guid id, JurySlotDto dto)
         {
             var response = await _httpClient.PutAsJsonAsync($"{Endpoint}/{id}", dto);
 
             if (response.IsSuccessStatusCode)
             {
-                return await response.Content.ReadFromJsonAsync<JurySlotReadDto>();
+                return await response.Content.ReadFromJsonAsync<JurySlotDto>();
             }
 
             return null;

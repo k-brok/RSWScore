@@ -18,27 +18,26 @@ namespace RSW.API.Services
             _mapper = mapper;
         }
 
-        public async Task<IEnumerable<JurySlotReadDto>> GetAllAsync()
+        public async Task<IEnumerable<JurySlotDto>> GetAllAsync()
         {
             return await _context.JurySlots
-                .Select(e => _mapper.Map<JurySlotReadDto>(e))
+                .Select(e => _mapper.Map<JurySlotDto>(e))
                 .ToListAsync();
         }
 
-        public async Task<JurySlotReadDto?> GetByIdAsync(Guid id)
+        public async Task<JurySlotDto?> GetByIdAsync(Guid id)
         {
             var entity = await _context.JurySlots.FirstOrDefaultAsync(e => e.Id == id);
-            return _mapper.Map<JurySlotReadDto>(entity);
+            return _mapper.Map<JurySlotDto>(entity);
         }
 
-        public async Task<JurySlotReadDto> CreateAsync(JurySlotCreateDto dto)
+        public async Task<JurySlotDto> CreateAsync(JurySlotCreateDto dto)
         {
             var entity = new JurySlot
             {
                 Id = Guid.NewGuid(),
                 CategoryId = dto.CategoryId,
                 ClosingTime = dto.ClosingTime,
-                EditionId = dto.EditionId,
                 OpeningTime = dto.OpeningTime,
                 SubgroupId = dto.SubgroupId
             };
@@ -46,22 +45,21 @@ namespace RSW.API.Services
             _context.JurySlots.Add(entity);
             await _context.SaveChangesAsync();
 
-            return _mapper.Map<JurySlotReadDto>(entity);
+            return _mapper.Map<JurySlotDto>(entity);
         }
 
-        public async Task<JurySlotReadDto?> UpdateAsync(Guid id, JurySlotUpdateDto dto)
+        public async Task<JurySlotDto?> UpdateAsync(Guid id, JurySlotDto dto)
         {
             var existing = await _context.JurySlots.FirstOrDefaultAsync(e => e.Id == id);
             if (existing == null) return null;
 
             existing.CategoryId = dto.CategoryId;
             existing.ClosingTime = dto.ClosingTime;
-            existing.EditionId = dto.EditionId;
             existing.OpeningTime = dto.OpeningTime;
             existing.SubgroupId = dto.SubgroupId;
 
             await _context.SaveChangesAsync();
-            return _mapper.Map<JurySlotReadDto>(existing);
+            return _mapper.Map<JurySlotDto>(existing);
         }
         public async Task<bool> DeleteAsync(Guid id)
         {
