@@ -8,7 +8,5 @@
         public Guid CategoryId { get; set; }
         public SubGroup SubGroup { get; set; } = null!;
         public Guid SubgroupId { get; set; }
-        public Edition Edition { get; set; } = null!;
-        public Guid EditionId { get; set; }
     }
 }
