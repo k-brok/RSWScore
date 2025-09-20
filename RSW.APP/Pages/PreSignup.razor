@@ -1,0 +1,138 @@
+@page "/voorinschrijven/{id:guid}"
+@using AutoMapper
+@inject ISignupCodeService SignupCodeService
+@inject IGroupService GroupService
+@inject IAssociationService AssociationService
+@inject IPatrolService PatrolService
+@inject IEditionService EditionService
+@inject IMapper Mapper
+
+<PageTitle>Inschrijven</PageTitle>
+
+@if (!loaded)
+{
+    <RadzenCard Style="margin:20px;">
+        <RadzenProgressBarCircular Value="50" ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
+        <p>Code controleren...</p>
+    </RadzenCard>
+}
+else if (signupCode is null)
+{
+    <RadzenCard Style="margin:20px;">
+        <h3>🚫 Ongeldige of verlopen code</h3>
+        <p>Neem contact op met de organisatie als je denkt dat dit niet klopt.</p>
+    </RadzenCard>
+}
+else if (ActiveEdition == null)
+{
+    <RadzenCard Style="margin:20px;">
+        <h3>🚫 Geen Actieve editie.</h3>
+        <p>Neem contact op met de organisatie.</p>
+    </RadzenCard>
+}
+else
+{
+    <RadzenCard Style="margin:20px;">
+        <h2>Inschrijfformulier RSW @ActiveEdition.RSWStartDate.Year ⚜️</h2>
+        <p>Voor groep: <b>@Group.Name @Association.Name</b></p>
+
+
+    <h4 style="margin-top:20px;">Patrouilles</h4>
+
+    <RadzenButton Text="Patrouille toevoegen"
+                      Click="@AddPatrol"
+                      ButtonStyle="ButtonStyle.Light"
+                      Icon="add"
+                      Style="margin-bottom:10px;" />
+
+        <RadzenDataList Data="@ExistingPatrol.Concat(newpatrols)" TItem="PatrolDto">
+            <Template Context="patrol">
+                    <RadzenTextBox @bind-Value="patrol.Name"
+                                   Placeholder="Patrouillenaam"
+                                   Style="width:100%;" />
+                <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" class="rz-mt-5">
+
+                    <RadzenStack Orientation="Orientation.Horizontal">
+                        <RadzenCheckBox @bind-Value="patrol.IsYoungest" Name="IsYoungest" Disabled=@toRemove.Contains(patrol) />
+                        <RadzenLabel Text="Jongste patrouille?" Component="IsYoungest" class="rz-ms-2" />
+                    </RadzenStack>
+                    @if (toRemove.Contains(patrol))
+                    {
+                        <RadzenButton Text="Reset"
+                                      ButtonStyle="ButtonStyle.Danger"
+                                      Icon="undo"
+                                      Click="@(() => toRemove.Remove(patrol))"
+                                      Style="margin-top:10px;" />
+                    }
+                    else
+                    {
+                        <RadzenButton Text="Verwijderen"
+                                      ButtonStyle="ButtonStyle.Danger"
+                                      Icon="delete"
+                                      Click="@(() => toRemove.Add(patrol))"
+                                      Style="margin-top:10px;" />
+                    }
+                </RadzenStack>
+            </Template>
+        </RadzenDataList>
+
+    <RadzenButton ButtonStyle="ButtonStyle.Primary" Text="Inschrijven"
+                      Icon="send" Style="margin-top:15px;" Click="OnSubmit" />
+
+    </RadzenCard>
+}
+
+@code {
+    [Parameter] public Guid id { get; set; }
+
+    private bool loaded = false;
+    private SignupCodeDto? signupCode;
+    private GroupDto? Group;
+    private EditionDto? ActiveEdition;
+    private AssociationDto? Association;
+    private List<PatrolDto> newpatrols = new List<PatrolDto>();
+    private List<PatrolDto>? ExistingPatrol;
+    private List<PatrolDto> toRemove = new List<PatrolDto>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        ActiveEdition = await EditionService.GetActiveAsync();
+        signupCode = await SignupCodeService.ValidateAsync(id);
+
+        if(signupCode != null){
+            Group = await GroupService.GetByIdAsync(signupCode.GroupId);
+
+            if(Group != null)
+            {
+                Association = await AssociationService.GetByIdAsync(Group.AssociationId);
+                ExistingPatrol = await GroupService.GetPatrolsAsync(Group.Id);
+            }
+        }
+
+        loaded = true;
+    }
+
+    private void AddPatrol()
+    {
+        if (signupCode is null) return;
+
+        newpatrols.Add(new PatrolDto());
+    }
+
+    private void OnSubmit()
+    {
+        foreach (PatrolDto patrol in newpatrols)
+        {
+            PatrolService.CreateAsync(new PatrolCreateDto
+            {
+                GroupId = Group.Id,
+                Name = patrol.Name,
+                IsYoungest = patrol.IsYoungest
+            });
+        }
+        foreach (PatrolDto patrol in ExistingPatrol)
+        {
+            PatrolService.UpdateAsync(patrol.Id,patrol);
+        }
+    }
+}

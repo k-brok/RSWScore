@@ -1,0 +1,123 @@
+﻿@page "/"
+@using Radzen
+@using Radzen.Blazor
+
+<PageTitle>Home</PageTitle>
+
+<RadzenCard class="rz-my-5">
+    <h1>Welkom bij de Regionale Scoutingwedstrijden Score Systeem! 🎉</h1>
+    <p>
+        Hier vind je alle informatie rondom de RSW, de inschrijvingen en natuurlijk de actuele scores.
+        Veel succes en vooral: <b>heel veel plezier met Scouting!</b> 🌲🔥
+    </p>
+</RadzenCard>
+
+<RadzenRow class="rz-my-5">
+    <RadzenColumn Size="12" SizeSM="4">
+        <RadzenCard>
+            <h3>Status & Agenda 📅</h3>
+            <RadzenTimeline>
+                <Items>
+                    <RadzenTimelineItem PointStyle="PointStyle.Primary">
+                        <LabelContent>
+                            <RadzenText TextStyle="TextStyle.Subtitle2" class="rz-m-0">01 MRT 2025</RadzenText>
+                        </LabelContent>
+                        <ChildContent>
+                            Voorinschrijvingen geopend 🎉
+                        </ChildContent>
+                    </RadzenTimelineItem>
+                    
+                    <RadzenTimelineItem>
+                        <LabelContent>
+                            <RadzenText TextStyle="TextStyle.Subtitle2" class="rz-m-0">15 MRT 2025</RadzenText>
+                        </LabelContent>
+                        <ChildContent>
+                            Sluiting voorinschrijvingen ⏳
+                        </ChildContent>
+                    </RadzenTimelineItem>
+
+                    <RadzenTimelineItem>
+                        <LabelContent>
+                            <RadzenText TextStyle="TextStyle.Subtitle2" class="rz-m-0">01 APR 2025</RadzenText>
+                        </LabelContent>
+                        <ChildContent>
+                            Definitieve inschrijvingen sluiten 📝
+                        </ChildContent>
+                    </RadzenTimelineItem>
+
+                    <RadzenTimelineItem PointStyle="PointStyle.Success">
+                        <LabelContent>
+                            <RadzenText TextStyle="TextStyle.Subtitle2" class="rz-m-0">20 APR 2025</RadzenText>
+                        </LabelContent>
+                        <ChildContent>
+                            Regionale Scoutingwedstrijden ⚜️🔥
+                        </ChildContent>
+                    </RadzenTimelineItem>
+                </Items>
+            </RadzenTimeline>
+        </RadzenCard>
+    </RadzenColumn>
+    <RadzenColumn Size="12" SizeSM="8">
+        <RadzenCard>
+            <h3>Top 10 Scorebord 🏆</h3>
+            <RadzenDropDown Data="@edities" @bind-Value="@gekozenEditie" Style="margin-bottom:10px;" />
+            <RadzenDataGrid Data="@scores" TItem="Score" Count="@scores.Count()" PageSize="10">
+                <Columns>
+                    <RadzenDataGridColumn TItem="Score" Property="Rank" Title="#" Width="50px" />
+                    <RadzenDataGridColumn TItem="Score" Property="Team" Title="Team" />
+                    <RadzenDataGridColumn TItem="Score" Property="Points" Title="Punten" />
+                </Columns>
+            </RadzenDataGrid>
+        </RadzenCard>
+    </RadzenColumn>
+</RadzenRow>
+
+<RadzenRow class="rz-my-5">
+    <RadzenColumn Size="12" SizeSM="6">
+        <RadzenCard>
+            <h3>Laatste Nieuws 📰</h3>
+            <ul>
+                <li>⚜️ De thema-opdracht voor dit jaar wordt volgende week bekendgemaakt!</li>
+                <li>📌 Let op: vergeet niet je EHBO-certificaat in te leveren voor 10 april.</li>
+                <li>🌍 Dit jaar doen er maar liefst 25 teams mee! </li>
+            </ul>
+        </RadzenCard>
+    </RadzenColumn>
+
+    <RadzenColumn Size="12" SizeSM="6">
+        <RadzenCard>
+            <h3>Handige Links 🔗</h3>
+            <ul>
+                <li><a href="https://www.scouting.nl/" target="_blank">Scouting Nederland</a></li>
+                <li><a href="https://www.scouting.nl/themas/regionale-scoutingwedstrijden-rsw" target="_blank">Informatie RSW</a></li>
+                <li><a href="/contact">Contact met de organisatie</a></li>
+            </ul>
+        </RadzenCard>
+    </RadzenColumn>
+</RadzenRow>
+
+@code {
+    private List<string> edities = new() { "2025", "2024", "2023" };
+    private string gekozenEditie = "2025";
+
+    private List<Score> scores = new()
+    {
+        new Score { Rank = 1, Team = "De Vuurvliegen", Points = 98 },
+        new Score { Rank = 2, Team = "De Beverscouts", Points = 95 },
+        new Score { Rank = 3, Team = "De Waterdraken", Points = 93 },
+        new Score { Rank = 4, Team = "De Bosuilen", Points = 89 },
+        new Score { Rank = 5, Team = "De Houtduiven", Points = 88 },
+        new Score { Rank = 6, Team = "De Panters", Points = 85 },
+        new Score { Rank = 7, Team = "De Haviken", Points = 83 },
+        new Score { Rank = 8, Team = "De Wolven", Points = 80 },
+        new Score { Rank = 9, Team = "De Vossen", Points = 78 },
+        new Score { Rank = 10, Team = "De Adelaars", Points = 75 },
+    };
+
+    public class Score
+    {
+        public int Rank { get; set; }
+        public string Team { get; set; }
+        public int Points { get; set; }
+    }
+}
