@@ -1,8 +1,11 @@
 @page "/voorinschrijven/{id:guid}"
+@using AutoMapper
 @inject ISignupCodeService SignupCodeService
-@inject IGroupService Groupervice
+@inject IGroupService GroupService
 @inject IAssociationService AssociationService
+@inject IPatrolService PatrolService
 @inject IEditionService EditionService
+@inject IMapper Mapper
 
 <PageTitle>Inschrijven</PageTitle>
 
@@ -36,30 +39,45 @@ else
 
     <h4 style="margin-top:20px;">Patrouilles</h4>
 
-    <RadzenButton Text="➕ Patrouille toevoegen"
+    <RadzenButton Text="Patrouille toevoegen"
                       Click="@AddPatrol"
                       ButtonStyle="ButtonStyle.Light"
                       Icon="add"
                       Style="margin-bottom:10px;" />
 
-        <RadzenDataList Count="@patrols.Count" Data="@patrols" TItem="PatrolCreateDto">
+        <RadzenDataList Data="@ExistingPatrol.Concat(newpatrols)" TItem="PatrolDto">
             <Template Context="patrol">
                     <RadzenTextBox @bind-Value="patrol.Name"
                                    Placeholder="Patrouillenaam"
                                    Style="width:100%;" />
-                    <div style="margin-top:10px;">
-                        <RadzenCheckBox @bind-Value="patrol.IsYoungest" />
-                        <label style="margin-left:5px;">Jongste patrouille?</label>
-                    </div>
-                    <RadzenButton Text="❌ Verwijderen"
-                                  ButtonStyle="ButtonStyle.Danger"
-                                  Click="@(() => RemovePatrol(patrol))"
-                                  Style="margin-top:10px;" />
+                <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" class="rz-mt-5">
+
+                    <RadzenStack Orientation="Orientation.Horizontal">
+                        <RadzenCheckBox @bind-Value="patrol.IsYoungest" Name="IsYoungest" Disabled=@toRemove.Contains(patrol) />
+                        <RadzenLabel Text="Jongste patrouille?" Component="IsYoungest" class="rz-ms-2" />
+                    </RadzenStack>
+                    @if (toRemove.Contains(patrol))
+                    {
+                        <RadzenButton Text="Reset"
+                                      ButtonStyle="ButtonStyle.Danger"
+                                      Icon="undo"
+                                      Click="@(() => toRemove.Remove(patrol))"
+                                      Style="margin-top:10px;" />
+                    }
+                    else
+                    {
+                        <RadzenButton Text="Verwijderen"
+                                      ButtonStyle="ButtonStyle.Danger"
+                                      Icon="delete"
+                                      Click="@(() => toRemove.Add(patrol))"
+                                      Style="margin-top:10px;" />
+                    }
+                </RadzenStack>
             </Template>
         </RadzenDataList>
 
     <RadzenButton ButtonStyle="ButtonStyle.Primary" Text="Inschrijven"
-                  Icon="send" Style="margin-top:15px;" />
+                      Icon="send" Style="margin-top:15px;" Click="OnSubmit" />
 
     </RadzenCard>
 }
@@ -68,11 +86,13 @@ else
     [Parameter] public Guid id { get; set; }
 
     private bool loaded = false;
-    private SignupCodeReadDto? signupCode;
-    private GroupReadDto? Group;
-    private EditionReadDto? ActiveEdition;
-    private AssociationReadDto? Association;
-    private List<PatrolCreateDto> patrols = new List<PatrolCreateDto>();      
+    private SignupCodeDto? signupCode;
+    private GroupDto? Group;
+    private EditionDto? ActiveEdition;
+    private AssociationDto? Association;
+    private List<PatrolDto> newpatrols = new List<PatrolDto>();
+    private List<PatrolDto>? ExistingPatrol;
+    private List<PatrolDto> toRemove = new List<PatrolDto>();
 
     protected override async Task OnInitializedAsync()
     {
@@ -80,8 +100,13 @@ else
         signupCode = await SignupCodeService.ValidateAsync(id);
 
         if(signupCode != null){
-            Group = await Groupervice.GetByIdAsync(signupCode.GroupId);
-            Association = await AssociationService.GetByIdAsync(Group.AssociationId);
+            Group = await GroupService.GetByIdAsync(signupCode.GroupId);
+
+            if(Group != null)
+            {
+                Association = await AssociationService.GetByIdAsync(Group.AssociationId);
+                ExistingPatrol = await GroupService.GetPatrolsAsync(Group.Id);
+            }
         }
 
         loaded = true;
@@ -91,24 +116,23 @@ else
     {
         if (signupCode is null) return;
 
-        patrols.Add(new PatrolCreateDto
-        {
-            GroupId = signupCode.Id
-        });
-    }
-
-    private void RemovePatrol(PatrolCreateDto patrol)
-    {
-        patrols.Remove(patrol);
+        newpatrols.Add(new PatrolDto());
     }
 
     private void OnSubmit()
     {
-        // Hier kun je straks de lijst naar je backend API sturen
-        Console.WriteLine($"Inschrijving voor groep: {Group.Name}");
-        foreach (var p in patrols)
+        foreach (PatrolDto patrol in newpatrols)
         {
-            Console.WriteLine($" - Patrouille: {p.Name}, jongste: {p.IsYoungest}");
+            PatrolService.CreateAsync(new PatrolCreateDto
+            {
+                GroupId = Group.Id,
+                Name = patrol.Name,
+                IsYoungest = patrol.IsYoungest
+            });
+        }
+        foreach (PatrolDto patrol in ExistingPatrol)
+        {
+            PatrolService.UpdateAsync(patrol.Id,patrol);
         }
     }
 }
