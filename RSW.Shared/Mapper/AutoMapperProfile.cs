@@ -8,19 +8,19 @@ namespace RSW.Shared.Mapper
     {
         public AutoMapperProfile()
         {
-            CreateMap<Association, AssociationReadDto>();
-            CreateMap<Category, CategoryReadDto>();
-            CreateMap<Criteria, CriteriaReadDto>();
-            CreateMap<Edition, EditionReadDto>();
-            CreateMap<Group, GroupReadDto>();
-            CreateMap<JurySlot, JurySlotReadDto>();
-            CreateMap<Patrol, PatrolReadDto>();
-            CreateMap<Score, ScoreReadDto>();
-            CreateMap<Scout, ScoutReadDto>();
-            CreateMap<SignupCode, SignupCodeReadDto>();
-            CreateMap<SubCategory, SubCategoryReadDto>();
-            CreateMap<SubGroup, SubGroupReadDto>();
-            CreateMap<WebSetting, WebSettingReadDto>();
+            CreateMap<Association, AssociationDto>();
+            CreateMap<Category, CategoryDto>();
+            CreateMap<Criteria, CriteriaDto>();
+            CreateMap<Edition, EditionDto>();
+            CreateMap<Group, GroupDto>();
+            CreateMap<JurySlot, JurySlotDto>();
+            CreateMap<Patrol, PatrolDto>();
+            CreateMap<Score, ScoreDto>();
+            CreateMap<Scout, ScoutDto>();
+            CreateMap<SignupCode, SignupCodeDto>();
+            CreateMap<SubCategory, SubCategoryDto>();
+            CreateMap<SubGroup, SubGroupDto>();
+            CreateMap<WebSetting, WebSettingDto>();
         }
     }
 }
