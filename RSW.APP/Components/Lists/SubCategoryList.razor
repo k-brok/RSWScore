@@ -1,19 +1,24 @@
 ﻿@inject DialogService DialogService
 @inject NotificationService NotificationService
+@inject ISubCategoryService subcategoryService
+@inject ICategoryService categoryService
 
-<RadzenDataGrid @ref="dataGrid" Data="@associations" TItem="AssociationDto" RowSelect="@OnRowSelect" AllowPaging="true" PageSize="10" AllowSorting="true" AllowFiltering="true" FilterMode="FilterMode.Simple" Responsive="true" Style="height: 600px;">
+<RadzenDataGrid @ref="dataGrid" Data="@subcategories" TItem="SubCategoryDto" RowSelect="@OnRowSelect" AllowPaging="true" PageSize="10" AllowSorting="true" AllowFiltering="true" FilterMode="FilterMode.Simple" Responsive="true" Style="height: 600px;">
     <Columns>
-        <RadzenDataGridColumn TItem="AssociationDto" Property="Name" Title="Name" >
-            <EditTemplate Context="association">
+        <RadzenDataGridColumn TItem="SubCategoryDto" Property="Name" Title="Name" >
+            <EditTemplate Context="subcategory">
                 <RadzenFormField Text="Naam" Style="width:100%">
-                    <RadzenTextBox @bind-Value="@association.Name" />
+                    <RadzenTextBox @bind-Value="@subcategory.Name" />
                 </RadzenFormField>
             </EditTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="AssociationDto" Property="Abbreviation" Title="Abbreviation" >
-            <EditTemplate Context="association">
-                <RadzenFormField Text="Afkorting" Style="width:100%">
-                    <RadzenTextBox @bind-Value="@association.Abbreviation" />
+        <RadzenDataGridColumn TItem="SubCategoryDto" Property="CategoryId" Title="Categorie">
+            <Template Context="subcategory">
+                @categoryDtos.FirstOrDefault(C => C.Id == subcategory.CategoryId).Name
+            </Template>
+            <EditTemplate Context="subcategory">
+                <RadzenFormField Text="Sub categorie" Style="width:100%">
+                    <RadzenDropDown Data="@categoryDtos" @bind-Value=subcategory.CategoryId ValueProperty=@nameof(CategoryDto.Id) TextProperty=@nameof(CategoryDto.Name) />
                 </RadzenFormField>
             </EditTemplate>
         </RadzenDataGridColumn>
@@ -22,15 +27,15 @@
                 <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1 rz-display-none rz-display-sm-inline" Click="@((args) => SaveAll())" aria-label="SaveAll" />
                 <RadzenButton Icon="add_circle" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-me-4 rz-display-none rz-display-sm-inline" Shade="Shade.Lighter" Click="@(() => Insert())" />
             </HeaderTemplate>
-            <Template Context="association">
-                <RadzenButton Icon="add_circle" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat" Size="ButtonSize.Medium" Shade="Shade.Lighter" Click="@(() => InsertAfterRow(association))" />
-                <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Click="@(args => EditRow(association))" @onclick:stopPropagation="true" />
-                <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" Size="ButtonSize.Medium" Shade="Shade.Lighter" class="rz-my-1 rz-ms-1 rz-me-4" Click="@(args => DeleteRow(association))" @onclick:stopPropagation="true" />
+            <Template Context="subcategory">
+                <RadzenButton Icon="add_circle" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat" Size="ButtonSize.Medium" Shade="Shade.Lighter" Click="@(() => InsertAfterRow(subcategory))" />
+                <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Click="@(args => EditRow(subcategory))" @onclick:stopPropagation="true" />
+                <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" Size="ButtonSize.Medium" Shade="Shade.Lighter" class="rz-my-1 rz-ms-1 rz-me-4" Click="@(args => DeleteRow(subcategory))" @onclick:stopPropagation="true" />
             </Template>
-            <EditTemplate Context="association">
-                <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat" Size="ButtonSize.Medium" Click="@((args) => SaveRow(association))" aria-label="Save" />
-                <RadzenButton Icon="close" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Click="@((args) => CancelEdit(association))" aria-label="Cancel" />
-                <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" Size="ButtonSize.Medium" Shade="Shade.Lighter" class="rz-my-1 rz-ms-1 rz-me-4" Click="@(args => DeleteRow(association))" aria-label="Delete" />
+            <EditTemplate Context="subcategory">
+                <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat" Size="ButtonSize.Medium" Click="@((args) => SaveRow(subcategory))" aria-label="Save" />
+                <RadzenButton Icon="close" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Click="@((args) => CancelEdit(subcategory))" aria-label="Cancel" />
+                <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" Size="ButtonSize.Medium" Shade="Shade.Lighter" class="rz-my-1 rz-ms-1 rz-me-4" Click="@(args => DeleteRow(subcategory))" aria-label="Delete" />
             </EditTemplate>
         </RadzenDataGridColumn>
     </Columns>
@@ -38,38 +43,39 @@
 
 @code {
     [Parameter]
-    public List<AssociationDto> associations { get; set; } = new List<AssociationDto>();
-    public List<AssociationDto> NewAssociations { get; set; } = new List<AssociationDto>();
-    public EventCallback<AssociationDto> OnAssociationDtoSelected { get; set; }
-    private RadzenDataGrid<AssociationDto> dataGrid;
-
-    [Inject]
-    private IAssociationService associationService { get; set; } = default!;
-
-    private async Task OnRowSelect(AssociationDto association)
+    public List<SubCategoryDto> subcategories { get; set; } = new List<SubCategoryDto>();
+    public EventCallback<SubCategoryDto> OnSubCategoryDtoSelected { get; set; }
+    private RadzenDataGrid<SubCategoryDto> dataGrid;
+    private IEnumerable<CategoryDto> categoryDtos {get; set;} = new List<CategoryDto>();
+    protected override async Task OnInitializedAsync()
     {
-        if (OnAssociationDtoSelected.HasDelegate)
+        categoryDtos = await categoryService.GetAllAsync();
+        await base.OnInitializedAsync();
+    }
+    private async Task OnRowSelect(SubCategoryDto subcategory)
+    {
+        if (OnSubCategoryDtoSelected.HasDelegate)
         {
-            await OnAssociationDtoSelected.InvokeAsync(association);
+            await OnSubCategoryDtoSelected.InvokeAsync(subcategory);
         }
     }
     void Insert()
     {
-        var NewAssociation = new AssociationDto();
-        dataGrid.InsertRow(NewAssociation);
+        var NewSubCategory = new SubCategoryDto();
+        dataGrid.InsertRow(NewSubCategory);
     }
-    void InsertAfterRow(AssociationDto association)
+    void InsertAfterRow(SubCategoryDto subcategory)
     {
-        var NewAssociation = new AssociationDto();
-        dataGrid.InsertAfterRow(NewAssociation, association);
+        var NewSubCategory = new SubCategoryDto();
+        dataGrid.InsertAfterRow(NewSubCategory, subcategory);
     }
-    void EditRow(AssociationDto association)
+    void EditRow(SubCategoryDto subcategory)
     {
-        dataGrid.EditRow(association);
+        dataGrid.EditRow(subcategory);
     }
-    async Task DeleteRow(AssociationDto association)
+    async Task DeleteRow(SubCategoryDto subcategory)
     {
-        var ConfirmDelete = await DialogService.Confirm($"Weet je zeker dat je \"{association.Name}\" wilt verwijderen?", "Verwijderen", new ConfirmOptions() { OkButtonText = "Ja", CancelButtonText = "Nee" });
+        var ConfirmDelete = await DialogService.Confirm($"Weet je zeker dat je \"{subcategory.Name}\" wilt verwijderen?", "Verwijderen", new ConfirmOptions() { OkButtonText = "Ja", CancelButtonText = "Nee" });
         if (ConfirmDelete == null)
         {
             NotificationService.Notify(new NotificationMessage{ Summary="Er is iets mis gegaan! neem contact op met een admin." });
@@ -78,66 +84,66 @@
 
         if ((bool)ConfirmDelete)
         {
-            if (association.Id != Guid.Empty)
+            if (subcategory.Id != Guid.Empty)
             {
-                await associationService.DeleteAsync(association.Id);
+                await subcategoryService.DeleteAsync(subcategory.Id);
             }
-            associations.Remove(association);
+            subcategories.Remove(subcategory);
             await dataGrid.Reload();
         }
     }
-    async Task SaveRow(AssociationDto association)
+    async Task SaveRow(SubCategoryDto subcategory)
     {
-        if (association.Id == Guid.Empty)
+        if (subcategory.Id == Guid.Empty)
         {
-            await associationService.CreateAsync(new AssociationCreateDto
+            await subcategoryService.CreateAsync(new SubCategoryCreateDto
             {
-                Name = association.Name,
-                Abbreviation = association.Abbreviation
+                Name = subcategory.Name,
+                CategoryId = subcategory.CategoryId
             });
         }
         else
         {
-            await associationService.UpdateAsync(association.Id, association);
+            await subcategoryService.UpdateAsync(subcategory.Id, subcategory);
         }
-        await dataGrid.UpdateRow(association);
+        await dataGrid.UpdateRow(subcategory);
     }
     async Task SaveAll()
     {
-        foreach (AssociationDto association in associations)
+        foreach (SubCategoryDto subcategory in subcategories)
         {
-            if (association.Id == Guid.Empty)
+            if (subcategory.Id == Guid.Empty)
             {
-                await associationService.CreateAsync(new AssociationCreateDto
+                await subcategoryService.CreateAsync(new SubCategoryCreateDto
                     {
-                        Name = association.Name,
-                        Abbreviation = association.Abbreviation
+                        Name = subcategory.Name,
+                        CategoryId = subcategory.CategoryId
                     });
             }
             else
             {
-                await associationService.UpdateAsync(association.Id, association);
+                await subcategoryService.UpdateAsync(subcategory.Id, subcategory);
             }
-            await dataGrid.UpdateRow(association);
+            await dataGrid.UpdateRow(subcategory);
         }
     }
-    async Task CancelEdit(AssociationDto association)
+    async Task CancelEdit(SubCategoryDto subcategory)
     {
-        if (association.Id == Guid.Empty)
+        if (subcategory.Id == Guid.Empty)
         {
-            associations.Remove(association);
+            subcategories.Remove(subcategory);
             await dataGrid.Reload();
         }
         else
         {
-            var OldAssociation = await associationService.GetByIdAsync(association.Id);
-            if (OldAssociation != null)
+            var OldSubCategory = await subcategoryService.GetByIdAsync(subcategory.Id);
+            if (OldSubCategory != null)
             {
-                association.Name = OldAssociation.Name;
-                association.Abbreviation = OldAssociation.Abbreviation;
+                subcategory.Name = OldSubCategory.Name;
+                subcategory.CategoryId = OldSubCategory.CategoryId;
                 
-                await dataGrid.UpdateRow(association);
-                dataGrid.CancelEditRow(association);
+                await dataGrid.UpdateRow(subcategory);
+                dataGrid.CancelEditRow(subcategory);
             }
         }
     }
