@@ -1,0 +1,23 @@
+﻿@page "/admin/criterias"
+
+@inject ICriteriaService CriteriaService
+
+<h3>Criterias</h3>
+
+@if (criterias == null)
+{
+    <RadzenProgressBarCircular Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
+}
+else
+{
+    <CriteriaList criterias="@criterias.ToList()" />
+}
+
+@code {
+    public IEnumerable<CriteriaDto>? criterias { get; set; }
+    protected override async Task OnInitializedAsync()
+    {
+        criterias = await CriteriaService.GetAllAsync();
+        await base.OnInitializedAsync();
+    }
+}
