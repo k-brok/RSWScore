@@ -1,19 +1,26 @@
 ﻿@inject DialogService DialogService
 @inject NotificationService NotificationService
 
-<RadzenDataGrid @ref="dataGrid" Data="@associations" TItem="AssociationDto" RowSelect="@OnRowSelect" AllowPaging="true" PageSize="10" AllowSorting="true" AllowFiltering="true" FilterMode="FilterMode.Simple" Responsive="true" Style="height: 600px;">
+<RadzenDataGrid @ref="dataGrid" Data="@editions" TItem="EditionDto" RowSelect="@OnRowSelect" AllowPaging="true" PageSize="10" AllowSorting="true" AllowFiltering="true" FilterMode="FilterMode.Simple" Responsive="true" Style="height: 600px;">
     <Columns>
-        <RadzenDataGridColumn TItem="AssociationDto" Property="Name" Title="Name" >
-            <EditTemplate Context="association">
-                <RadzenFormField Text="Naam" Style="width:100%">
-                    <RadzenTextBox @bind-Value="@association.Name" />
+        <RadzenDataGridColumn TItem="EditionDto" Property="RSWStartDate" Title="RSW datum" >
+            <EditTemplate Context="edition">
+                <RadzenFormField Text="RSW datum" Style="width:100%">
+                    <RadzenDatePicker @bind-Value="@edition.RSWStartDate" />
                 </RadzenFormField>
             </EditTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="AssociationDto" Property="Abbreviation" Title="Abbreviation" >
-            <EditTemplate Context="association">
-                <RadzenFormField Text="Afkorting" Style="width:100%">
-                    <RadzenTextBox @bind-Value="@association.Abbreviation" />
+        <RadzenDataGridColumn TItem="EditionDto" Property="LSWStartDate" Title="LSW datum" >
+            <EditTemplate Context="edition">
+                <RadzenFormField Text="LSW Datum" Style="width:100%">
+                    <RadzenDatePicker @bind-Value="@edition.LSWStartDate" />
+                </RadzenFormField>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="EditionDto" Property="Theme" Title="Thema" >
+            <EditTemplate Context="edition">
+                <RadzenFormField Text="Thema" Style="width:100%">
+                    <RadzenTextBox @bind-Value="@edition.Theme" />
                 </RadzenFormField>
             </EditTemplate>
         </RadzenDataGridColumn>
@@ -22,15 +29,15 @@
                 <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1 rz-display-none rz-display-sm-inline" Click="@((args) => SaveAll())" aria-label="SaveAll" />
                 <RadzenButton Icon="add_circle" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-me-4 rz-display-none rz-display-sm-inline" Shade="Shade.Lighter" Click="@(() => Insert())" />
             </HeaderTemplate>
-            <Template Context="association">
-                <RadzenButton Icon="add_circle" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat" Size="ButtonSize.Medium" Shade="Shade.Lighter" Click="@(() => InsertAfterRow(association))" />
-                <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Click="@(args => EditRow(association))" @onclick:stopPropagation="true" />
-                <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" Size="ButtonSize.Medium" Shade="Shade.Lighter" class="rz-my-1 rz-ms-1 rz-me-4" Click="@(args => DeleteRow(association))" @onclick:stopPropagation="true" />
+            <Template Context="edition">
+                <RadzenButton Icon="add_circle" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat" Size="ButtonSize.Medium" Shade="Shade.Lighter" Click="@(() => InsertAfterRow(edition))" />
+                <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Click="@(args => EditRow(edition))" @onclick:stopPropagation="true" />
+                <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" Size="ButtonSize.Medium" Shade="Shade.Lighter" class="rz-my-1 rz-ms-1 rz-me-4" Click="@(args => DeleteRow(edition))" @onclick:stopPropagation="true" />
             </Template>
-            <EditTemplate Context="association">
-                <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat" Size="ButtonSize.Medium" Click="@((args) => SaveRow(association))" aria-label="Save" />
-                <RadzenButton Icon="close" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Click="@((args) => CancelEdit(association))" aria-label="Cancel" />
-                <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" Size="ButtonSize.Medium" Shade="Shade.Lighter" class="rz-my-1 rz-ms-1 rz-me-4" Click="@(args => DeleteRow(association))" aria-label="Delete" />
+            <EditTemplate Context="edition">
+                <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat" Size="ButtonSize.Medium" Click="@((args) => SaveRow(edition))" aria-label="Save" />
+                <RadzenButton Icon="close" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Click="@((args) => CancelEdit(edition))" aria-label="Cancel" />
+                <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" Size="ButtonSize.Medium" Shade="Shade.Lighter" class="rz-my-1 rz-ms-1 rz-me-4" Click="@(args => DeleteRow(edition))" aria-label="Delete" />
             </EditTemplate>
         </RadzenDataGridColumn>
     </Columns>
@@ -38,38 +45,38 @@
 
 @code {
     [Parameter]
-    public List<AssociationDto> associations { get; set; } = new List<AssociationDto>();
-    public List<AssociationDto> NewAssociations { get; set; } = new List<AssociationDto>();
-    public EventCallback<AssociationDto> OnAssociationDtoSelected { get; set; }
-    private RadzenDataGrid<AssociationDto> dataGrid;
+    public List<EditionDto> editions { get; set; } = new List<EditionDto>();
+    public List<EditionDto> NewEditions { get; set; } = new List<EditionDto>();
+    public EventCallback<EditionDto> OnEditionDtoSelected { get; set; }
+    private RadzenDataGrid<EditionDto> dataGrid;
 
     [Inject]
-    private IAssociationService associationService { get; set; } = default!;
+    private IEditionService editionService { get; set; } = default!;
 
-    private async Task OnRowSelect(AssociationDto association)
+    private async Task OnRowSelect(EditionDto edition)
     {
-        if (OnAssociationDtoSelected.HasDelegate)
+        if (OnEditionDtoSelected.HasDelegate)
         {
-            await OnAssociationDtoSelected.InvokeAsync(association);
+            await OnEditionDtoSelected.InvokeAsync(edition);
         }
     }
     void Insert()
     {
-        var NewAssociation = new AssociationDto();
-        dataGrid.InsertRow(NewAssociation);
+        var NewEdition = new EditionDto();
+        dataGrid.InsertRow(NewEdition);
     }
-    void InsertAfterRow(AssociationDto association)
+    void InsertAfterRow(EditionDto edition)
     {
-        var NewAssociation = new AssociationDto();
-        dataGrid.InsertAfterRow(NewAssociation, association);
+        var NewEdition = new EditionDto();
+        dataGrid.InsertAfterRow(NewEdition, edition);
     }
-    void EditRow(AssociationDto association)
+    void EditRow(EditionDto edition)
     {
-        dataGrid.EditRow(association);
+        dataGrid.EditRow(edition);
     }
-    async Task DeleteRow(AssociationDto association)
+    async Task DeleteRow(EditionDto edition)
     {
-        var ConfirmDelete = await DialogService.Confirm($"Weet je zeker dat je \"{association.Name}\" wilt verwijderen?", "Verwijderen", new ConfirmOptions() { OkButtonText = "Ja", CancelButtonText = "Nee" });
+        var ConfirmDelete = await DialogService.Confirm($"Weet je zeker dat je \"{edition.Theme}\" wilt verwijderen?", "Verwijderen", new ConfirmOptions() { OkButtonText = "Ja", CancelButtonText = "Nee" });
         if (ConfirmDelete == null)
         {
             NotificationService.Notify(new NotificationMessage{ Summary="Er is iets mis gegaan! neem contact op met een admin." });
@@ -78,66 +85,69 @@
 
         if ((bool)ConfirmDelete)
         {
-            if (association.Id != Guid.Empty)
+            if (edition.Id != Guid.Empty)
             {
-                await associationService.DeleteAsync(association.Id);
+                await editionService.DeleteAsync(edition.Id);
             }
-            associations.Remove(association);
+            editions.Remove(edition);
             await dataGrid.Reload();
         }
     }
-    async Task SaveRow(AssociationDto association)
+    async Task SaveRow(EditionDto edition)
     {
-        if (association.Id == Guid.Empty)
+        if (edition.Id == Guid.Empty)
         {
-            await associationService.CreateAsync(new AssociationCreateDto
+            await editionService.CreateAsync(new EditionCreateDto
             {
-                Name = association.Name,
-                Abbreviation = association.Abbreviation
+                RSWStartDate = edition.RSWStartDate,
+                LSWStartDate = edition.LSWStartDate,
+                Theme = edition.Theme
             });
         }
         else
         {
-            await associationService.UpdateAsync(association.Id, association);
+            await editionService.UpdateAsync(edition.Id, edition);
         }
-        await dataGrid.UpdateRow(association);
+        await dataGrid.UpdateRow(edition);
     }
     async Task SaveAll()
     {
-        foreach (AssociationDto association in associations)
+        foreach (EditionDto edition in editions)
         {
-            if (association.Id == Guid.Empty)
+            if (edition.Id == Guid.Empty)
             {
-                await associationService.CreateAsync(new AssociationCreateDto
+                await editionService.CreateAsync(new EditionCreateDto
                     {
-                        Name = association.Name,
-                        Abbreviation = association.Abbreviation
+                        RSWStartDate = edition.RSWStartDate,
+                        LSWStartDate = edition.LSWStartDate,
+                        Theme = edition.Theme
                     });
             }
             else
             {
-                await associationService.UpdateAsync(association.Id, association);
+                await editionService.UpdateAsync(edition.Id, edition);
             }
-            await dataGrid.UpdateRow(association);
+            await dataGrid.UpdateRow(edition);
         }
     }
-    async Task CancelEdit(AssociationDto association)
+    async Task CancelEdit(EditionDto edition)
     {
-        if (association.Id == Guid.Empty)
+        if (edition.Id == Guid.Empty)
         {
-            associations.Remove(association);
+            editions.Remove(edition);
             await dataGrid.Reload();
         }
         else
         {
-            var OldAssociation = await associationService.GetByIdAsync(association.Id);
-            if (OldAssociation != null)
+            var OldEdition = await editionService.GetByIdAsync(edition.Id);
+            if (OldEdition != null)
             {
-                association.Name = OldAssociation.Name;
-                association.Abbreviation = OldAssociation.Abbreviation;
+                edition.RSWStartDate = OldEdition.RSWStartDate;
+                edition.LSWStartDate = OldEdition.LSWStartDate;
+                edition.Theme = OldEdition.Theme;
                 
-                await dataGrid.UpdateRow(association);
-                dataGrid.CancelEditRow(association);
+                await dataGrid.UpdateRow(edition);
+                dataGrid.CancelEditRow(edition);
             }
         }
     }
