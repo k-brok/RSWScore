@@ -1,7 +1,7 @@
 ﻿@inject DialogService DialogService
 @inject NotificationService NotificationService
 
-<RadzenDataGrid @ref="dataGrid" Data="@categorys" TItem="CategoryDto" RowSelect="@OnRowSelect" AllowPaging="true" PageSize="10" AllowSorting="true" AllowFiltering="true" FilterMode="FilterMode.Simple" Responsive="true" Style="height: 600px;">
+<RadzenDataGrid @ref="dataGrid" Data="@categories" TItem="CategoryDto" RowSelect="@OnRowSelect" AllowPaging="true" PageSize="10" AllowSorting="true" AllowFiltering="true" FilterMode="FilterMode.Simple" Responsive="true" Style="height: 600px;">
     <Columns>
         <RadzenDataGridColumn TItem="CategoryDto" Property="Name" Title="Naam" >
             <EditTemplate Context="category">
@@ -42,16 +42,16 @@
 
 @code {
     [Parameter]
-    public List<CategoryDto> categorys { get; set; } = new List<CategoryDto>();
+    public List<CategoryDto> categories { get; set; } = new List<CategoryDto>();
     public EventCallback<CategoryDto> OnCategoryDtoSelected { get; set; }
     private RadzenDataGrid<CategoryDto> dataGrid;
 
     private int WeightCount {get{
-            if (categorys == null || categorys.Count == 0)
+            if (categories == null || categories.Count == 0)
             {
                 return 0;
             }
-            return categorys.Sum(c => c.Weight);
+            return categories.Sum(c => c.Weight);
         }
     }
 
@@ -68,13 +68,13 @@
     void Insert()
     {
         var NewCategory = new CategoryDto();
-        categorys.Add(NewCategory);
+        categories.Add(NewCategory);
         dataGrid.InsertRow(NewCategory);
     }
     void InsertAfterRow(CategoryDto category)
     {
         var NewCategory = new CategoryDto();
-        categorys.Add(NewCategory);
+        categories.Add(NewCategory);
         dataGrid.InsertAfterRow(NewCategory, category);
     }
     void EditRow(CategoryDto category)
@@ -96,7 +96,7 @@
             {
                 await categoryService.DeleteAsync(category.Id);
             }
-            categorys.Remove(category);
+            categories.Remove(category);
             await dataGrid.Reload();
         }
     }
@@ -118,7 +118,7 @@
     }
     async Task SaveAll()
     {
-        foreach (CategoryDto category in categorys)
+        foreach (CategoryDto category in categories)
         {
             if (category.Id == Guid.Empty)
             {
@@ -139,7 +139,7 @@
     {
         if (category.Id == Guid.Empty)
         {
-            categorys.Remove(category);
+            categories.Remove(category);
             await dataGrid.Reload();
         }
         else
