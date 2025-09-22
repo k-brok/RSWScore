@@ -26,14 +26,10 @@
                 </RadzenFormField>
             </EditTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="CriteriaDto" Property="MaxScore" Title="Maximale score">
-            <EditTemplate Context="criteria">
-                <RadzenFormField Text="Maximale score" Style="width:100%">
-                    <RadzenNumeric @bind-Value="@criteria.MaxScore" />
-                </RadzenFormField>
-            </EditTemplate>
-        </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="CriteriaDto" Property="MaxScore" Title="Sub Categorie">
+        <RadzenDataGridColumn TItem="CriteriaDto" Property="SubCategoryId" Title="Sub Categorie">
+            <Template Context="criteria">
+                @subCategoryDtos.FirstOrDefault(C => C.Id == criteria.SubCategoryId).Name
+            </Template>
             <EditTemplate Context="criteria">
                 <RadzenFormField Text="Sub categorie" Style="width:100%">
                     <RadzenDropDown Data="@subCategoryDtos" @bind-Value=criteria.SubCategoryId ValueProperty=@nameof(SubCategoryDto.Id) TextProperty=@nameof(SubCategoryDto.Name) />
