@@ -1,23 +1,23 @@
-﻿@page "/admin/categorys"
+﻿@page "/admin/categories"
 
 @inject ICategoryService CategoryService
 
 <h3>Categorys</h3>
 
-@if (categorys == null)
+@if (categories == null)
 {
     <RadzenProgressBarCircular Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
 }
 else
 {
-    <CategoryList categorys="@categorys.ToList()" />
+    <CategoryList categories="@categories.ToList()" />
 }
 
 @code {
-    public IEnumerable<CategoryDto>? categorys { get; set; }
+    public IEnumerable<CategoryDto>? categories { get; set; }
     protected override async Task OnInitializedAsync()
     {
-        categorys = await CategoryService.GetAllAsync();
+        categories = await CategoryService.GetAllAsync();
         await base.OnInitializedAsync();
     }
 }
