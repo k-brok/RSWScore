@@ -1,0 +1,158 @@
+﻿@inject DialogService DialogService
+@inject NotificationService NotificationService
+
+<RadzenDataGrid @ref="dataGrid" Data="@categorys" TItem="CategoryDto" RowSelect="@OnRowSelect" AllowPaging="true" PageSize="10" AllowSorting="true" AllowFiltering="true" FilterMode="FilterMode.Simple" Responsive="true" Style="height: 600px;">
+    <Columns>
+        <RadzenDataGridColumn TItem="CategoryDto" Property="Name" Title="Naam" >
+            <EditTemplate Context="category">
+                <RadzenFormField Text="Naam" Style="width:100%">
+                    <RadzenTextBox @bind-Value="@category.Name" />
+                </RadzenFormField>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="CategoryDto" Property="Weight" Title="Gewicht">
+            <EditTemplate Context="category">
+                <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Center">
+                    @category.Weight
+                    @if ((100 - (WeightCount - category.Weight)) != 0)
+                    {
+                        <RadzenSlider Min="0" Max=@(100 - (WeightCount - category.Weight)) @bind-Value="@category.Weight" class="rz-me-5" Style="width:90%;" />
+                    }
+                </RadzenStack>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn Context="order" Filterable="false" Sortable="false" TextAlign="TextAlign.Right" Frozen="true" Width="10rem" FrozenPosition="FrozenColumnPosition.Right">
+            <HeaderTemplate>
+                <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1 rz-display-none rz-display-sm-inline" Click="@((args) => SaveAll())" aria-label="SaveAll" />
+                <RadzenButton Icon="add_circle" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-me-4 rz-display-none rz-display-sm-inline" Shade="Shade.Lighter" Click="@(() => Insert())" />
+            </HeaderTemplate>
+            <Template Context="category">
+                <RadzenButton Icon="add_circle" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat" Size="ButtonSize.Medium" Shade="Shade.Lighter" Click="@(() => InsertAfterRow(category))" />
+                <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Click="@(args => EditRow(category))" @onclick:stopPropagation="true" />
+                <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" Size="ButtonSize.Medium" Shade="Shade.Lighter" class="rz-my-1 rz-ms-1 rz-me-4" Click="@(args => DeleteRow(category))" @onclick:stopPropagation="true" />
+            </Template>
+            <EditTemplate Context="category">
+                <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat" Size="ButtonSize.Medium" Click="@((args) => SaveRow(category))" aria-label="Save" />
+                <RadzenButton Icon="close" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Click="@((args) => CancelEdit(category))" aria-label="Cancel" />
+                <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" Size="ButtonSize.Medium" Shade="Shade.Lighter" class="rz-my-1 rz-ms-1 rz-me-4" Click="@(args => DeleteRow(category))" aria-label="Delete" />
+            </EditTemplate>
+        </RadzenDataGridColumn>
+    </Columns>
+</RadzenDataGrid>
+
+@code {
+    [Parameter]
+    public List<CategoryDto> categorys { get; set; } = new List<CategoryDto>();
+    public EventCallback<CategoryDto> OnCategoryDtoSelected { get; set; }
+    private RadzenDataGrid<CategoryDto> dataGrid;
+
+    private int WeightCount {get{
+            if (categorys == null || categorys.Count == 0)
+            {
+                return 0;
+            }
+            return categorys.Sum(c => c.Weight);
+        }
+    }
+
+    [Inject]
+    private ICategoryService categoryService { get; set; } = default!;
+
+    private async Task OnRowSelect(CategoryDto category)
+    {
+        if (OnCategoryDtoSelected.HasDelegate)
+        {
+            await OnCategoryDtoSelected.InvokeAsync(category);
+        }
+    }
+    void Insert()
+    {
+        var NewCategory = new CategoryDto();
+        categorys.Add(NewCategory);
+        dataGrid.InsertRow(NewCategory);
+    }
+    void InsertAfterRow(CategoryDto category)
+    {
+        var NewCategory = new CategoryDto();
+        categorys.Add(NewCategory);
+        dataGrid.InsertAfterRow(NewCategory, category);
+    }
+    void EditRow(CategoryDto category)
+    {
+        dataGrid.EditRow(category);
+    }
+    async Task DeleteRow(CategoryDto category)
+    {
+        var ConfirmDelete = await DialogService.Confirm($"Weet je zeker dat je \"{category.Name}\" wilt verwijderen?", "Verwijderen", new ConfirmOptions() { OkButtonText = "Ja", CancelButtonText = "Nee" });
+        if (ConfirmDelete == null)
+        {
+            NotificationService.Notify(new NotificationMessage{ Summary="Er is iets mis gegaan! neem contact op met een admin." });
+            return;
+        }
+
+        if ((bool)ConfirmDelete)
+        {
+            if (category.Id != Guid.Empty)
+            {
+                await categoryService.DeleteAsync(category.Id);
+            }
+            categorys.Remove(category);
+            await dataGrid.Reload();
+        }
+    }
+    async Task SaveRow(CategoryDto category)
+    {
+        if (category.Id == Guid.Empty)
+        {
+            await categoryService.CreateAsync(new CategoryCreateDto
+            {
+                Name = category.Name,
+                Weight = category.Weight
+            });
+        }
+        else
+        {
+            await categoryService.UpdateAsync(category.Id, category);
+        }
+        await dataGrid.UpdateRow(category);
+    }
+    async Task SaveAll()
+    {
+        foreach (CategoryDto category in categorys)
+        {
+            if (category.Id == Guid.Empty)
+            {
+                await categoryService.CreateAsync(new CategoryCreateDto
+                    {
+                        Name = category.Name,
+                        Weight = category.Weight
+                    });
+            }
+            else
+            {
+                await categoryService.UpdateAsync(category.Id, category);
+            }
+            await dataGrid.UpdateRow(category);
+        }
+    }
+    async Task CancelEdit(CategoryDto category)
+    {
+        if (category.Id == Guid.Empty)
+        {
+            categorys.Remove(category);
+            await dataGrid.Reload();
+        }
+        else
+        {
+            var OldCategory = await categoryService.GetByIdAsync(category.Id);
+            if (OldCategory != null)
+            {
+                category.Name = OldCategory.Name;
+                category.Weight = OldCategory.Weight;
+                
+                await dataGrid.UpdateRow(category);
+                dataGrid.CancelEditRow(category);
+            }
+        }
+    }
+}
