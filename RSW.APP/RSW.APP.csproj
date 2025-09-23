@@ -10,6 +10,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.17" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="8.0.17" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="8.*" />
     <PackageReference Include="Radzen.Blazor" Version="*" />
     <PackageReference Include="AutoMapper" Version="15.*" />
   </ItemGroup>
@@ -19,5 +20,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\RSW.Shared\RSW.Shared.csproj" />
+    <ProjectReference Include="..\Chunkk.JWT.Client\Chunkk.JWT.Client.csproj" />
   </ItemGroup>
 </Project>

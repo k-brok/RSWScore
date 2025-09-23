@@ -4,6 +4,7 @@ using Radzen;
 using RSW.APP.Services;
 using RSW.Shared.Interfaces;
 using RSW.Shared.Mapper;
+using Chunkk.JWT.Client;
 
 namespace RSW.APP;
 
@@ -36,6 +37,8 @@ public class Program
         builder.Services.AddScoped<IWebSettingService, WebSettingService>();
 
         var apiBaseUrl = builder.Configuration["ApiBaseUrl"];
+        builder.Services.AddChunkkJwt(new Uri(apiBaseUrl));
+
         builder.Services.AddScoped(sp =>
         {
             var client = new HttpClient()

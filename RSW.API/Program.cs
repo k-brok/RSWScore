@@ -6,12 +6,15 @@ using RSW.Shared.Interfaces;
 using AutoMapper;
 using Microsoft.Extensions.DependencyInjection;
 using RSW.Shared.Mapper;
+using Chunkk.JWT.Server;
+using RSW.Shared.Entities;
+using Microsoft.AspNetCore.Identity;
 
 namespace RSW.API;
 
 public class Program
 {
-    public static void Main(string[] args)
+    public static async Task Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
 
@@ -20,6 +23,10 @@ public class Program
                 .UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"))
                 .LogTo(Console.WriteLine, LogLevel.Information)
         );
+
+        builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
+            .AddEntityFrameworkStores<AppDbContext>()
+            .AddDefaultTokenProviders();
 
         builder.Services.AddAutoMapper(cfg => { }, typeof(AutoMapperProfile));
 
@@ -36,6 +43,8 @@ public class Program
         builder.Services.AddScoped<ISubCategoryService, SubCategoryService>();
         builder.Services.AddScoped<ISubGroupService, SubGroupService>();
         builder.Services.AddScoped<IWebSettingService, WebSettingService>();
+
+        builder.Services.AddChunkkJwt<ApplicationUser>(builder.Configuration);
 
         builder.Services.AddAuthorization();
 
@@ -66,6 +75,7 @@ public class Program
         app.UseHttpsRedirection();
 
         app.UseCors("AllowBlazorClient");
+        app.UseAuthentication();
         app.UseAuthorization();
 
         app.MapAssociationEndpoints();
@@ -81,6 +91,12 @@ public class Program
         app.MapSubCategoryEndpoints();
         app.MapSubGroupEndpoints();
         app.MapWebSettingEndpoints();
+
+        var scope = app.Services.CreateScope();
+        var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+        await RolesService.EnsureDefaultRolesAsync(roleManager);
+
+        app.MapAccountEndpoints<ApplicationUser>();
 
         app.MapHub<UpdatesHub>("/hubs/updates");
 
