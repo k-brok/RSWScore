@@ -21,7 +21,7 @@ else
             </RadzenDataGridColumn>
             <RadzenDataGridColumn TItem="PatrolDto" Property="GroupId" Title="Groep">
                 <Template Context="patrol">
-                    @groupDtos.FirstOrDefault(C => C.Id == patrol.GroupId).Name
+                    @(groupDtos.FirstOrDefault(C => C.Id == patrol.GroupId)?.Name ?? "Onbekend")
                 </Template>
                 <EditTemplate Context="patrol">
                     <RadzenFormField Text="Groep" Style="width:100%">
@@ -49,7 +49,7 @@ else
             </RadzenDataGridColumn>
             <RadzenDataGridColumn TItem="PatrolDto" Property="SubgroupId" Title="Sub-kamp">
                 <Template Context="patrol">
-                    @subGroupDtos.FirstOrDefault(C => C.Id == patrol.SubGroupId).Color
+                    @(subGroupDtos.FirstOrDefault(C => C.Id == patrol.SubGroupId)?.Color ?? "Onbekend")
                 </Template>
                 <EditTemplate Context="patrol">
                     <RadzenFormField Text="sub-kamp" Style="width:100%">
