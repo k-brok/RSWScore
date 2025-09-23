@@ -1,0 +1,23 @@
+﻿@page "/admin/signupcodes"
+
+@inject ISignupCodeService SignupCodeService
+
+<h3>SignupCodes</h3>
+
+@if (signupcodes == null)
+{
+    <RadzenProgressBarCircular Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
+}
+else
+{
+    <SignupCodeList signupcodes="@signupcodes.ToList()" />
+}
+
+@code {
+    public IEnumerable<SignupCodeDto>? signupcodes { get; set; }
+    protected override async Task OnInitializedAsync()
+    {
+        signupcodes = await SignupCodeService.GetAllAsync();
+        await base.OnInitializedAsync();
+    }
+}

@@ -1,19 +1,27 @@
 ﻿@inject DialogService DialogService
 @inject NotificationService NotificationService
+@inject IEditionService editionService
 
-<RadzenDataGrid @ref="dataGrid" Data="@associations" TItem="AssociationDto" RowSelect="@OnRowSelect" AllowPaging="true" PageSize="10" AllowSorting="true" AllowFiltering="true" FilterMode="FilterMode.Simple" Responsive="true" Style="height: 600px;">
+<RadzenDataGrid @ref="dataGrid" Data="@subgroups" TItem="SubGroupDto" RowSelect="@OnRowSelect" AllowPaging="true" PageSize="10" AllowSorting="true" AllowFiltering="true" FilterMode="FilterMode.Simple" Responsive="true" Style="height: 600px;">
     <Columns>
-        <RadzenDataGridColumn TItem="AssociationDto" Property="Name" Title="Name" >
-            <EditTemplate Context="association">
-                <RadzenFormField Text="Naam" Style="width:100%">
-                    <RadzenTextBox @bind-Value="@association.Name" />
+        <RadzenDataGridColumn TItem="SubGroupDto" Property="Color" Title="Color" >
+            <EditTemplate Context="subgroup">
+                <RadzenFormField Text="Kleur" Style="width:100%">
+                    <RadzenTextBox @bind-Value="@subgroup.Color" />
                 </RadzenFormField>
             </EditTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="AssociationDto" Property="Abbreviation" Title="Abbreviation" >
-            <EditTemplate Context="association">
-                <RadzenFormField Text="Afkorting" Style="width:100%">
-                    <RadzenTextBox @bind-Value="@association.Abbreviation" />
+        <RadzenDataGridColumn TItem="SubGroupDto" Property="EditionId" Title="Editie">
+            <Template Context="subgroup">
+                @editionDtos.FirstOrDefault(C => C.Id == subgroup.EditionId).RSWStartDate.Year
+            </Template>
+            <EditTemplate Context="subgroup">
+                <RadzenFormField Text="Editie" Style="width:100%">
+                    <RadzenDropDown Data="@editionDtos" @bind-Value=subgroup.EditionId ValueProperty=@nameof(EditionDto.Id)>
+                        <Template>
+                            @((context as EditionDto).RSWStartDate.Year)
+                        </Template>
+                    </RadzenDropDown>
                 </RadzenFormField>
             </EditTemplate>
         </RadzenDataGridColumn>
@@ -22,15 +30,15 @@
                 <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1 rz-display-none rz-display-sm-inline" Click="@((args) => SaveAll())" aria-label="SaveAll" />
                 <RadzenButton Icon="add_circle" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-me-4 rz-display-none rz-display-sm-inline" Shade="Shade.Lighter" Click="@(() => Insert())" />
             </HeaderTemplate>
-            <Template Context="association">
-                <RadzenButton Icon="add_circle" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat" Size="ButtonSize.Medium" Shade="Shade.Lighter" Click="@(() => InsertAfterRow(association))" />
-                <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Click="@(args => EditRow(association))" @onclick:stopPropagation="true" />
-                <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" Size="ButtonSize.Medium" Shade="Shade.Lighter" class="rz-my-1 rz-ms-1 rz-me-4" Click="@(args => DeleteRow(association))" @onclick:stopPropagation="true" />
+            <Template Context="subgroup">
+                <RadzenButton Icon="add_circle" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat" Size="ButtonSize.Medium" Shade="Shade.Lighter" Click="@(() => InsertAfterRow(subgroup))" />
+                <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Click="@(args => EditRow(subgroup))" @onclick:stopPropagation="true" />
+                <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" Size="ButtonSize.Medium" Shade="Shade.Lighter" class="rz-my-1 rz-ms-1 rz-me-4" Click="@(args => DeleteRow(subgroup))" @onclick:stopPropagation="true" />
             </Template>
-            <EditTemplate Context="association">
-                <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat" Size="ButtonSize.Medium" Click="@((args) => SaveRow(association))" aria-label="Save" />
-                <RadzenButton Icon="close" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Click="@((args) => CancelEdit(association))" aria-label="Cancel" />
-                <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" Size="ButtonSize.Medium" Shade="Shade.Lighter" class="rz-my-1 rz-ms-1 rz-me-4" Click="@(args => DeleteRow(association))" aria-label="Delete" />
+            <EditTemplate Context="subgroup">
+                <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat" Size="ButtonSize.Medium" Click="@((args) => SaveRow(subgroup))" aria-label="Save" />
+                <RadzenButton Icon="close" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Click="@((args) => CancelEdit(subgroup))" aria-label="Cancel" />
+                <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" Size="ButtonSize.Medium" Shade="Shade.Lighter" class="rz-my-1 rz-ms-1 rz-me-4" Click="@(args => DeleteRow(subgroup))" aria-label="Delete" />
             </EditTemplate>
         </RadzenDataGridColumn>
     </Columns>
@@ -38,38 +46,44 @@
 
 @code {
     [Parameter]
-    public List<AssociationDto> associations { get; set; } = new List<AssociationDto>();
-    public List<AssociationDto> NewAssociations { get; set; } = new List<AssociationDto>();
-    public EventCallback<AssociationDto> OnAssociationDtoSelected { get; set; }
-    private RadzenDataGrid<AssociationDto> dataGrid;
+    public List<SubGroupDto> subgroups { get; set; } = new List<SubGroupDto>();
+    public List<SubGroupDto> NewSubGroups { get; set; } = new List<SubGroupDto>();
+    public EventCallback<SubGroupDto> OnSubGroupDtoSelected { get; set; }
+    private RadzenDataGrid<SubGroupDto> dataGrid;
+    private IEnumerable<EditionDto> editionDtos { get; set; } = new List<EditionDto>();
+
 
     [Inject]
-    private IAssociationService associationService { get; set; } = default!;
-
-    private async Task OnRowSelect(AssociationDto association)
+    private ISubGroupService subgroupService { get; set; } = default!;
+    protected override async Task OnInitializedAsync()
     {
-        if (OnAssociationDtoSelected.HasDelegate)
+        editionDtos = await editionService.GetAllAsync();
+        await base.OnInitializedAsync();
+    }
+    private async Task OnRowSelect(SubGroupDto subgroup)
+    {
+        if (OnSubGroupDtoSelected.HasDelegate)
         {
-            await OnAssociationDtoSelected.InvokeAsync(association);
+            await OnSubGroupDtoSelected.InvokeAsync(subgroup);
         }
     }
     void Insert()
     {
-        var NewAssociation = new AssociationDto();
-        dataGrid.InsertRow(NewAssociation);
+        var NewSubGroup = new SubGroupDto();
+        dataGrid.InsertRow(NewSubGroup);
     }
-    void InsertAfterRow(AssociationDto association)
+    void InsertAfterRow(SubGroupDto subgroup)
     {
-        var NewAssociation = new AssociationDto();
-        dataGrid.InsertAfterRow(NewAssociation, association);
+        var NewSubGroup = new SubGroupDto();
+        dataGrid.InsertAfterRow(NewSubGroup, subgroup);
     }
-    void EditRow(AssociationDto association)
+    void EditRow(SubGroupDto subgroup)
     {
-        dataGrid.EditRow(association);
+        dataGrid.EditRow(subgroup);
     }
-    async Task DeleteRow(AssociationDto association)
+    async Task DeleteRow(SubGroupDto subgroup)
     {
-        var ConfirmDelete = await DialogService.Confirm($"Weet je zeker dat je \"{association.Name}\" wilt verwijderen?", "Verwijderen", new ConfirmOptions() { OkButtonText = "Ja", CancelButtonText = "Nee" });
+        var ConfirmDelete = await DialogService.Confirm($"Weet je zeker dat je \"{subgroup.Color}\" wilt verwijderen?", "Verwijderen", new ConfirmOptions() { OkButtonText = "Ja", CancelButtonText = "Nee" });
         if (ConfirmDelete == null)
         {
             NotificationService.Notify(new NotificationMessage{ Summary="Er is iets mis gegaan! neem contact op met een admin." });
@@ -78,66 +92,66 @@
 
         if ((bool)ConfirmDelete)
         {
-            if (association.Id != Guid.Empty)
+            if (subgroup.Id != Guid.Empty)
             {
-                await associationService.DeleteAsync(association.Id);
+                await subgroupService.DeleteAsync(subgroup.Id);
             }
-            associations.Remove(association);
+            subgroups.Remove(subgroup);
             await dataGrid.Reload();
         }
     }
-    async Task SaveRow(AssociationDto association)
+    async Task SaveRow(SubGroupDto subgroup)
     {
-        if (association.Id == Guid.Empty)
+        if (subgroup.Id == Guid.Empty)
         {
-            await associationService.CreateAsync(new AssociationCreateDto
+            await subgroupService.CreateAsync(new SubGroupCreateDto
             {
-                Name = association.Name,
-                Abbreviation = association.Abbreviation
+                Color = subgroup.Color,
+                EditionId = subgroup.EditionId
             });
         }
         else
         {
-            await associationService.UpdateAsync(association.Id, association);
+            await subgroupService.UpdateAsync(subgroup.Id, subgroup);
         }
-        await dataGrid.UpdateRow(association);
+        await dataGrid.UpdateRow(subgroup);
     }
     async Task SaveAll()
     {
-        foreach (AssociationDto association in associations)
+        foreach (SubGroupDto subgroup in subgroups)
         {
-            if (association.Id == Guid.Empty)
+            if (subgroup.Id == Guid.Empty)
             {
-                await associationService.CreateAsync(new AssociationCreateDto
+                await subgroupService.CreateAsync(new SubGroupCreateDto
                     {
-                        Name = association.Name,
-                        Abbreviation = association.Abbreviation
+                        Color = subgroup.Color,
+                        EditionId = subgroup.EditionId
                     });
             }
             else
             {
-                await associationService.UpdateAsync(association.Id, association);
+                await subgroupService.UpdateAsync(subgroup.Id, subgroup);
             }
-            await dataGrid.UpdateRow(association);
+            await dataGrid.UpdateRow(subgroup);
         }
     }
-    async Task CancelEdit(AssociationDto association)
+    async Task CancelEdit(SubGroupDto subgroup)
     {
-        if (association.Id == Guid.Empty)
+        if (subgroup.Id == Guid.Empty)
         {
-            associations.Remove(association);
+            subgroups.Remove(subgroup);
             await dataGrid.Reload();
         }
         else
         {
-            var OldAssociation = await associationService.GetByIdAsync(association.Id);
-            if (OldAssociation != null)
+            var OldSubGroup = await subgroupService.GetByIdAsync(subgroup.Id);
+            if (OldSubGroup != null)
             {
-                association.Name = OldAssociation.Name;
-                association.Abbreviation = OldAssociation.Abbreviation;
+                subgroup.Color = OldSubGroup.Color;
+                subgroup.EditionId = OldSubGroup.EditionId;
                 
-                await dataGrid.UpdateRow(association);
-                dataGrid.CancelEditRow(association);
+                await dataGrid.UpdateRow(subgroup);
+                dataGrid.CancelEditRow(subgroup);
             }
         }
     }

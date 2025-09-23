@@ -1,0 +1,23 @@
+﻿@page "/admin/subgroups"
+
+@inject ISubGroupService SubGroupService
+
+<h3>SubGroups</h3>
+
+@if (subgroups == null)
+{
+    <RadzenProgressBarCircular Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
+}
+else
+{
+    <SubGroupList subgroups="@subgroups.ToList()" />
+}
+
+@code {
+    public IEnumerable<SubGroupDto>? subgroups { get; set; }
+    protected override async Task OnInitializedAsync()
+    {
+        subgroups = await SubGroupService.GetAllAsync();
+        await base.OnInitializedAsync();
+    }
+}

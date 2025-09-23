@@ -1,75 +1,106 @@
 ﻿@inject DialogService DialogService
 @inject NotificationService NotificationService
-
-<RadzenDataGrid @ref="dataGrid" Data="@associations" TItem="AssociationDto" RowSelect="@OnRowSelect" AllowPaging="true" PageSize="10" AllowSorting="true" AllowFiltering="true" FilterMode="FilterMode.Simple" Responsive="true" Style="height: 600px;">
-    <Columns>
-        <RadzenDataGridColumn TItem="AssociationDto" Property="Name" Title="Name" >
-            <EditTemplate Context="association">
-                <RadzenFormField Text="Naam" Style="width:100%">
-                    <RadzenTextBox @bind-Value="@association.Name" />
-                </RadzenFormField>
-            </EditTemplate>
-        </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="AssociationDto" Property="Abbreviation" Title="Abbreviation" >
-            <EditTemplate Context="association">
-                <RadzenFormField Text="Afkorting" Style="width:100%">
-                    <RadzenTextBox @bind-Value="@association.Abbreviation" />
-                </RadzenFormField>
-            </EditTemplate>
-        </RadzenDataGridColumn>
-        <RadzenDataGridColumn Context="order" Filterable="false" Sortable="false" TextAlign="TextAlign.Right" Frozen="true" Width="10rem" FrozenPosition="FrozenColumnPosition.Right">
-            <HeaderTemplate>
-                <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1 rz-display-none rz-display-sm-inline" Click="@((args) => SaveAll())" aria-label="SaveAll" />
-                <RadzenButton Icon="add_circle" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-me-4 rz-display-none rz-display-sm-inline" Shade="Shade.Lighter" Click="@(() => Insert())" />
-            </HeaderTemplate>
-            <Template Context="association">
-                <RadzenButton Icon="add_circle" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat" Size="ButtonSize.Medium" Shade="Shade.Lighter" Click="@(() => InsertAfterRow(association))" />
-                <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Click="@(args => EditRow(association))" @onclick:stopPropagation="true" />
-                <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" Size="ButtonSize.Medium" Shade="Shade.Lighter" class="rz-my-1 rz-ms-1 rz-me-4" Click="@(args => DeleteRow(association))" @onclick:stopPropagation="true" />
-            </Template>
-            <EditTemplate Context="association">
-                <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat" Size="ButtonSize.Medium" Click="@((args) => SaveRow(association))" aria-label="Save" />
-                <RadzenButton Icon="close" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Click="@((args) => CancelEdit(association))" aria-label="Cancel" />
-                <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" Size="ButtonSize.Medium" Shade="Shade.Lighter" class="rz-my-1 rz-ms-1 rz-me-4" Click="@(args => DeleteRow(association))" aria-label="Delete" />
-            </EditTemplate>
-        </RadzenDataGridColumn>
-    </Columns>
-</RadzenDataGrid>
+@inject IPatrolService patrolService
+@if(patrolDtos == null){
+    <RadzenCard Style="margin:20px;">
+        <RadzenProgressBarCircular Value="50" ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
+        <p>Data ophalen...</p>
+    </RadzenCard>
+}
+else
+{
+    <RadzenDataGrid @ref="dataGrid" Data="@scouts" TItem="ScoutDto" RowSelect="@OnRowSelect" AllowPaging="true" PageSize="10" AllowSorting="true" AllowFiltering="true" FilterMode="FilterMode.Simple" Responsive="true" Style="height: 600px;">
+        <Columns>
+            <RadzenDataGridColumn TItem="ScoutDto" Property="Firstname" Title="Voornaam" >
+                <EditTemplate Context="scout">
+                    <RadzenFormField Text="Voornaam" Style="width:100%">
+                        <RadzenTextBox @bind-Value="@scout.Firstname" />
+                    </RadzenFormField>
+                </EditTemplate>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="ScoutDto" Property="Lastname" Title="Achternaam" >
+                <EditTemplate Context="scout">
+                    <RadzenFormField Text="Achternaam" Style="width:100%">
+                        <RadzenTextBox @bind-Value="@scout.Lastname" />
+                    </RadzenFormField>
+                </EditTemplate>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="ScoutDto" Property="DateOfBirth" Title="Geboorte datum" >
+                <EditTemplate Context="scout">
+                    <RadzenFormField Text="Geboorte datum" Style="width:100%">
+                        <RadzenDatePicker @bind-Value="@scout.DateOfBirth" />
+                    </RadzenFormField>
+                </EditTemplate>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="ScoutDto" Property="PatrolId" Title="Patrouille">
+                <Template Context="score">
+                    @patrolDtos.FirstOrDefault(C => C.Id == score.PatrolId).Name
+                </Template>
+                <EditTemplate Context="score">
+                    <RadzenFormField Text="Patrouille" Style="width:100%">
+                        <RadzenDropDown Data="@patrolDtos" @bind-Value=score.PatrolId ValueProperty=@nameof(PatrolDto.Id) TextProperty=@nameof(PatrolDto.Name) />
+                    </RadzenFormField>
+                </EditTemplate>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn Context="order" Filterable="false" Sortable="false" TextAlign="TextAlign.Right" Frozen="true" Width="10rem" FrozenPosition="FrozenColumnPosition.Right">
+                <HeaderTemplate>
+                    <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1 rz-display-none rz-display-sm-inline" Click="@((args) => SaveAll())" aria-label="SaveAll" />
+                    <RadzenButton Icon="add_circle" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-me-4 rz-display-none rz-display-sm-inline" Shade="Shade.Lighter" Click="@(() => Insert())" />
+                </HeaderTemplate>
+                <Template Context="scout">
+                    <RadzenButton Icon="add_circle" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat" Size="ButtonSize.Medium" Shade="Shade.Lighter" Click="@(() => InsertAfterRow(scout))" />
+                    <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Click="@(args => EditRow(scout))" @onclick:stopPropagation="true" />
+                    <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" Size="ButtonSize.Medium" Shade="Shade.Lighter" class="rz-my-1 rz-ms-1 rz-me-4" Click="@(args => DeleteRow(scout))" @onclick:stopPropagation="true" />
+                </Template>
+                <EditTemplate Context="scout">
+                    <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat" Size="ButtonSize.Medium" Click="@((args) => SaveRow(scout))" aria-label="Save" />
+                    <RadzenButton Icon="close" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Click="@((args) => CancelEdit(scout))" aria-label="Cancel" />
+                    <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" Size="ButtonSize.Medium" Shade="Shade.Lighter" class="rz-my-1 rz-ms-1 rz-me-4" Click="@(args => DeleteRow(scout))" aria-label="Delete" />
+                </EditTemplate>
+            </RadzenDataGridColumn>
+        </Columns>
+    </RadzenDataGrid>
+}
 
 @code {
     [Parameter]
-    public List<AssociationDto> associations { get; set; } = new List<AssociationDto>();
-    public List<AssociationDto> NewAssociations { get; set; } = new List<AssociationDto>();
-    public EventCallback<AssociationDto> OnAssociationDtoSelected { get; set; }
-    private RadzenDataGrid<AssociationDto> dataGrid;
+    public List<ScoutDto> scouts { get; set; } = new List<ScoutDto>();
+    public List<ScoutDto> NewScouts { get; set; } = new List<ScoutDto>();
+    public EventCallback<ScoutDto> OnScoutDtoSelected { get; set; }
+    private RadzenDataGrid<ScoutDto> dataGrid;
+    private IEnumerable<PatrolDto>? patrolDtos { get; set; } = null;
 
     [Inject]
-    private IAssociationService associationService { get; set; } = default!;
-
-    private async Task OnRowSelect(AssociationDto association)
+    private IScoutService scoutService { get; set; } = default!;
+    protected override async Task OnInitializedAsync()
     {
-        if (OnAssociationDtoSelected.HasDelegate)
+        patrolDtos = await patrolService.GetAllAsync();
+        await base.OnInitializedAsync();
+    }
+    private async Task OnRowSelect(ScoutDto scout)
+    {
+        if (OnScoutDtoSelected.HasDelegate)
         {
-            await OnAssociationDtoSelected.InvokeAsync(association);
+            await OnScoutDtoSelected.InvokeAsync(scout);
         }
     }
     void Insert()
     {
-        var NewAssociation = new AssociationDto();
-        dataGrid.InsertRow(NewAssociation);
+        var NewScout = new ScoutDto();
+        dataGrid.InsertRow(NewScout);
     }
-    void InsertAfterRow(AssociationDto association)
+    void InsertAfterRow(ScoutDto scout)
     {
-        var NewAssociation = new AssociationDto();
-        dataGrid.InsertAfterRow(NewAssociation, association);
+        var NewScout = new ScoutDto();
+        dataGrid.InsertAfterRow(NewScout, scout);
     }
-    void EditRow(AssociationDto association)
+    void EditRow(ScoutDto scout)
     {
-        dataGrid.EditRow(association);
+        dataGrid.EditRow(scout);
     }
-    async Task DeleteRow(AssociationDto association)
+    async Task DeleteRow(ScoutDto scout)
     {
-        var ConfirmDelete = await DialogService.Confirm($"Weet je zeker dat je \"{association.Name}\" wilt verwijderen?", "Verwijderen", new ConfirmOptions() { OkButtonText = "Ja", CancelButtonText = "Nee" });
+        var ConfirmDelete = await DialogService.Confirm($"Weet je zeker dat je \"{scout.Firstname} {scout.Lastname}\" wilt verwijderen?", "Verwijderen", new ConfirmOptions() { OkButtonText = "Ja", CancelButtonText = "Nee" });
         if (ConfirmDelete == null)
         {
             NotificationService.Notify(new NotificationMessage{ Summary="Er is iets mis gegaan! neem contact op met een admin." });
@@ -78,66 +109,72 @@
 
         if ((bool)ConfirmDelete)
         {
-            if (association.Id != Guid.Empty)
+            if (scout.Id != Guid.Empty)
             {
-                await associationService.DeleteAsync(association.Id);
+                await scoutService.DeleteAsync(scout.Id);
             }
-            associations.Remove(association);
+            scouts.Remove(scout);
             await dataGrid.Reload();
         }
     }
-    async Task SaveRow(AssociationDto association)
+    async Task SaveRow(ScoutDto scout)
     {
-        if (association.Id == Guid.Empty)
+        if (scout.Id == Guid.Empty)
         {
-            await associationService.CreateAsync(new AssociationCreateDto
+            await scoutService.CreateAsync(new ScoutCreateDto
             {
-                Name = association.Name,
-                Abbreviation = association.Abbreviation
+                Firstname = scout.Firstname,
+                Lastname = scout.Lastname,
+                PatrolId = scout.PatrolId,
+                DateOfBirth = scout.DateOfBirth
             });
         }
         else
         {
-            await associationService.UpdateAsync(association.Id, association);
+            await scoutService.UpdateAsync(scout.Id, scout);
         }
-        await dataGrid.UpdateRow(association);
+        await dataGrid.UpdateRow(scout);
     }
     async Task SaveAll()
     {
-        foreach (AssociationDto association in associations)
+        foreach (ScoutDto scout in scouts)
         {
-            if (association.Id == Guid.Empty)
+            if (scout.Id == Guid.Empty)
             {
-                await associationService.CreateAsync(new AssociationCreateDto
+                await scoutService.CreateAsync(new ScoutCreateDto
                     {
-                        Name = association.Name,
-                        Abbreviation = association.Abbreviation
+                        Firstname = scout.Firstname,
+                        Lastname = scout.Lastname,
+                        PatrolId = scout.PatrolId,
+                        DateOfBirth = scout.DateOfBirth
                     });
             }
             else
             {
-                await associationService.UpdateAsync(association.Id, association);
+                await scoutService.UpdateAsync(scout.Id, scout);
             }
-            await dataGrid.UpdateRow(association);
+            await dataGrid.UpdateRow(scout);
         }
     }
-    async Task CancelEdit(AssociationDto association)
+    async Task CancelEdit(ScoutDto scout)
     {
-        if (association.Id == Guid.Empty)
+        if (scout.Id == Guid.Empty)
         {
-            associations.Remove(association);
+            scouts.Remove(scout);
             await dataGrid.Reload();
         }
         else
         {
-            var OldAssociation = await associationService.GetByIdAsync(association.Id);
-            if (OldAssociation != null)
+            var OldScout = await scoutService.GetByIdAsync(scout.Id);
+            if (OldScout != null)
             {
-                association.Name = OldAssociation.Name;
-                association.Abbreviation = OldAssociation.Abbreviation;
+                scout.Firstname = OldScout.Firstname;
+                scout.Lastname = OldScout.Lastname;
+                scout.PatrolId = OldScout.PatrolId;
+                scout.DateOfBirth = OldScout.DateOfBirth;
                 
-                await dataGrid.UpdateRow(association);
-                dataGrid.CancelEditRow(association);
+                await dataGrid.UpdateRow(scout);
+                dataGrid.CancelEditRow(scout);
             }
         }
     }

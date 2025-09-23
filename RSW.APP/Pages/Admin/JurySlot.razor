@@ -1,0 +1,23 @@
+﻿@page "/admin/juryslots"
+
+@inject IJurySlotService JurySlotService
+
+<h3>JurySlots</h3>
+
+@if (jurySlots == null)
+{
+    <RadzenProgressBarCircular Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
+}
+else
+{
+    <JurySlotList jurySlots="@jurySlots.ToList()" />
+}
+
+@code {
+    public IEnumerable<JurySlotDto>? jurySlots { get; set; }
+    protected override async Task OnInitializedAsync()
+    {
+        jurySlots = await JurySlotService.GetAllAsync();
+        await base.OnInitializedAsync();
+    }
+}
