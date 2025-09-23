@@ -79,7 +79,14 @@ namespace RSW.API.Services
             newActive.IsActive = true;
             await _context.SaveChangesAsync();
 
-            return _mapper.Map<EditionDto>(newActive);
+            return new EditionDto
+            {
+                Id = newActive.Id,
+                RSWStartDate = newActive.RSWStartDate,
+                LSWStartDate = newActive.LSWStartDate,
+                Theme = newActive.Theme,
+                IsActive = newActive.IsActive
+            };
         }
 
         public async Task<bool> DeleteAsync(Guid id)

@@ -17,6 +17,6 @@ namespace RSW.Shared.Dto
         public DateOnly RSWStartDate { get; set; }
         public DateOnly? LSWStartDate { get; set; }
         public string? Theme { get; set; }
-        public bool IsActive { get;}
+        public bool IsActive { get; set; }
     }
 }
