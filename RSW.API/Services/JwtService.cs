@@ -4,7 +4,7 @@ using System.Text;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 
-namespace Chunkk.JWT.Server.Services;
+namespace RSW.API.Services;
 
 public class JwtService : IJwtService
 {

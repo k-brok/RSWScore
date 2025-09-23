@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
 
-namespace Chunkk.JWT.Client;
+namespace RSW.APP.Services;
 
 public interface ITokenStorage
 {

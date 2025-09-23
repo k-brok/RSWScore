@@ -1,0 +1,37 @@
+@inject JwtAuthenticationStateProvider AuthProvider
+@inject ITokenStorage TokenStorage
+@inject NavigationManager Nav
+@using Microsoft.AspNetCore.Components.Authorization
+
+<AuthorizeView>
+    <Authorized>
+        <RadzenProfileMenu>
+            <Template>
+                <RadzenGravatar Email="@userEmail" />
+            </Template>
+            <ChildContent>
+                <RadzenProfileMenuItem Text="Logout" Icon="logout" Path="/logout" />
+            </ChildContent>
+        </RadzenProfileMenu>
+    </Authorized>
+    <NotAuthorized>
+        <RadzenButton Text="Login" Icon="login" Click="@(() => Nav.NavigateTo("/login"))" Style="margin-right:10px;" />
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    private string userEmail = "";
+
+    [CascadingParameter] private Task<AuthenticationState> AuthStateTask { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthStateTask;
+        var user = authState.User;
+        if (user.Identity?.IsAuthenticated ?? false)
+        {
+            userEmail = user.FindFirst(c => c.Type == System.Security.Claims.ClaimTypes.Email)?.Value 
+                        ?? user.Identity.Name ?? "";
+        }
+    }
+}

@@ -1,6 +1,6 @@
 using System.Security.Claims;
 
-namespace Chunkk.JWT.Server.Services;
+namespace RSW.API.Services;
 
 public interface IJwtService
 {

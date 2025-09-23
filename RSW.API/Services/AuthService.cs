@@ -7,20 +7,21 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using RSW.Shared.Entities;
 
-namespace Chunkk.JWT.Server.Services
+namespace RSW.API.Services
 {
-    public class AuthService<TUser> : IAuthService<TUser> where TUser : class
+    public class AuthService : IAuthService
     {
-        private readonly UserManager<TUser> _userManager;
+        private readonly UserManager<ApplicationUser> _userManager;
         private readonly IConfiguration _config;
-        private readonly ILogger<AuthService<TUser>> _logger;
+        private readonly ILogger<AuthService> _logger;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
         public AuthService(
-            UserManager<TUser> userManager, 
-            IConfiguration config, 
-            ILogger<AuthService<TUser>> logger,
+            UserManager<ApplicationUser> userManager,
+            IConfiguration config,
+            ILogger<AuthService> logger,
             IHttpContextAccessor httpContextAccessor)
         {
             _userManager = userManager;
@@ -49,20 +50,16 @@ namespace Chunkk.JWT.Server.Services
         public async Task<string?> RegisterAsync(string email, string password)
         {
             // Maak user via reflection / dynamisch, library hoeft velden niet te kennen
-            var user = Activator.CreateInstance<TUser>();
-            if (user == null) throw new InvalidOperationException("Cannot create user instance");
-
-            // Stel UserName & Email
-            var userNameProp = typeof(TUser).GetProperty("UserName");
-            var emailProp = typeof(TUser).GetProperty("Email");
-
-            if (userNameProp != null) userNameProp.SetValue(user, email);
-            if (emailProp != null) emailProp.SetValue(user, email);
+            var user = new ApplicationUser
+            {
+                UserName = email,
+                Email = email
+            };
 
             var result = await _userManager.CreateAsync(user, password);
             if (!result.Succeeded)
             {
-                foreach(var err in result.Errors)
+                foreach (var err in result.Errors)
                     Console.WriteLine(err.Description);
                 return null;
             }
@@ -76,7 +73,7 @@ namespace Chunkk.JWT.Server.Services
         // ---------------------------
         // GENERATE JWT
         // ---------------------------
-        private async Task<string> GenerateJwtToken(TUser user)
+        private async Task<string> GenerateJwtToken(ApplicationUser user)
         {
             var roles = await _userManager.GetRolesAsync(user);
 
@@ -89,7 +86,6 @@ namespace Chunkk.JWT.Server.Services
             claims.AddRange(roles.Select(r => new Claim(ClaimTypes.Role, r)));
 
             var jwtSettings = _config.GetSection("Jwt");
-            Console.WriteLine(jwtSettings["Key"]);
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Key"]!));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
@@ -131,7 +127,7 @@ namespace Chunkk.JWT.Server.Services
         // ---------------------------
         // GET USER CLAIMS
         // ---------------------------
-        public async Task<IList<Claim>> GetClaimsForUserAsync(TUser user)
+        public async Task<IList<Claim>> GetClaimsForUserAsync(ApplicationUser user)
         {
             var roles = await _userManager.GetRolesAsync(user);
 
@@ -167,6 +163,23 @@ namespace Chunkk.JWT.Server.Services
             var ctx = _httpContextAccessor.HttpContext;
             var currentUserId = ctx?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var isAdmin = ctx?.User.IsInRole("Admin") ?? false;
+
+            return currentUserId == userId || isAdmin;
+        }
+        public async Task<ApplicationUser> GetCurrentUserAsync()
+        {
+            var userId = _httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
+            Console.WriteLine(userId);
+            if (string.IsNullOrEmpty(userId)) return null;
+
+            var user = await _userManager.FindByIdAsync(userId);
+            return user;
+        }
+
+        public bool IsCurrentUserOrAdmin(ClaimsPrincipal user, string userId)
+        {
+            var currentUserId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var isAdmin = user.IsInRole("Admin");
 
             return currentUserId == userId || isAdmin;
         }

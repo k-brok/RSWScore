@@ -1,4 +1,5 @@
 ﻿@page "/admin/subgroups"
+@attribute [Authorize(Roles = "Admin")]
 
 @inject ISubGroupService SubGroupService
 

@@ -1,0 +1,22 @@
+@page "/logout"
+@inject JwtAuthenticationStateProvider AuthProvider
+@inject ITokenStorage TokenStorage
+@inject NavigationManager Nav
+
+<PageTitle>Logout</PageTitle>
+
+<h3>U wordt uitgelogd...</h3>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        // Token verwijderen
+        await TokenStorage.RemoveTokenAsync();
+
+        // Notify Blazor dat gebruiker uitlogt
+        AuthProvider.NotifyUserLogout();
+
+        // Redirect naar login pagina of home
+        Nav.NavigateTo("/login", forceLoad: true);
+    }
+}

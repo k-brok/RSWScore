@@ -2,12 +2,14 @@ using Microsoft.AspNetCore.Components.Authorization;
 using System.Security.Claims;
 using System.IdentityModel.Tokens.Jwt;
 using System.Threading.Tasks;
+using RSW.APP.Services;
 
-namespace Chunkk.JWT.Client;
+namespace RSW.APP.Auth;
 
 public class JwtAuthenticationStateProvider : AuthenticationStateProvider
 {
     private readonly ITokenStorage _tokenStorage;
+    public event Action AuthenticationStateChangedEvent;
 
     public JwtAuthenticationStateProvider(ITokenStorage tokenStorage)
     {
@@ -24,6 +26,8 @@ public class JwtAuthenticationStateProvider : AuthenticationStateProvider
         var identity = new ClaimsIdentity(claims, "jwt");
         var user = new ClaimsPrincipal(identity);
 
+        AuthenticationStateChangedEvent?.Invoke();
+
         return new AuthenticationState(user);
     }
 
@@ -33,18 +37,29 @@ public class JwtAuthenticationStateProvider : AuthenticationStateProvider
         var identity = new ClaimsIdentity(claims, "jwt");
         var user = new ClaimsPrincipal(identity);
         NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(user)));
+        AuthenticationStateChangedEvent?.Invoke();
     }
 
     public void NotifyUserLogout()
     {
         var anonymous = new ClaimsPrincipal(new ClaimsIdentity());
         NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(anonymous)));
+        AuthenticationStateChangedEvent?.Invoke();
     }
 
     private IEnumerable<Claim> ParseClaimsFromJwt(string jwt)
     {
         var handler = new JwtSecurityTokenHandler();
         var token = handler.ReadJwtToken(jwt);
-        return token.Claims;
+        var claims = token.Claims.ToList();
+
+        // Rollen toevoegen op basis van "role" claim (JWT kan single of array bevatten)
+        var roleClaims = token.Claims.Where(c => c.Type == "role");
+        foreach (var roleClaim in roleClaims)
+        {
+            claims.Add(new Claim(ClaimTypes.Role, roleClaim.Value));
+        }
+
+        return claims;
     }
 }

@@ -1,6 +1,6 @@
 using Microsoft.JSInterop;
 
-namespace Chunkk.JWT.Client;
+namespace RSW.APP.Services;
 
 public class BrowserTokenStorage : ITokenStorage
 {

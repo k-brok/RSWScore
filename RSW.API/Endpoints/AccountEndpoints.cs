@@ -1,19 +1,15 @@
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Routing;
-using Chunkk.JWT.Server.Services;
-using Microsoft.AspNetCore.Http;
+using RSW.API.Services;
 
-namespace Chunkk.JWT.Server;
+namespace RSW.API.Endpoints;
 
 public static class EndpointRouteBuilderExtensions
 {
-    public static IEndpointRouteBuilder MapAccountEndpoints<TUser>(this IEndpointRouteBuilder endpoints) 
-        where TUser : class
+    public static void MapAccountEndpoints(this WebApplication app)
     {
-        var group = endpoints.MapGroup("/account").WithTags("Account");
+        var group = app.MapGroup("/api/account").WithTags("Account");
 
         // ----------------- LOGIN -----------------
-        group.MapPost("/login", async (LoginRequest request, IAuthService<TUser> authService) =>
+        group.MapPost("/login", async (LoginRequest request, IAuthService authService) =>
         {
             var token = await authService.LoginAsync(request.Email, request.Password);
             if (token == null)
@@ -23,7 +19,7 @@ public static class EndpointRouteBuilderExtensions
         }).AllowAnonymous();
 
         // ----------------- REGISTER -----------------
-        group.MapPost("/register", async (RegisterRequest request, IAuthService<TUser> authService) =>
+        group.MapPost("/register", async (RegisterRequest request, IAuthService authService) =>
         {
             var token = await authService.RegisterAsync(request.Email, request.Password);
             if (token == null)
@@ -33,7 +29,7 @@ public static class EndpointRouteBuilderExtensions
         }).AllowAnonymous();
 
         // ----------------- REQUEST PASSWORD RESET -----------------
-        group.MapPost("/request-password-change", async (ResetPasswordTokenRequest request, IAuthService<TUser> authService) =>
+        group.MapPost("/request-password-change", async (ResetPasswordTokenRequest request, IAuthService authService) =>
         {
             var token = await authService.GeneratePasswordResetTokenAsync(request.Email);
             if (token == null)
@@ -44,15 +40,23 @@ public static class EndpointRouteBuilderExtensions
         }).AllowAnonymous();
 
         // ----------------- RESET PASSWORD -----------------
-        group.MapPost("/password-change", async (ResetPasswordRequest request, IAuthService<TUser> authService) =>
+        group.MapPost("/password-change", async (ResetPasswordRequest request, IAuthService authService) =>
         {
             var success = await authService.ResetPasswordAsync(request.Email, request.Token, request.NewPassword);
-            return success 
-                ? Results.Ok(new { Message = "Password changed successfully" }) 
+            return success
+                ? Results.Ok(new { Message = "Password changed successfully" })
                 : Results.BadRequest("Invalid request or token");
         }).AllowAnonymous();
 
-        return endpoints;
+        group.MapGet("/getcurrentuser", async (IAuthService authService) =>
+        {
+            Console.WriteLine("hallo?");
+            var user = await authService.GetCurrentUserAsync();
+            if (user == null) return Results.Unauthorized();
+
+            // Return enkel relevante info
+            return Results.Ok(user);
+        }).RequireAuthorization();
     }
 }
 

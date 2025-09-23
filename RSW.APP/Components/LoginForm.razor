@@ -28,7 +28,7 @@
     {
         await TokenStorage.SetTokenAsync(response.Token, rememberMe);
         AuthProvider.NotifyUserAuthentication(response.Token);
-        Nav.NavigateTo("/");
+        Nav.NavigateTo("/",true);
     }
     else
     {
@@ -44,23 +44,11 @@
 
     void OnRegister()
     {
-        NotificationService.Notify(new NotificationMessage
-        {
-            Severity = NotificationSeverity.Error,
-            Summary = "System Error",
-            Detail = "Registreren is momenteel niet mogelijk!",
-            Duration = 4000
-        });
+        Nav.NavigateTo("/register");
     }
 
     void OnResetPassword(string value)
     {
-        NotificationService.Notify(new NotificationMessage
-        {
-            Severity = NotificationSeverity.Error,
-            Summary = "System Error",
-            Detail = "Wachtwoord resetten is momenteel niet mogelijk!",
-            Duration = 4000
-        });
+        Nav.NavigateTo("/PasswordReset");
     }
 }
