@@ -1,0 +1,184 @@
+﻿@inject DialogService DialogService
+@inject NotificationService NotificationService
+@inject ISubGroupService subGroupService
+@inject ICategoryService categoryService
+
+@if(categoryDtos == null || subGroupDtos == null){
+    <RadzenCard Style="margin:20px;">
+        <RadzenProgressBarCircular Value="50" ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
+        <p>Data ophalen...</p>
+    </RadzenCard>
+}
+else
+{
+    <RadzenDataGrid @ref="dataGrid" Data="@juryslots" TItem="JurySlotDto" RowSelect="@OnRowSelect" AllowPaging="true" PageSize="10" AllowSorting="true" AllowFiltering="true" FilterMode="FilterMode.Simple" Responsive="true" Style="height: 600px;">
+        <Columns>
+            <RadzenDataGridColumn TItem="JurySlotDto" Property="Id" Title="Code" >
+                <Template Context="jurySlot">
+                    @if(jurySlot.Id == Guid.Empty){
+                        <p>Nog niet gegenereerd.</p>
+                    }
+                    else
+                    {
+                        @jurySlot.Id
+                    }
+                </Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="JurySlotDto" Property="CategoryId" Title="Categorie">
+                <Template Context="jurySlot">
+                    @categoryDtos.FirstOrDefault(C => C.Id == jurySlot.CategoryId).Name
+                </Template>
+                <EditTemplate Context="jurySlot">
+                    <RadzenFormField Text="Categorie" Style="width:100%">
+                        <RadzenDropDown Data="@categoryDtos" @bind-Value=jurySlot.CategoryId ValueProperty=@nameof(CategoryDto.Id) TextProperty=@nameof(CategoryDto.Name) />
+                    </RadzenFormField>
+                </EditTemplate>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="JurySlotDto" Property="SubgroupId" Title="Sub-kamp">
+                <Template Context="jurySlot">
+                    @subGroupDtos.FirstOrDefault(C => C.Id == jurySlot.SubgroupId).Color
+                </Template>
+                <EditTemplate Context="jurySlot">
+                    <RadzenFormField Text="sub-kamp" Style="width:100%">
+                        <RadzenDropDown Data="@subGroupDtos" @bind-Value=jurySlot.SubgroupId ValueProperty=@nameof(SubGroupDto.Id) TextProperty=@nameof(SubGroupDto.Color) />
+                    </RadzenFormField>
+                </EditTemplate>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn Context="order" Filterable="false" Sortable="false" TextAlign="TextAlign.Right" Frozen="true" Width="10rem" FrozenPosition="FrozenColumnPosition.Right">
+                <HeaderTemplate>
+                    <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1 rz-display-none rz-display-sm-inline" Click="@((args) => SaveAll())" aria-label="SaveAll" />
+                    <RadzenButton Icon="add_circle" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-me-4 rz-display-none rz-display-sm-inline" Shade="Shade.Lighter" Click="@(() => Insert())" />
+                </HeaderTemplate>
+                <Template Context="juryslot">
+                    <RadzenButton Icon="add_circle" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat" Size="ButtonSize.Medium" Shade="Shade.Lighter" Click="@(() => InsertAfterRow(juryslot))" />
+                    <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Click="@(args => EditRow(juryslot))" @onclick:stopPropagation="true" />
+                    <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" Size="ButtonSize.Medium" Shade="Shade.Lighter" class="rz-my-1 rz-ms-1 rz-me-4" Click="@(args => DeleteRow(juryslot))" @onclick:stopPropagation="true" />
+                </Template>
+                <EditTemplate Context="juryslot">
+                    <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat" Size="ButtonSize.Medium" Click="@((args) => SaveRow(juryslot))" aria-label="Save" />
+                    <RadzenButton Icon="close" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Click="@((args) => CancelEdit(juryslot))" aria-label="Cancel" />
+                    <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" Size="ButtonSize.Medium" Shade="Shade.Lighter" class="rz-my-1 rz-ms-1 rz-me-4" Click="@(args => DeleteRow(juryslot))" aria-label="Delete" />
+                </EditTemplate>
+            </RadzenDataGridColumn>
+        </Columns>
+    </RadzenDataGrid>
+}
+@code {
+    [Parameter]
+    public List<JurySlotDto> juryslots { get; set; } = new List<JurySlotDto>();
+    public EventCallback<JurySlotDto> OnJurySlotDtoSelected { get; set; }
+    private RadzenDataGrid<JurySlotDto> dataGrid;
+    private IEnumerable<CategoryDto>? categoryDtos { get; set; } = null;
+    private IEnumerable<SubGroupDto>? subGroupDtos { get; set; } = null;
+
+    [Inject]
+    private IJurySlotService juryslotService { get; set; } = default!;
+    protected override async Task OnInitializedAsync()
+    {
+        categoryDtos = await categoryService.GetAllAsync();
+        subGroupDtos = await subGroupService.GetAllAsync();
+        await base.OnInitializedAsync();
+    }
+    private async Task OnRowSelect(JurySlotDto juryslot)
+    {
+        if (OnJurySlotDtoSelected.HasDelegate)
+        {
+            await OnJurySlotDtoSelected.InvokeAsync(juryslot);
+        }
+    }
+    void Insert()
+    {
+        var NewJurySlot = new JurySlotDto();
+        dataGrid.InsertRow(NewJurySlot);
+    }
+    void InsertAfterRow(JurySlotDto juryslot)
+    {
+        var NewJurySlot = new JurySlotDto();
+        dataGrid.InsertAfterRow(NewJurySlot, juryslot);
+    }
+    void EditRow(JurySlotDto juryslot)
+    {
+        dataGrid.EditRow(juryslot);
+    }
+    async Task DeleteRow(JurySlotDto juryslot)
+    {
+        var ConfirmDelete = await DialogService.Confirm($"Weet je zeker dat je \"{juryslot.Id}\" wilt verwijderen?", "Verwijderen", new ConfirmOptions() { OkButtonText = "Ja", CancelButtonText = "Nee" });
+        if (ConfirmDelete == null)
+        {
+            NotificationService.Notify(new NotificationMessage{ Summary="Er is iets mis gegaan! neem contact op met een admin." });
+            return;
+        }
+
+        if ((bool)ConfirmDelete)
+        {
+            if (juryslot.Id != Guid.Empty)
+            {
+                await juryslotService.DeleteAsync(juryslot.Id);
+            }
+            juryslots.Remove(juryslot);
+            await dataGrid.Reload();
+        }
+    }
+    async Task SaveRow(JurySlotDto juryslot)
+    {
+        if (juryslot.Id == Guid.Empty)
+        {
+            var NewJurySlot = await juryslotService.CreateAsync(new JurySlotCreateDto
+            {
+                CategoryId = juryslot.CategoryId,
+                SubgroupId = juryslot.SubgroupId,
+                ClosingTime = juryslot.ClosingTime,
+                OpeningTime = juryslot.OpeningTime
+            });
+            juryslot.Id = NewJurySlot.Id;
+        }
+        else
+        {
+            await juryslotService.UpdateAsync(juryslot.Id, juryslot);
+        }
+        await dataGrid.UpdateRow(juryslot);
+    }
+    async Task SaveAll()
+    {
+        foreach (JurySlotDto juryslot in juryslots)
+        {
+            if (juryslot.Id == Guid.Empty)
+            {
+                await juryslotService.CreateAsync(new JurySlotCreateDto
+                    {
+                        CategoryId = juryslot.CategoryId,
+                        SubgroupId = juryslot.SubgroupId,
+                        ClosingTime = juryslot.ClosingTime,
+                        OpeningTime = juryslot.OpeningTime
+                    });
+            }
+            else
+            {
+                await juryslotService.UpdateAsync(juryslot.Id, juryslot);
+            }
+            await dataGrid.UpdateRow(juryslot);
+        }
+    }
+    async Task CancelEdit(JurySlotDto juryslot)
+    {
+        if (juryslot.Id == Guid.Empty)
+        {
+            juryslots.Remove(juryslot);
+            await dataGrid.Reload();
+        }
+        else
+        {
+            var OldJurySlot = await juryslotService.GetByIdAsync(juryslot.Id);
+            if (OldJurySlot != null)
+            {
+                juryslot.CategoryId = OldJurySlot.CategoryId;
+                juryslot.SubgroupId = OldJurySlot.SubgroupId;
+                juryslot.ClosingTime = OldJurySlot.ClosingTime;
+                juryslot.OpeningTime = OldJurySlot.OpeningTime;
+                
+                await dataGrid.UpdateRow(juryslot);
+                dataGrid.CancelEditRow(juryslot);
+            }
+        }
+    }
+}

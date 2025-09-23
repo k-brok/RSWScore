@@ -1,0 +1,23 @@
+﻿@page "/admin/patrols"
+
+@inject IPatrolService PatrolService
+
+<h3>Patrols</h3>
+
+@if (patrols == null)
+{
+    <RadzenProgressBarCircular Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
+}
+else
+{
+    <PatrolList patrols="@patrols.ToList()" />
+}
+
+@code {
+    public IEnumerable<PatrolDto>? patrols { get; set; }
+    protected override async Task OnInitializedAsync()
+    {
+        patrols = await PatrolService.GetAllAsync();
+        await base.OnInitializedAsync();
+    }
+}

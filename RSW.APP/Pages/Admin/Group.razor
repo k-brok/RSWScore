@@ -1,0 +1,23 @@
+﻿@page "/admin/groups"
+
+@inject IGroupService GroupService
+
+<h3>Groups</h3>
+
+@if (groups == null)
+{
+    <RadzenProgressBarCircular Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
+}
+else
+{
+    <GroupList groups="@groups.ToList()" />
+}
+
+@code {
+    public IEnumerable<GroupDto>? groups { get; set; }
+    protected override async Task OnInitializedAsync()
+    {
+        groups = await GroupService.GetAllAsync();
+        await base.OnInitializedAsync();
+    }
+}

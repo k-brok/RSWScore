@@ -1,0 +1,23 @@
+﻿@page "/admin/editions"
+
+@inject IEditionService EditionService
+
+<h3>Editions</h3>
+
+@if (editions == null)
+{
+    <RadzenProgressBarCircular Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
+}
+else
+{
+    <EditionList editions="@editions.ToList()" />
+}
+
+@code {
+    public IEnumerable<EditionDto>? editions { get; set; }
+    protected override async Task OnInitializedAsync()
+    {
+        editions = await EditionService.GetAllAsync();
+        await base.OnInitializedAsync();
+    }
+}

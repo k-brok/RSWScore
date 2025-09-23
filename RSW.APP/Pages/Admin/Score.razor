@@ -1,0 +1,23 @@
+﻿@page "/admin/scores"
+
+@inject IScoreService ScoreService
+
+<h3>Scores</h3>
+
+@if (scores == null)
+{
+    <RadzenProgressBarCircular Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
+}
+else
+{
+    <ScoreList scores="@scores.ToList()" />
+}
+
+@code {
+    public IEnumerable<ScoreDto>? scores { get; set; }
+    protected override async Task OnInitializedAsync()
+    {
+        scores = await ScoreService.GetAllAsync();
+        await base.OnInitializedAsync();
+    }
+}

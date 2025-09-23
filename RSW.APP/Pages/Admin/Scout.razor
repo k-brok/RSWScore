@@ -1,0 +1,23 @@
+﻿@page "/admin/scouts"
+
+@inject IScoutService ScoutService
+
+<h3>Scouts</h3>
+
+@if (scouts == null)
+{
+    <RadzenProgressBarCircular Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
+}
+else
+{
+    <ScoutList scouts="@scouts.ToList()" />
+}
+
+@code {
+    public IEnumerable<ScoutDto>? scouts { get; set; }
+    protected override async Task OnInitializedAsync()
+    {
+        scouts = await ScoutService.GetAllAsync();
+        await base.OnInitializedAsync();
+    }
+}

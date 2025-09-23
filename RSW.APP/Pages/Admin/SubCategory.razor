@@ -1,0 +1,23 @@
+﻿@page "/admin/subcategories"
+
+@inject ISubCategoryService SubCategoryService
+
+<h3>SubCategorys</h3>
+
+@if (subcategories == null)
+{
+    <RadzenProgressBarCircular Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
+}
+else
+{
+    <SubCategoryList subcategories="@subcategories.ToList()" />
+}
+
+@code {
+    public IEnumerable<SubCategoryDto>? subcategories { get; set; }
+    protected override async Task OnInitializedAsync()
+    {
+        subcategories = await SubCategoryService.GetAllAsync();
+        await base.OnInitializedAsync();
+    }
+}

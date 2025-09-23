@@ -1,0 +1,23 @@
+﻿@page "/admin/associations"
+
+@inject IAssociationService AssociationService
+
+<h3>Associations</h3>
+
+@if (associations == null)
+{
+    <RadzenProgressBarCircular Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
+}
+else
+{
+    <AssociationList associations="@associations.ToList()" />
+}
+
+@code {
+    public IEnumerable<AssociationDto>? associations { get; set; }
+    protected override async Task OnInitializedAsync()
+    {
+        associations = await AssociationService.GetAllAsync();
+        await base.OnInitializedAsync();
+    }
+}
