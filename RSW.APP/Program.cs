@@ -4,6 +4,8 @@ using Radzen;
 using RSW.APP.Services;
 using RSW.Shared.Interfaces;
 using RSW.Shared.Mapper;
+using RSW.APP.Auth;
+using Microsoft.AspNetCore.Components.Authorization;
 
 namespace RSW.APP;
 
@@ -35,15 +37,24 @@ public class Program
         builder.Services.AddScoped<ISubGroupService, SubGroupService>();
         builder.Services.AddScoped<IWebSettingService, WebSettingService>();
 
+        builder.Services.AddScoped<ITokenStorage, BrowserTokenStorage>();
+        builder.Services.AddScoped<AuthService>();
+        builder.Services.AddScoped<AuthenticationStateProvider, JwtAuthenticationStateProvider>();
+        builder.Services.AddScoped<JwtAuthenticationStateProvider>();
+
+        builder.Services.AddAuthorizationCore();
+
         var apiBaseUrl = builder.Configuration["ApiBaseUrl"];
         builder.Services.AddScoped(sp =>
         {
-            var client = new HttpClient()
+            var client = new HttpClient(new JwtAuthorizationMessageHandler(sp.GetRequiredService<ITokenStorage>()))
             {
-                BaseAddress = new Uri(apiBaseUrl!)
+                BaseAddress = new Uri(apiBaseUrl)
             };
             return client;
         });
+
+        builder.Services.AddTransient<JwtAuthorizationMessageHandler>();
 
         await builder.Build().RunAsync();
     }

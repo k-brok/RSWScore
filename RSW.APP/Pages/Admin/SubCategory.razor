@@ -1,4 +1,5 @@
 ﻿@page "/admin/subcategories"
+@attribute [Authorize(Roles = "Admin")]
 
 @inject ISubCategoryService SubCategoryService
 

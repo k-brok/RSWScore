@@ -1,0 +1,54 @@
+@using Radzen
+@using Radzen.Blazor
+@inject AuthService AuthService
+@inject NavigationManager Nav
+@inject NotificationService NotificationService
+@inject ITokenStorage TokenStorage
+@inject JwtAuthenticationStateProvider AuthProvider
+
+<RadzenTemplateForm Data=@("LoginWithDefaultValues")>
+    <RadzenLogin AllowRegister="true" AllowResetPassword="true" Username=@userName Password=@password
+                AllowRememberMe="true" RememberMe="@rememberMe"
+                Login=@(args => OnLogin(args))
+                ResetPassword=@(args => OnResetPassword(args))
+                Register=@(args => OnRegister()) />
+</RadzenTemplateForm>
+
+@code {
+    string userName = "";
+    string password = "";
+    bool rememberMe = true;
+
+    private async Task OnLogin(LoginArgs args)
+{
+    var model = new LoginRequest(args.Username, args.Password);
+    var response = await AuthService.LoginAsync(model, rememberMe);
+
+    if (response != null && !string.IsNullOrEmpty(response.Token))
+    {
+        await TokenStorage.SetTokenAsync(response.Token, rememberMe);
+        AuthProvider.NotifyUserAuthentication(response.Token);
+        Nav.NavigateTo("/",true);
+    }
+    else
+    {
+        NotificationService.Notify(new NotificationMessage
+        {
+            Severity = NotificationSeverity.Error,
+            Summary = "Login mislukt",
+            Detail = response?.Message ?? "Onbekende fout",
+            Duration = 4000
+        });
+    }
+}
+
+    void OnRegister()
+    {
+        Nav.NavigateTo("/register");
+    }
+
+    void OnResetPassword(string value)
+    {
+        Nav.NavigateTo("/PasswordReset");
+    }
+}
