@@ -1,8 +1,9 @@
 ﻿<RadzenPanelMenu>
     <RadzenPanelMenuItem Text="Home" Path="/" Icon="home" />
+    <RadzenPanelMenuItem Text="Inschrijving" Path="/signup" Icon="app_registration" />
     <AuthorizeView Roles="Admin">
         <Authorized>
-            <RadzenPanelMenuItem Text="Admin" Path="/" Icon="admin_panel_settings">
+            <RadzenPanelMenuItem Text="Admin" Icon="admin_panel_settings">
                 <RadzenPanelMenuItem Text="Verenigingen" Path="/admin/associations" Icon="groups" />
                 <RadzenPanelMenuItem Text="Categoriëen" Path="/admin/categories" Icon="category" />
                 <RadzenPanelMenuItem Text="Criterias" Path="/admin/criterias" Icon="rule" />

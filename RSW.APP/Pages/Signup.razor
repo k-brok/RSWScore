@@ -1,4 +1,5 @@
 @page "/signup/{id:guid}"
+@page "/signup"
 @using AutoMapper
 @inject ISignupCodeService SignupCodeService
 @inject IGroupService GroupService
@@ -23,8 +24,9 @@
 else if (signupCode is null)
 {
     <RadzenCard Style="margin:20px;">
-        <h3>🚫 Ongeldige of verlopen code</h3>
-        <p>Neem contact op met de organisatie als je denkt dat dit niet klopt.</p>
+        Om in te schrijven heb je een inschrijf code nodig, vul deze hieronder in om de inschrijving te opnen.
+        <RadzenTextBox @bind-Value=InsertCode />
+        <RadzenButton Text="Open Inschrijving" Click=@(() => openSignup(InsertCode)) />
     </RadzenCard>
 }
 else if (ActiveEdition == null)
@@ -154,8 +156,8 @@ else
 }
 
 @code {
-    [Parameter] public Guid id { get; set; }
-
+    [Parameter] public Guid? id { get; set; } = null;
+    private string InsertCode { get; set; }
     private bool loaded = false;
     private bool IsinPresignup = true;
     private SignupCodeDto? signupCode;
@@ -171,33 +173,42 @@ else
     protected override async Task OnInitializedAsync()
     {
         ActiveEdition = await EditionService.GetActiveAsync();
-        signupCode = await SignupCodeService.ValidateAsync(id);
-        SubGroupDtos = await subGroupService.GetAllAsync();
+        
+        await openSignup();
 
-        if(signupCode != null){
-            Group = await GroupService.GetByIdAsync(signupCode.GroupId);
-
-            if(Group != null)
-            {
-                Association = await AssociationService.GetByIdAsync(Group.AssociationId);
-                ExistingPatrol = await GroupService.GetPatrolsAsync(Group.Id);
-
-                // Load scouts per patrol
-                foreach (var patrol in ExistingPatrol)
-                {
-                    patrol.Scouts = (await PatrolService.GetScoutsAsync(patrol.Id)).ToList();
-                    DeleteScoutsLists[patrol] = new List<ScoutDto>();
-
-                }
-            }
-        }
-
-        if(ActiveEdition.PreSignupClose != null && ActiveEdition.PreSignupClose < DateOnly.FromDateTime(DateTime.Today) )
-            IsinPresignup = false;
+        if(ActiveEdition != null)
+            if(ActiveEdition.PreSignupClose != null && ActiveEdition.PreSignupClose < DateOnly.FromDateTime(DateTime.Today) )
+                IsinPresignup = false;
 
         loaded = true;
     }
+    private async Task openSignup(string Code = null!){
+        if(id != null || Code != null){
+            if(id == null)
+                id = Guid.Parse(Code);
 
+            SubGroupDtos = await subGroupService.GetAllAsync();
+            signupCode = await SignupCodeService.ValidateAsync((Guid)id);
+
+            if(signupCode != null){
+                Group = await GroupService.GetByIdAsync(signupCode.GroupId);
+
+                if(Group != null)
+                {
+                    Association = await AssociationService.GetByIdAsync(Group.AssociationId);
+                    ExistingPatrol = await GroupService.GetPatrolsAsync(Group.Id);
+
+                    // Load scouts per patrol
+                    foreach (var patrol in ExistingPatrol)
+                    {
+                        patrol.Scouts = (await PatrolService.GetScoutsAsync(patrol.Id)).ToList();
+                        DeleteScoutsLists[patrol] = new List<ScoutDto>();
+
+                    }
+                }
+            }
+        }
+    }
     private void AddPatrol()
     {
         if (signupCode is null) return;
