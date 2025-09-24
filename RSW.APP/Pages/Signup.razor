@@ -1,4 +1,4 @@
-@page "/voorinschrijven/{id:guid}"
+@page "/signup/{id:guid}"
 @using AutoMapper
 @inject ISignupCodeService SignupCodeService
 @inject IGroupService GroupService
@@ -7,6 +7,7 @@
 @inject IEditionService EditionService
 @inject IMapper Mapper
 @inject NavigationManager Nav
+@inject IScoutService scoutService
 
 <PageTitle>Inschrijven</PageTitle>
 
@@ -31,20 +32,6 @@ else if (ActiveEdition == null)
         <p>Neem contact op met de organisatie.</p>
     </RadzenCard>
 }
-else if(ActiveEdition.PreSignupClose != null && ActiveEdition.PreSignupClose < DateOnly.FromDateTime(DateTime.Today))
-{
-    if(ExistingPatrol != null && ExistingPatrol.Any())
-    {
-        Nav.NavigateTo("/inschrijven");
-    }
-    else
-    {
-        <RadzenCard Style="margin:20px;">
-            <h3>🚫 De voor inschijving is afgelopen.</h3>
-            <p>Helass inschrijven is nu niet meer mogelijk!</p>
-        </RadzenCard>
-    }
-}
 else
 {
     <RadzenCard Style="margin:20px;">
@@ -53,43 +40,88 @@ else
 
 
     <h4 style="margin-top:20px;">Patrouilles</h4>
-
+    
+    @if(IsinPresignup)
+    {
     <RadzenButton Text="Patrouille toevoegen"
                       Click="@AddPatrol"
                       ButtonStyle="ButtonStyle.Light"
                       Icon="add"
                       Style="margin-bottom:10px;" />
+    }
 
-        <RadzenDataList Data="@ExistingPatrol.Concat(newpatrols)" TItem="PatrolDto">
-            <Template Context="patrol">
-                    <RadzenTextBox @bind-Value="patrol.Name"
-                                   Placeholder="Patrouillenaam"
-                                   Style="width:100%;" />
+    <RadzenDataList Data="@ExistingPatrol.Concat(newpatrols)" TItem="PatrolDto">
+        <Template Context="patrol">
+            @if (IsinPresignup)
+            {
+                <RadzenTextBox @bind-Value="patrol.Name"
+                            Placeholder="Patrouillenaam"
+                            Style="width:100%;" />
+
                 <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" class="rz-mt-5">
-
                     <RadzenStack Orientation="Orientation.Horizontal">
-                        <RadzenCheckBox @bind-Value="patrol.IsYoungest" Name="IsYoungest" Disabled=@toRemove.Contains(patrol) />
+                        <RadzenCheckBox @bind-Value="patrol.IsYoungest" Name="IsYoungest" Disabled="@toRemove.Contains(patrol)" />
                         <RadzenLabel Text="Jongste patrouille?" Component="IsYoungest" class="rz-ms-2" />
                     </RadzenStack>
+
                     @if (toRemove.Contains(patrol))
                     {
                         <RadzenButton Text="Reset"
-                                      ButtonStyle="ButtonStyle.Danger"
-                                      Icon="undo"
-                                      Click="@(() => toRemove.Remove(patrol))"
-                                      Style="margin-top:10px;" />
+                                    ButtonStyle="ButtonStyle.Danger"
+                                    Icon="undo"
+                                    Click="@(() => toRemove.Remove(patrol))"
+                                    Style="margin-top:10px;" />
                     }
                     else
                     {
                         <RadzenButton Text="Verwijderen"
-                                      ButtonStyle="ButtonStyle.Danger"
-                                      Icon="delete"
-                                      Click="@(() => toRemove.Add(patrol))"
-                                      Style="margin-top:10px;" />
+                                    ButtonStyle="ButtonStyle.Danger"
+                                    Icon="delete"
+                                    Click="@(() => toRemove.Add(patrol))"
+                                    Style="margin-top:10px;" />
                     }
                 </RadzenStack>
-            </Template>
-        </RadzenDataList>
+            }
+            else
+            {
+                @patrol.Name
+
+                <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" class="rz-mt-5">
+                    @if (patrol.IsYoungest)
+                    {
+                        <p>jongste</p>
+                    }
+                </RadzenStack>
+                <RadzenDataGrid Data="@patrol.Scouts" TItem="ScoutDto" AllowPaging="false" AllowSorting="false">
+
+                    <Columns>
+                        <RadzenDataGridColumn TItem="ScoutDto" Property="Firstname" Title="Voornaam">
+                            <EditTemplate Context="scout">
+                                <RadzenTextBox @bind-Value="scout.Firstname" Style="width:100%;" />
+                            </EditTemplate>
+                        </RadzenDataGridColumn>
+
+                        <RadzenDataGridColumn TItem="ScoutDto" Property="Lastname" Title="Achternaam">
+                            <EditTemplate Context="scout">
+                                <RadzenTextBox @bind-Value="scout.Lastname" Style="width:100%;" />
+                            </EditTemplate>
+                        </RadzenDataGridColumn>
+
+                        <RadzenDataGridColumn TItem="ScoutDto" Property="DateOfBirth" Title="Geboortedatum">
+                            <EditTemplate Context="scout">
+                                <RadzenDatePicker @bind-Value="scout.DateOfBirth" />
+                            </EditTemplate>
+                            <Template Context="scout">
+                                @scout.DateOfBirth.ToString("dd/MM/yyyy")
+                            </Template>
+                        </RadzenDataGridColumn>
+                    </Columns>
+                </RadzenDataGrid>
+
+            }
+        </Template>
+    </RadzenDataList>
+
 
     <RadzenButton ButtonStyle="ButtonStyle.Primary" Text="Inschrijven"
                       Icon="send" Style="margin-top:15px;" Click="OnSubmit" />
@@ -101,6 +133,7 @@ else
     [Parameter] public Guid id { get; set; }
 
     private bool loaded = false;
+    private bool IsinPresignup = true;
     private SignupCodeDto? signupCode;
     private GroupDto? Group;
     private EditionDto? ActiveEdition;
@@ -108,7 +141,6 @@ else
     private List<PatrolDto> newpatrols = new List<PatrolDto>();
     private List<PatrolDto>? ExistingPatrol;
     private List<PatrolDto> toRemove = new List<PatrolDto>();
-
     protected override async Task OnInitializedAsync()
     {
         ActiveEdition = await EditionService.GetActiveAsync();
@@ -121,10 +153,17 @@ else
             {
                 Association = await AssociationService.GetByIdAsync(Group.AssociationId);
                 ExistingPatrol = await GroupService.GetPatrolsAsync(Group.Id);
+
+                // Load scouts per patrol
+                foreach (var patrol in ExistingPatrol)
+                {
+                    patrol.Scouts = (await PatrolService.GetScoutsAsync(patrol.Id)).ToList();
+                }
             }
         }
 
-        Console.WriteLine($"Datum: {ActiveEdition.PreSignupClose.ToString()}");
+        if(ActiveEdition.PreSignupClose != null && ActiveEdition.PreSignupClose < DateOnly.FromDateTime(DateTime.Today) )
+            IsinPresignup = false;
 
         loaded = true;
     }

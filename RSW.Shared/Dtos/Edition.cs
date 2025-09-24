@@ -15,7 +15,8 @@ namespace RSW.Shared.Dto
     {
         [Required]
         public DateOnly RSWStartDate { get; set; }
-        public DateOnly? LSWStartDate { get; set; }
+        public DateOnly? LSWStartDate { get; set; } = null;
+        public DateOnly? PreSignupClose { get; set; } = null;
         public string? Theme { get; set; }
         public bool IsActive { get; set; }
     }
