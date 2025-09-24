@@ -1,0 +1,44 @@
+@page "/user/{id}"
+@page "/user"
+@inject IUserService UserService
+@inject AuthService authService
+@using RSW.Shared.Entities
+@using Radzen
+
+<PageTitle>Gebruiker</PageTitle>
+
+@if (user == null)
+{
+    <RadzenProgressBar Mode="ProgressBarMode.Indeterminate" Style="width: 100%;" />
+}
+else
+{
+    <UserDetailsForm User="@user" OnUserSaved="HandleUserSaved" />
+}
+
+@code {
+    [Parameter] public string id { get; set; } = null!;
+    private ApplicationUser? user;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if(id == null)
+        {
+            if(authService.CurrentUser == null)
+                await authService.GetCurrentUser();
+            
+            if(authService.CurrentUser != null)
+                user = await UserService.GetByIdAsync(authService.CurrentUser.Id);
+        }
+        else
+        {
+            user = await UserService.GetByIdAsync(id);
+        }
+    }
+
+    private async Task HandleUserSaved(ApplicationUser updatedUser)
+    {
+        // optioneel feedback of navigatie
+        Console.WriteLine("Gebruiker opgeslagen: " + updatedUser.Email);
+    }
+}

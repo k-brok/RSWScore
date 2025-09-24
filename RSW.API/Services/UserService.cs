@@ -49,7 +49,8 @@ namespace RSW.API.Services
             user.Email = model.Email;
             user.UserName = model.UserName;
             user.PhoneNumber = model.PhoneNumber;
-            // eventueel meer custom properties...
+            user.Firstname = model.Firstname;
+            user.Lastname = model.Lastname;
 
             var result = await _userManager.UpdateAsync(user);
             if (!result.Succeeded)

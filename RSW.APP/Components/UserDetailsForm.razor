@@ -1,0 +1,62 @@
+@using RSW.Shared.Entities
+@using Radzen
+
+@inject IUserService userService
+
+@if (User == null)
+{
+    <RadzenProgressBar Mode="ProgressBarMode.Indeterminate" Style="width: 100%;" />
+}
+else
+{
+    <RadzenFieldset Text="Gebruikersgegevens">
+        <RadzenLabel Text="Email" />
+        <RadzenTextBox Value="@User.Email" ReadOnly="true" Style="width: 100%;" />
+
+        <RadzenLabel Text="Voornaam" Style="margin-top: 20px;" />
+        <RadzenTextBox @bind-Value="User.Firstname" Style="width: 100%;" Name="Firstname" />
+
+        <RadzenLabel Text="Achternaam" Style="margin-top: 20px;" />
+        <RadzenTextBox @bind-Value="User.Lastname" Style="width: 100%;" Name="Lastname" />
+
+        <RadzenLabel Text="Telefoonnummer" Style="margin-top: 20px;" />
+        <RadzenTextBox @bind-Value="User.PhoneNumber" Style="width: 100%;" Name="PhoneNumber" />
+
+        <RadzenButton Text="Opslaan" Click="@OnSave" Style="margin-top: 20px;" Disabled="@IsSaving" />
+        @if (IsSaving)
+        {
+            <RadzenProgressBar Mode="ProgressBarMode.Indeterminate" Style="margin-top: 10px;" />
+        }
+
+        @if (!string.IsNullOrWhiteSpace(StatusMessage))
+        {
+            <RadzenAlert Severity="AlertSeverity.Info" Style="margin-top: 10px;">
+                @StatusMessage
+            </RadzenAlert>
+        }
+    </RadzenFieldset>
+}
+
+@code {
+    [Parameter] public ApplicationUser? User { get; set; }
+    [Parameter] public EventCallback<ApplicationUser> OnUserSaved { get; set; }
+
+    private bool IsSaving = false;
+    private string? StatusMessage;
+
+    private async Task OnSave()
+    {
+        IsSaving = true;
+        StatusMessage = "Aan het opslaan...";
+
+        await userService.UpdateAsync(User.Id, User);
+
+        StatusMessage = "Gegevens opgeslagen!";
+        IsSaving = false;
+
+        if (User != null)
+        {
+            await OnUserSaved.InvokeAsync(User);
+        }
+    }
+}

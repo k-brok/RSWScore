@@ -6,7 +6,9 @@ namespace RSW.Shared.Entities
     public class ApplicationUser : IdentityUser
     {
         public Group? group { get; set; } = null;
-        public List<VolunteerAssignment> volunteerAssignments { get; set; }
+        public List<VolunteerAssignment>? volunteerAssignments { get; set; }
+        public string? Firstname { get; set; } = null!;
+        public string? Lastname { get; set; } = null!;
     }
 
 }
