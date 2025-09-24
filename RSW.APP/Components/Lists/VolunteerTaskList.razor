@@ -1,0 +1,136 @@
+﻿@inject DialogService DialogService
+@inject NotificationService NotificationService
+@using RSW.Shared.Entities
+
+<RadzenDataGrid @ref="dataGrid" Data="@volunteertasks" TItem="VolunteerTask" RowSelect="@OnRowSelect" AllowPaging="true" PageSize="10" AllowSorting="true" AllowFiltering="true" FilterMode="FilterMode.Simple" Responsive="true" Style="height: 600px;">
+    <Columns>
+        <RadzenDataGridColumn TItem="VolunteerTask" Property="Name" Title="Name" >
+            <EditTemplate Context="volunteertask">
+                <RadzenFormField Text="Naam" Style="width:100%">
+                    <RadzenTextBox @bind-Value="@volunteertask.Name" />
+                </RadzenFormField>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="VolunteerTask" Property="Description" Title="Omschrijving" >
+            <EditTemplate Context="volunteertask">
+                <RadzenFormField Text="Omschrijving" Style="width:100%">
+                    <RadzenTextArea @bind-Value="@volunteertask.Description" />
+                </RadzenFormField>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn Context="order" Filterable="false" Sortable="false" TextAlign="TextAlign.Right" Frozen="true" Width="10rem" FrozenPosition="FrozenColumnPosition.Right">
+            <HeaderTemplate>
+                <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1 rz-display-none rz-display-sm-inline" Click="@((args) => SaveAll())" aria-label="SaveAll" />
+                <RadzenButton Icon="add_circle" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-me-4 rz-display-none rz-display-sm-inline" Shade="Shade.Lighter" Click="@(() => Insert())" />
+            </HeaderTemplate>
+            <Template Context="volunteertask">
+                <RadzenButton Icon="add_circle" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat" Size="ButtonSize.Medium" Shade="Shade.Lighter" Click="@(() => InsertAfterRow(volunteertask))" />
+                <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Click="@(args => EditRow(volunteertask))" @onclick:stopPropagation="true" />
+                <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" Size="ButtonSize.Medium" Shade="Shade.Lighter" class="rz-my-1 rz-ms-1 rz-me-4" Click="@(args => DeleteRow(volunteertask))" @onclick:stopPropagation="true" />
+            </Template>
+            <EditTemplate Context="volunteertask">
+                <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat" Size="ButtonSize.Medium" Click="@((args) => SaveRow(volunteertask))" aria-label="Save" />
+                <RadzenButton Icon="close" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Click="@((args) => CancelEdit(volunteertask))" aria-label="Cancel" />
+                <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" Size="ButtonSize.Medium" Shade="Shade.Lighter" class="rz-my-1 rz-ms-1 rz-me-4" Click="@(args => DeleteRow(volunteertask))" aria-label="Delete" />
+            </EditTemplate>
+        </RadzenDataGridColumn>
+    </Columns>
+</RadzenDataGrid>
+
+@code {
+    [Parameter]
+    public List<VolunteerTask> volunteertasks { get; set; } = new List<VolunteerTask>();
+    public EventCallback<VolunteerTask> OnVolunteerTaskSelected { get; set; }
+    private RadzenDataGrid<VolunteerTask> dataGrid;
+
+    [Inject]
+    private IVolunteerTaskService volunteertaskService { get; set; } = default!;
+
+    private async Task OnRowSelect(VolunteerTask volunteertask)
+    {
+        if (OnVolunteerTaskSelected.HasDelegate)
+        {
+            await OnVolunteerTaskSelected.InvokeAsync(volunteertask);
+        }
+    }
+    void Insert()
+    {
+        var NewAssociation = new VolunteerTask();
+        dataGrid.InsertRow(NewAssociation);
+    }
+    void InsertAfterRow(VolunteerTask volunteertask)
+    {
+        var NewAssociation = new VolunteerTask();
+        dataGrid.InsertAfterRow(NewAssociation, volunteertask);
+    }
+    void EditRow(VolunteerTask volunteertask)
+    {
+        dataGrid.EditRow(volunteertask);
+    }
+    async Task DeleteRow(VolunteerTask volunteertask)
+    {
+        var ConfirmDelete = await DialogService.Confirm($"Weet je zeker dat je \"{volunteertask.Name}\" wilt verwijderen?", "Verwijderen", new ConfirmOptions() { OkButtonText = "Ja", CancelButtonText = "Nee" });
+        if (ConfirmDelete == null)
+        {
+            NotificationService.Notify(new NotificationMessage{ Summary="Er is iets mis gegaan! neem contact op met een admin." });
+            return;
+        }
+
+        if ((bool)ConfirmDelete)
+        {
+            if (volunteertask.Id != Guid.Empty)
+            {
+                await volunteertaskService.DeleteAsync(volunteertask.Id);
+            }
+            volunteertasks.Remove(volunteertask);
+            await dataGrid.Reload();
+        }
+    }
+    async Task SaveRow(VolunteerTask volunteertask)
+    {
+        if (volunteertask.Id == Guid.Empty)
+        {
+            await volunteertaskService.CreateAsync(volunteertask);
+        }
+        else
+        {
+            await volunteertaskService.UpdateAsync(volunteertask.Id, volunteertask);
+        }
+        await dataGrid.UpdateRow(volunteertask);
+    }
+    async Task SaveAll()
+    {
+        foreach (VolunteerTask volunteertask in volunteertasks)
+        {
+            if (volunteertask.Id == Guid.Empty)
+            {
+                await volunteertaskService.CreateAsync(volunteertask);
+            }
+            else
+            {
+                await volunteertaskService.UpdateAsync(volunteertask.Id, volunteertask);
+            }
+            await dataGrid.UpdateRow(volunteertask);
+        }
+    }
+    async Task CancelEdit(VolunteerTask volunteertask)
+    {
+        if (volunteertask.Id == Guid.Empty)
+        {
+            volunteertasks.Remove(volunteertask);
+            await dataGrid.Reload();
+        }
+        else
+        {
+            var OldAssociation = await volunteertaskService.GetByIdAsync(volunteertask.Id);
+            if (OldAssociation != null)
+            {
+                volunteertask.Name = OldAssociation.Name;
+                volunteertask.Description = OldAssociation.Description;
+                
+                await dataGrid.UpdateRow(volunteertask);
+                dataGrid.CancelEditRow(volunteertask);
+            }
+        }
+    }
+}

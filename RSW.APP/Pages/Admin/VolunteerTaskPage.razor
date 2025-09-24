@@ -1,0 +1,25 @@
+@page "/admin/volunteertasks"
+@attribute [Authorize(Roles = "Admin")]
+@using RSW.Shared.Entities
+
+@inject IVolunteerTaskService VolunteerTaskService
+
+<h3>VolunteerTasks</h3>
+
+@if (volunteertasks == null)
+{
+    <RadzenProgressBarCircular Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
+}
+else
+{
+    <VolunteerTaskList volunteertasks="@volunteertasks.ToList()" />
+}
+
+@code {
+    public IEnumerable<VolunteerTask>? volunteertasks { get; set; }
+protected override async Task OnInitializedAsync()
+{
+    volunteertasks = await VolunteerTaskService.GetAllAsync();
+    await base.OnInitializedAsync();
+}
+}

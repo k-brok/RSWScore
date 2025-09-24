@@ -1,4 +1,5 @@
 using RSW.API.Services;
+using RSW.Shared.Dto;
 
 namespace RSW.API.Endpoints;
 
@@ -59,16 +60,3 @@ public static class EndpointRouteBuilderExtensions
         }).RequireAuthorization();
     }
 }
-
-// ----------------- DTO’s -----------------
-public record LoginRequest(string Email, string Password);
-
-public record RegisterRequest(string Email, string Password);
-
-public record ResetPasswordTokenRequest(string Email);
-
-public record ResetPasswordRequest(string Email, string Token, string NewPassword);
-
-public record LoginResponse(string Message, bool Success, string Token);
-
-public record RegisterResponse(string Message, bool Success, string Token);

@@ -16,7 +16,15 @@
                 <RadzenPanelMenuItem Text="Inschrijf codes" Path="/admin/signupcodes" Icon="qr_code" />
                 <RadzenPanelMenuItem Text="Sub categoriëen" Path="/admin/subcategories" Icon="subdirectory_arrow_right" />
                 <RadzenPanelMenuItem Text="Sub-kampen" Path="/admin/subgroups" Icon="camping" />
+                <RadzenPanelMenuItem Text="Vrijwilligers taken" Path="/admin/volunteertasks" Icon="volunteer_activism" />
+                <RadzenPanelMenuItem Text="Vrijwilligers inschrijvingen" Path="/admin/volunteerassignments" Icon="app_registration" />
             </RadzenPanelMenuItem>
+        </Authorized>
+    </AuthorizeView>
+    <RadzenPanelMenuItem Text="Word Vrijwilliger" Path="/vrijwilliger-aanmelden" Icon="how_to_reg" />
+    <AuthorizeView>
+        <Authorized>
+            <RadzenPanelMenuItem Text="Mijn gegevens" Path="/user" Icon="how_to_reg" />
         </Authorized>
     </AuthorizeView>
 </RadzenPanelMenu>

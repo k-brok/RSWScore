@@ -1,0 +1,24 @@
+@page "/register"
+@inject NavigationManager Navigation
+
+<RadzenCard Style="max-width: 400px; margin: auto; margin-top: 80px;">
+    <RadzenHeading Size="H4">Account aanmaken</RadzenHeading>
+
+    <RegisterForm OnRegisterSuccess="HandleSuccess" OnRegisterFailed="HandleFailure" ErrorMessage="@errorMessage" />
+</RadzenCard>
+
+@code {
+    private string? errorMessage;
+
+    private async Task HandleSuccess(RegisterResponse response)
+    {
+        // Optioneel: loggen
+        Console.WriteLine("Registratie succesvol");
+        Navigation.NavigateTo("/",true);
+    }
+
+    private async Task HandleFailure(string error)
+    {
+        errorMessage = error;
+    }
+}
