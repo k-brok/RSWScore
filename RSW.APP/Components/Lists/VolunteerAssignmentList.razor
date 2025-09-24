@@ -1,0 +1,181 @@
+﻿@inject DialogService DialogService
+@inject NotificationService NotificationService
+@inject IEditionService editionService
+@inject IVolunteerTaskService volunteerTaskService
+@inject IUserService userService
+@using Microsoft.AspNetCore.Identity
+@using RSW.Shared.Entities
+@if(Editions == null || VolunteerTasks == null || Users == null){
+    <RadzenCard Style="margin:20px;">
+        <RadzenProgressBarCircular Value="50" ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
+        <p>Data ophalen...</p>
+    </RadzenCard>
+}
+else
+{
+    <RadzenDataGrid @ref="dataGrid" Data="@volunteerassignments" TItem="VolunteerAssignment" RowSelect="@OnRowSelect" AllowPaging="true" PageSize="10" AllowSorting="true" AllowFiltering="true" FilterMode="FilterMode.Simple" Responsive="true" Style="height: 600px;">
+        <Columns>
+            <RadzenDataGridColumn TItem="VolunteerAssignment" Property="EditionId" Title="Editie">
+                <Template Context="volunteerassignment">
+                    @(Editions.FirstOrDefault(C => C.Id == volunteerassignment.EditionId)?.RSWStartDate.Year)
+                </Template>
+                <EditTemplate Context="volunteerassignment">
+                    <RadzenFormField Text="Editie" Style="width:100%">
+                        <RadzenDropDown Data="@Editions" @bind-Value=volunteerassignment.EditionId ValueProperty=@nameof(EditionDto.Id)>
+                        <Template>
+                            @((context as EditionDto).RSWStartDate.Year)
+                        </Template>
+                        </RadzenDropDown>
+                    </RadzenFormField>
+                </EditTemplate>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="VolunteerAssignment" Property="TaskId" Title="Taak">
+                <Template Context="volunteerassignment">
+                    @(VolunteerTasks.FirstOrDefault(C => C.Id == volunteerassignment.TaskId)?.Name ?? "Onbekend")
+                </Template>
+                <EditTemplate Context="volunteerassignment">
+                    <RadzenFormField Text="Taak" Style="width:100%">
+                        <RadzenDropDown Data="@VolunteerTasks" @bind-Value=volunteerassignment.TaskId ValueProperty=@nameof(VolunteerTask.Id) TextProperty=@nameof(VolunteerTask.Name) />
+                    </RadzenFormField>
+                </EditTemplate>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="VolunteerAssignment" Property="UserId" Title="Gebruiker">
+                <Template Context="volunteerassignment">
+                    @(Users.FirstOrDefault(C => C.Id == volunteerassignment.UserId)?.UserName)
+                </Template>
+                <EditTemplate Context="volunteerassignment">
+                    <RadzenFormField Text="Gebruiker" Style="width:100%">
+                        <RadzenDropDown Data="@Users" @bind-Value=volunteerassignment.UserId ValueProperty=@nameof(ApplicationUser.Id)>
+                        <Template>
+                            @((context as ApplicationUser).Email)
+                        </Template>
+                        </RadzenDropDown>
+                    </RadzenFormField>
+                </EditTemplate>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn Context="order" Filterable="false" Sortable="false" TextAlign="TextAlign.Right" Frozen="true" Width="10rem" FrozenPosition="FrozenColumnPosition.Right">
+                <HeaderTemplate>
+                    <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1 rz-display-none rz-display-sm-inline" Click="@((args) => SaveAll())" aria-label="SaveAll" />
+                    <RadzenButton Icon="add_circle" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-me-4 rz-display-none rz-display-sm-inline" Shade="Shade.Lighter" Click="@(() => Insert())" />
+                </HeaderTemplate>
+                <Template Context="volunteerassignment">
+                    <RadzenButton Icon="add_circle" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat" Size="ButtonSize.Medium" Shade="Shade.Lighter" Click="@(() => InsertAfterRow(volunteerassignment))" />
+                    <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Click="@(args => EditRow(volunteerassignment))" @onclick:stopPropagation="true" />
+                    <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" Size="ButtonSize.Medium" Shade="Shade.Lighter" class="rz-my-1 rz-ms-1 rz-me-4" Click="@(args => DeleteRow(volunteerassignment))" @onclick:stopPropagation="true" />
+                </Template>
+                <EditTemplate Context="volunteerassignment">
+                    <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat" Size="ButtonSize.Medium" Click="@((args) => SaveRow(volunteerassignment))" aria-label="Save" />
+                    <RadzenButton Icon="close" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Click="@((args) => CancelEdit(volunteerassignment))" aria-label="Cancel" />
+                    <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" Size="ButtonSize.Medium" Shade="Shade.Lighter" class="rz-my-1 rz-ms-1 rz-me-4" Click="@(args => DeleteRow(volunteerassignment))" aria-label="Delete" />
+                </EditTemplate>
+            </RadzenDataGridColumn>
+        </Columns>
+    </RadzenDataGrid>
+}
+
+@code {
+    [Parameter]
+    public List<VolunteerAssignment> volunteerassignments { get; set; } = new List<VolunteerAssignment>();
+    public EventCallback<VolunteerAssignment> OnVolunteerAssignmentSelected { get; set; }
+    private RadzenDataGrid<VolunteerAssignment> dataGrid;
+    private IEnumerable<EditionDto>? Editions = null!;
+    private IEnumerable<VolunteerTask>? VolunteerTasks = null!;
+    private IEnumerable<ApplicationUser>? Users = null!;
+    [Inject]
+    private IVolunteerAssignmentService volunteerassignmentService { get; set; } = default!;
+    protected override async Task OnInitializedAsync()
+    {
+        Users = await userService.GetAllAsync();
+        VolunteerTasks = await volunteerTaskService.GetAllAsync();
+        Editions = await editionService.GetAllAsync();
+        await base.OnInitializedAsync();
+    }
+    private async Task OnRowSelect(VolunteerAssignment volunteerassignment)
+    {
+        if (OnVolunteerAssignmentSelected.HasDelegate)
+        {
+            await OnVolunteerAssignmentSelected.InvokeAsync(volunteerassignment);
+        }
+    }
+    void Insert()
+    {
+        var NewAssociation = new VolunteerAssignment();
+        dataGrid.InsertRow(NewAssociation);
+    }
+    void InsertAfterRow(VolunteerAssignment volunteerassignment)
+    {
+        var NewAssociation = new VolunteerAssignment();
+        dataGrid.InsertAfterRow(NewAssociation, volunteerassignment);
+    }
+    void EditRow(VolunteerAssignment volunteerassignment)
+    {
+        dataGrid.EditRow(volunteerassignment);
+    }
+    async Task DeleteRow(VolunteerAssignment volunteerassignment)
+    {
+        var ConfirmDelete = await DialogService.Confirm($"Weet je zeker dat je \"{volunteerassignment.Id}\" wilt verwijderen?", "Verwijderen", new ConfirmOptions() { OkButtonText = "Ja", CancelButtonText = "Nee" });
+        if (ConfirmDelete == null)
+        {
+            NotificationService.Notify(new NotificationMessage{ Summary="Er is iets mis gegaan! neem contact op met een admin." });
+            return;
+        }
+
+        if ((bool)ConfirmDelete)
+        {
+            if (volunteerassignment.Id != Guid.Empty)
+            {
+                await volunteerassignmentService.DeleteAsync(volunteerassignment.Id);
+            }
+            volunteerassignments.Remove(volunteerassignment);
+            await dataGrid.Reload();
+        }
+    }
+    async Task SaveRow(VolunteerAssignment volunteerassignment)
+    {
+        if (volunteerassignment.Id == Guid.Empty)
+        {
+            await volunteerassignmentService.CreateAsync(volunteerassignment);
+        }
+        else
+        {
+            await volunteerassignmentService.UpdateAsync(volunteerassignment.Id, volunteerassignment);
+        }
+        await dataGrid.UpdateRow(volunteerassignment);
+    }
+    async Task SaveAll()
+    {
+        foreach (VolunteerAssignment volunteerassignment in volunteerassignments)
+        {
+            if (volunteerassignment.Id == Guid.Empty)
+            {
+                await volunteerassignmentService.CreateAsync(volunteerassignment);
+            }
+            else
+            {
+                await volunteerassignmentService.UpdateAsync(volunteerassignment.Id, volunteerassignment);
+            }
+            await dataGrid.UpdateRow(volunteerassignment);
+        }
+    }
+    async Task CancelEdit(VolunteerAssignment volunteerassignment)
+    {
+        if (volunteerassignment.Id == Guid.Empty)
+        {
+            volunteerassignments.Remove(volunteerassignment);
+            await dataGrid.Reload();
+        }
+        else
+        {
+            var OldAssociation = await volunteerassignmentService.GetByIdAsync(volunteerassignment.Id);
+            if (OldAssociation != null)
+            {
+                volunteerassignment.TaskId = OldAssociation.TaskId;
+                volunteerassignment.UserId = OldAssociation.UserId;
+                volunteerassignment.EditionId = OldAssociation.EditionId;
+                
+                await dataGrid.UpdateRow(volunteerassignment);
+                dataGrid.CancelEditRow(volunteerassignment);
+            }
+        }
+    }
+}
