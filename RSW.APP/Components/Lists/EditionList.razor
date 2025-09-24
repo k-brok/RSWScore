@@ -24,6 +24,16 @@
                 </RadzenFormField>
             </EditTemplate>
         </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="EditionDto" Property="IsActive" Title="Actief" >
+            <EditTemplate Context="edition">
+                <RadzenButton Text="Activeren" Click=@(()=> ActivateEdition(edition)) Disabled=@edition.IsActive />
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="EditionDto" Title="Details" >
+            <Template Context="edition">
+                <RadzenButton Text="Details" Click=@(()=> OpenDialog(edition))/>
+            </Template>
+        </RadzenDataGridColumn>
         <RadzenDataGridColumn Context="order" Filterable="false" Sortable="false" TextAlign="TextAlign.Right" Frozen="true" Width="10rem" FrozenPosition="FrozenColumnPosition.Right">
             <HeaderTemplate>
                 <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1 rz-display-none rz-display-sm-inline" Click="@((args) => SaveAll())" aria-label="SaveAll" />
@@ -97,12 +107,14 @@
     {
         if (edition.Id == Guid.Empty)
         {
-            await editionService.CreateAsync(new EditionCreateDto
+            var NewEdition = await editionService.CreateAsync(new EditionCreateDto
             {
                 RSWStartDate = edition.RSWStartDate,
                 LSWStartDate = edition.LSWStartDate,
                 Theme = edition.Theme
             });
+            if(await editionService.GetActiveAsync() == null)
+                await editionService.ActivateAsync(NewEdition.Id);
         }
         else
         {
@@ -116,12 +128,14 @@
         {
             if (edition.Id == Guid.Empty)
             {
-                await editionService.CreateAsync(new EditionCreateDto
+                var NewEdition = await editionService.CreateAsync(new EditionCreateDto
                     {
                         RSWStartDate = edition.RSWStartDate,
                         LSWStartDate = edition.LSWStartDate,
                         Theme = edition.Theme
                     });
+                if(await editionService.GetActiveAsync() == null)
+                    await editionService.ActivateAsync(NewEdition.Id);
             }
             else
             {
@@ -150,5 +164,11 @@
                 dataGrid.CancelEditRow(edition);
             }
         }
+    }
+    async Task ActivateEdition(EditionDto edition){
+        await editionService.ActivateAsync(edition.Id);
+    }
+    async Task OpenDialog(EditionDto edition){
+        await DialogService.OpenAsync<EditionDialog>("Edit Edition", new Dictionary<string, object> { { "edition", edition } });
     }
 }

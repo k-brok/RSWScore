@@ -1,0 +1,112 @@
+@page "/edition/edit/{Id:guid?}"
+@inject RSW.Shared.Interfaces.IEditionService EditionService
+@inject DialogService DialogService
+@inject NotificationService NotificationService
+
+@using System.ComponentModel.DataAnnotations
+@using RSW.Shared.Dto
+
+<RadzenTemplateForm Data="@edition" TItem="EditionDto" Submit="@((EditionDto args) => { OnValidSubmit(args); })" InvalidSubmit="@OnInvalidSubmit">
+
+                <RadzenStack Gap="1rem">
+
+                    <RadzenRow AlignItems="AlignItems.Center">
+                        <RadzenColumn Size="12" SizeMD="4">
+                            <RadzenLabel Text="RSW Start Date" Component="RSWStartDate" />
+                        </RadzenColumn>
+                        <RadzenColumn Size="12" SizeMD="8">
+                            <RadzenDatePicker @bind-Value="edition.RSWStartDate" DateFormat="yyyy-MM-dd" Style="width: 100%;" Name="RSWStartDate" Required="true" />
+                        </RadzenColumn>
+                    </RadzenRow>
+
+                    <RadzenRow AlignItems="AlignItems.Center">
+                        <RadzenColumn Size="12" SizeMD="4">
+                            <RadzenLabel Text="LSW Start Date" Component="LSWStartDate" />
+                        </RadzenColumn>
+                        <RadzenColumn Size="12" SizeMD="8">
+                            <RadzenDatePicker @bind-Value="edition.LSWStartDate" DateFormat="yyyy-MM-dd" Style="width: 100%;" Name="LSWStartDate" />
+                        </RadzenColumn>
+                    </RadzenRow>
+
+                    <RadzenRow AlignItems="AlignItems.Center">
+                        <RadzenColumn Size="12" SizeMD="4">
+                            <RadzenLabel Text="Pre-Signup Close" Component="PreSignupClose" />
+                        </RadzenColumn>
+                        <RadzenColumn Size="12" SizeMD="8">
+                            <RadzenDatePicker @bind-Value="edition.PreSignupClose" DateFormat="yyyy-MM-dd" Style="width: 100%;" Name="PreSignupClose" />
+                        </RadzenColumn>
+                    </RadzenRow>
+
+                    <RadzenRow AlignItems="AlignItems.Center">
+                        <RadzenColumn Size="12" SizeMD="4">
+                            <RadzenLabel Text="Theme" Component="Theme" />
+                        </RadzenColumn>
+                        <RadzenColumn Size="12" SizeMD="8">
+                            <RadzenTextBox @bind-Value="edition.Theme" Style="width: 100%;" Name="Theme" />
+                        </RadzenColumn>
+                    </RadzenRow>
+
+                    <RadzenRow AlignItems="AlignItems.Center">
+                        <RadzenColumn Size="12" SizeMD="4">
+                            <RadzenLabel Text="Is Active" Component="IsActive" />
+                        </RadzenColumn>
+                        <RadzenColumn Size="12" SizeMD="8">
+                            <RadzenCheckBox @bind-Value="edition.IsActive" TValue="bool" Name="IsActive" />
+                        </RadzenColumn>
+                    </RadzenRow>
+
+                </RadzenStack>
+
+        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" Gap="1rem" class="rz-mt-4 rz-mb-2">
+            <RadzenButton ButtonType="ButtonType.Submit" Icon="save" Text="Save" Style="min-width: 100px;" />
+            <RadzenButton ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Icon="cancel" Text="Cancel" Click="@(() => DialogService.Close(null))" Style="min-width: 100px;" />
+        </RadzenStack>
+</RadzenTemplateForm>
+
+@code {
+    [Parameter] public Guid? Id { get; set; }
+    [Parameter] public EditionDto edition { get; set; } = new EditionDto();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Id.HasValue && edition.Id == Guid.Empty)
+        {
+            var existing = await EditionService.GetByIdAsync(Id.Value);
+            if (existing != null)
+            {
+                edition = existing;
+            }
+            else
+            {
+                NotificationService.Notify(NotificationSeverity.Error, "Error", "Edition not found.");
+                DialogService.Close(null);
+            }
+        }
+    }
+
+    private async Task OnValidSubmit(EditionDto args)
+    {
+        if (args.Id != Guid.Empty)
+        {
+            var result = await EditionService.UpdateAsync(args.Id, args);
+            if (result != null)
+            {
+                NotificationService.Notify(NotificationSeverity.Success, "Success", "Edition updated.");
+                DialogService.Close(result);
+            }
+            else
+            {
+                NotificationService.Notify(NotificationSeverity.Error, "Error", "Update failed.");
+            }
+        }
+        else
+        {
+            NotificationService.Notify(NotificationSeverity.Warning, "Warning", "Creating new edition not supported in this dialog.");
+        }
+    }
+
+    private void OnInvalidSubmit(FormInvalidSubmitEventArgs args)
+    {
+        NotificationService.Notify(NotificationSeverity.Warning, "Validation Failed", "Please check the form for errors.");
+    }
+}

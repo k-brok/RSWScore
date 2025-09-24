@@ -1,0 +1,379 @@
+@page "/signup/{id:guid}"
+@using AutoMapper
+@inject ISignupCodeService SignupCodeService
+@inject IGroupService GroupService
+@inject IAssociationService AssociationService
+@inject IPatrolService PatrolService
+@inject IEditionService EditionService
+@inject ISubGroupService subGroupService
+@inject IMapper Mapper
+@inject NavigationManager Nav
+@inject IScoutService scoutService
+@inject NotificationService NotificationService
+
+<PageTitle>Inschrijven</PageTitle>
+
+@if (!loaded)
+{
+    <RadzenCard Style="margin:20px;">
+        <RadzenProgressBarCircular Value="50" ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
+        <p>Code controleren...</p>
+    </RadzenCard>
+}
+else if (signupCode is null)
+{
+    <RadzenCard Style="margin:20px;">
+        <h3>🚫 Ongeldige of verlopen code</h3>
+        <p>Neem contact op met de organisatie als je denkt dat dit niet klopt.</p>
+    </RadzenCard>
+}
+else if (ActiveEdition == null)
+{
+    <RadzenCard Style="margin:20px;">
+        <h3>🚫 Geen Actieve editie.</h3>
+        <p>Neem contact op met de organisatie.</p>
+    </RadzenCard>
+}
+else
+{
+    <RadzenCard Style="margin:20px;">
+        <h2>Inschrijfformulier RSW @ActiveEdition.RSWStartDate.Year ⚜️</h2>
+        <p>Voor groep: <b>@Group.Name @Association.Name</b></p>
+
+
+    <h4 style="margin-top:20px;">Patrouilles</h4>
+    
+    @if(IsinPresignup)
+    {
+    <RadzenButton Text="Patrouille toevoegen"
+                      Click="@AddPatrol"
+                      ButtonStyle="ButtonStyle.Light"
+                      Icon="add"
+                      Style="margin-bottom:10px;" />
+    }
+
+    <RadzenDataList Data="@ExistingPatrol.Concat(newpatrols)" TItem="PatrolDto">
+        <Template Context="patrol">
+            @if (IsinPresignup)
+            {
+                <RadzenTable>
+                    <RadzenTableHeader>
+                        <RadzenTableHeaderRow>
+                            <RadzenTableHeaderCell>
+                                <RadzenLabel Text="Patrouille naam" Component="PatrolName" />
+                            </RadzenTableHeaderCell>
+                            <RadzenTableHeaderCell>
+                                <RadzenLabel Text="Jongste patrouille?" Component="IsYoungest" />
+                            </RadzenTableHeaderCell>
+                            <RadzenTableHeaderCell rowspan="2">
+                                @if (toRemove.Contains(patrol))
+                                {
+                                    <RadzenButton Text="Reset"
+                                                ButtonStyle="ButtonStyle.Danger"
+                                                Icon="undo"
+                                                Click="@(() => toRemove.Remove(patrol))"
+                                                Style="margin-top:10px;" />
+                                }
+                                else
+                                {
+                                    <RadzenButton Text="Verwijderen"
+                                                ButtonStyle="ButtonStyle.Danger"
+                                                Icon="delete"
+                                                Click="@(() => toRemove.Add(patrol))"
+                                                Style="margin-top:10px;" />
+                                }
+                            </RadzenTableHeaderCell>
+                        </RadzenTableHeaderRow>
+                        <RadzenTableHeaderRow>
+                            <RadzenTableHeaderCell>
+                                <RadzenTextBox @bind-Value="patrol.Name" Name="PatrolName" Placeholder="Patrouillenaam" Style="width:100%;" />
+                            </RadzenTableHeaderCell>
+                            <RadzenTableHeaderCell>
+                                <RadzenCheckBox @bind-Value="patrol.IsYoungest" Name="IsYoungest" Disabled="@toRemove.Contains(patrol)" />
+                            </RadzenTableHeaderCell>
+                        </RadzenTableHeaderRow>
+                    </RadzenTableHeader>
+                </RadzenTable>
+            }
+            else
+            {
+                <h2>@patrol.Name</h2>
+                <RadzenTable>
+                    <RadzenTableHeader>
+                        <RadzenTableHeaderRow>
+                            <RadzenTableHeaderCell>
+                                Nummer
+                            </RadzenTableHeaderCell>
+                            <RadzenTableHeaderCell>
+                                Sub-kamp
+                            </RadzenTableHeaderCell>
+                            <RadzenTableHeaderCell>
+                                Voldoet aan deelnemerseisen
+                            </RadzenTableHeaderCell>
+                            <RadzenTableHeaderCell rowspan="2">
+                                @if (patrol.IsYoungest)
+                                {
+                                    <p>jongste</p>
+                                }
+                            </RadzenTableHeaderCell>
+                        </RadzenTableHeaderRow>
+                        <RadzenTableHeaderRow>
+                            <RadzenTableHeaderCell>
+                                @patrol.Number
+                            </RadzenTableHeaderCell>
+                            <RadzenTableHeaderCell>
+                            @if(patrol.SubGroupId != null)
+                            {
+                                @SubGroupDtos.FirstOrDefault(S => S.Id == patrol.SubGroupId).Color;
+                            }
+                            </RadzenTableHeaderCell>
+                            <RadzenTableHeaderCell>
+                                 @if(patrol.unranked((DateOnly)(ActiveEdition.LSWStartDate ?? ActiveEdition.RSWStartDate))){
+                                    <p>nee</p>
+                                }
+                                else
+                                {
+                                    <p>ja</p>
+                                }
+                            </RadzenTableHeaderCell>
+                        </RadzenTableHeaderRow>
+                    </RadzenTableHeader>
+                </RadzenTable>
+                <RadzenDataGrid @ref=ScoutsLists[patrol] Data="@patrol.Scouts" TItem="ScoutDto" AllowPaging="false" AllowSorting="false" RowRender="@RowRender" ondragover="event.preventDefault()" @ondrop=@(args => Move(patrol))>
+                    <Columns>
+                        @RenderColumns(patrol)
+                    </Columns>
+                </RadzenDataGrid>
+            }
+        </Template>
+    </RadzenDataList>
+
+    <RadzenButton ButtonStyle="ButtonStyle.Primary" Text="Inschrijven"
+                      Icon="send" Style="margin-top:15px;" Click="OnSubmit" />
+    </RadzenCard>
+}
+
+@code {
+    [Parameter] public Guid id { get; set; }
+
+    private bool loaded = false;
+    private bool IsinPresignup = true;
+    private SignupCodeDto? signupCode;
+    private GroupDto? Group;
+    private EditionDto? ActiveEdition;
+    private AssociationDto? Association;
+    private List<PatrolDto> newpatrols = new List<PatrolDto>();
+    private List<PatrolDto>? ExistingPatrol;
+    private List<PatrolDto> toRemove = new List<PatrolDto>();
+    private IEnumerable<SubGroupDto> SubGroupDtos = new List<SubGroupDto>();
+    private Dictionary<PatrolDto,RadzenDataGrid<ScoutDto>> ScoutsLists = new();
+    private Dictionary<PatrolDto,List<ScoutDto>> DeleteScoutsLists = new();
+    protected override async Task OnInitializedAsync()
+    {
+        ActiveEdition = await EditionService.GetActiveAsync();
+        signupCode = await SignupCodeService.ValidateAsync(id);
+        SubGroupDtos = await subGroupService.GetAllAsync();
+
+        if(signupCode != null){
+            Group = await GroupService.GetByIdAsync(signupCode.GroupId);
+
+            if(Group != null)
+            {
+                Association = await AssociationService.GetByIdAsync(Group.AssociationId);
+                ExistingPatrol = await GroupService.GetPatrolsAsync(Group.Id);
+
+                // Load scouts per patrol
+                foreach (var patrol in ExistingPatrol)
+                {
+                    patrol.Scouts = (await PatrolService.GetScoutsAsync(patrol.Id)).ToList();
+                    DeleteScoutsLists[patrol] = new List<ScoutDto>();
+
+                }
+            }
+        }
+
+        if(ActiveEdition.PreSignupClose != null && ActiveEdition.PreSignupClose < DateOnly.FromDateTime(DateTime.Today) )
+            IsinPresignup = false;
+
+        loaded = true;
+    }
+
+    private void AddPatrol()
+    {
+        if (signupCode is null) return;
+
+        newpatrols.Add(new PatrolDto());
+    }
+
+    private async Task OnSubmit()
+    {
+        if(IsinPresignup)
+        {
+            foreach (PatrolDto patrol in newpatrols)
+            {
+                await PatrolService.CreateAsync(new PatrolCreateDto
+                {
+                    GroupId = Group.Id,
+                    Name = patrol.Name,
+                    IsYoungest = patrol.IsYoungest
+                });
+            }
+            foreach (PatrolDto patrol in ExistingPatrol)
+            {
+                await PatrolService.UpdateAsync(patrol.Id,patrol);
+            }
+        }
+        else
+        {
+            var tasks = new List<Task>();
+            var semaphore = new SemaphoreSlim(5);
+
+            foreach (PatrolDto patrol in ExistingPatrol)
+            {
+                foreach (ScoutDto scout in patrol.Scouts)
+                {
+                    tasks.Add(Task.Run(async () =>
+                    {
+                        await semaphore.WaitAsync();
+                        try
+                        {
+                            if (scout.Id == Guid.Empty)
+                            {
+                                await scoutService.CreateAsync(new ScoutCreateDto
+                                {
+                                    Firstname = scout.Firstname,
+                                    Lastname = scout.Lastname,
+                                    DateOfBirth = scout.DateOfBirth,
+                                    PatrolId = patrol.Id
+                                });
+                            }
+                            else
+                            {
+                                await scoutService.UpdateAsync(scout.Id, scout);
+                            }
+                        }
+                        finally
+                        {
+                            semaphore.Release();
+                        }
+                    }));
+                }
+                foreach (ScoutDto scout in DeleteScoutsLists[patrol])
+                {
+                    tasks.Add(Task.Run(async () =>
+                    {
+                        await semaphore.WaitAsync();
+                        try
+                        {
+                            if (scout.Id != Guid.Empty)
+                            {
+                                await scoutService.DeleteAsync(scout.Id);
+                            }
+                        }
+                        finally
+                        {
+                            semaphore.Release();
+                        }
+                    }));
+                }
+            }
+
+            await Task.WhenAll(tasks);
+        }
+        NotificationService.Notify(NotificationSeverity.Success, "Success", "De inschrijving is geupdate.");
+    }
+
+    private void Insert(PatrolDto patrol, RadzenDataGrid<ScoutDto> dataGrid)
+    {
+        var NewScout = new ScoutDto();
+        patrol.Scouts.Add(NewScout);
+        dataGrid.InsertRow(NewScout);
+    }
+    private void InsertAfterRow(PatrolDto patrol, RadzenDataGrid<ScoutDto> dataGrid, ScoutDto scout)
+    {
+        var NewScout = new ScoutDto();
+        patrol.Scouts.Add(NewScout);
+        dataGrid.InsertAfterRow(NewScout, scout);
+    }
+    private void DeleteRow(PatrolDto patrol, RadzenDataGrid<ScoutDto> dataGrid, ScoutDto scout)
+    {
+        DeleteScoutsLists[patrol].Add(scout);
+        patrol.Scouts.Remove(scout);
+        dataGrid.Reload();
+    }
+    ScoutDto draggedItem;
+    void Move(PatrolDto target)
+    {
+        List<PatrolDto> GridUpdates = new();
+
+        if(!target.Scouts.Contains(draggedItem))
+        {
+            foreach(PatrolDto patrolDtos in ExistingPatrol)
+            {
+                if(patrolDtos.Scouts.Contains(draggedItem))
+                {
+                    patrolDtos.Scouts.Remove(draggedItem);
+                    DeleteScoutsLists[patrolDtos].Add(draggedItem);
+
+                    if(!GridUpdates.Contains(patrolDtos))
+                        GridUpdates.Add(patrolDtos);
+                }
+            }
+
+            draggedItem.PatrolId = target.Id;
+            target.Scouts.Add(draggedItem);
+        }
+
+        if(!GridUpdates.Contains(target))
+                    GridUpdates.Add(target);
+
+        foreach(PatrolDto updaterows in GridUpdates){
+            ScoutsLists[updaterows].Reload();
+        }
+    }
+    void RowRender(RowRenderEventArgs<ScoutDto> args)
+    {
+        args.Attributes.Add("title", "Drag row to move it to the other DataGrid");
+        args.Attributes.Add("style", "cursor:grab");
+        args.Attributes.Add("draggable", "true");
+        args.Attributes.Add("ondragstart", EventCallback.Factory.Create<DragEventArgs>(this, () => draggedItem = args.Data));
+    }
+    RenderFragment RenderColumns(PatrolDto patrol)
+    {
+        return __builder => {
+            <text>
+                <RadzenDataGridColumn TItem="ScoutDto" Property="Firstname" Title="Voornaam">
+                    <Template Context="scout">
+                        <RadzenTextBox @bind-Value="scout.Firstname" Style="width:100%;" />
+                    </Template>
+                </RadzenDataGridColumn>
+
+                <RadzenDataGridColumn TItem="ScoutDto" Property="Lastname" Title="Achternaam">
+                    <Template Context="scout">
+                        <RadzenTextBox @bind-Value="scout.Lastname" Style="width:100%;" />
+                    </Template>
+                </RadzenDataGridColumn>
+
+                <RadzenDataGridColumn TItem="ScoutDto" Property="DateOfBirth" Title="Geboortedatum">
+                    <Template Context="scout">
+                        <RadzenDatePicker @bind-Value="scout.DateOfBirth" />
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn TItem="ScoutDto" Property="DateOfBirth" Title="Leeftijd op LSW">
+                    <Template Context="scout">
+                        @scout.CalculateAge((DateOnly)(ActiveEdition.LSWStartDate ?? ActiveEdition.RSWStartDate))
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn TItem="ScoutDto" Context="scout" Filterable="false" Sortable="false" TextAlign="TextAlign.Right" Frozen="true" Width="10rem" FrozenPosition="FrozenColumnPosition.Right">
+                    <HeaderTemplate>
+                        <RadzenButton Icon="add_circle" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-me-4 rz-display-none rz-display-sm-inline" Shade="Shade.Lighter" Click="@(() => Insert(patrol, ScoutsLists[patrol]))" />
+                    </HeaderTemplate>
+                    <Template Context="criteria">
+                        <RadzenButton Icon="add_circle" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat" Size="ButtonSize.Medium" Shade="Shade.Lighter" Click="@(() => InsertAfterRow(patrol, ScoutsLists[patrol], criteria))" />
+                        <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" Size="ButtonSize.Medium" Shade="Shade.Lighter" class="rz-my-1 rz-ms-1 rz-me-4" Click="@(args => DeleteRow(patrol, ScoutsLists[patrol], criteria))" @onclick:stopPropagation="true" />
+                    </Template>
+                </RadzenDataGridColumn>
+            </text>
+        };
+    }
+}

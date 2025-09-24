@@ -34,7 +34,18 @@ namespace RSW.API.Services
         public async Task<EditionDto?> GetActiveAsync()
         {
             var entity = await _context.Editions.FirstOrDefaultAsync(e => e.IsActive);
-            return _mapper.Map<EditionDto>(entity);
+            if (entity == null)
+                return null;
+            
+            return new EditionDto
+            {
+                Id = entity.Id,
+                RSWStartDate = entity.RSWStartDate,
+                LSWStartDate = entity.LSWStartDate,
+                Theme = entity.Theme,
+                IsActive = entity.IsActive,
+                PreSignupClose = entity.PreSignupClose
+            };
         }
 
         public async Task<EditionDto> CreateAsync(EditionCreateDto dto)
@@ -62,6 +73,7 @@ namespace RSW.API.Services
             existing.RSWStartDate = dto.RSWStartDate;
             existing.LSWStartDate = dto.LSWStartDate;
             existing.Theme = dto.Theme;
+            existing.PreSignupClose = dto.PreSignupClose;
 
             await _context.SaveChangesAsync();
             return _mapper.Map<EditionDto>(existing);
@@ -79,7 +91,15 @@ namespace RSW.API.Services
             newActive.IsActive = true;
             await _context.SaveChangesAsync();
 
-            return _mapper.Map<EditionDto>(newActive);
+            return new EditionDto
+            {
+                Id = newActive.Id,
+                RSWStartDate = newActive.RSWStartDate,
+                LSWStartDate = newActive.LSWStartDate,
+                Theme = newActive.Theme,
+                IsActive = newActive.IsActive,
+                PreSignupClose = newActive.PreSignupClose
+            };
         }
 
         public async Task<bool> DeleteAsync(Guid id)

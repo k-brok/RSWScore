@@ -6,6 +6,7 @@
 @inject IPatrolService PatrolService
 @inject IEditionService EditionService
 @inject IMapper Mapper
+@inject NavigationManager Nav
 
 <PageTitle>Inschrijven</PageTitle>
 
@@ -29,6 +30,20 @@ else if (ActiveEdition == null)
         <h3>🚫 Geen Actieve editie.</h3>
         <p>Neem contact op met de organisatie.</p>
     </RadzenCard>
+}
+else if(ActiveEdition.PreSignupClose != null && ActiveEdition.PreSignupClose < DateOnly.FromDateTime(DateTime.Today))
+{
+    if(ExistingPatrol != null && ExistingPatrol.Any())
+    {
+        Nav.NavigateTo("/inschrijven");
+    }
+    else
+    {
+        <RadzenCard Style="margin:20px;">
+            <h3>🚫 De voor inschijving is afgelopen.</h3>
+            <p>Helass inschrijven is nu niet meer mogelijk!</p>
+        </RadzenCard>
+    }
 }
 else
 {
@@ -108,6 +123,8 @@ else
                 ExistingPatrol = await GroupService.GetPatrolsAsync(Group.Id);
             }
         }
+
+        Console.WriteLine($"Datum: {ActiveEdition.PreSignupClose.ToString()}");
 
         loaded = true;
     }

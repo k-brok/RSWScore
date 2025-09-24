@@ -4,10 +4,14 @@
     {
         public DateOnly RSWStartDate { get; set; }
         public DateOnly? LSWStartDate { get; set; } = null;
-        public int Year { get
+        public DateOnly? PreSignupClose { get; set; } = null;
+        public int Year
+        {
+            get
             {
                 return RSWStartDate.Year;
-            } }
+            }
+        }
         public String? Theme { get; set; } = string.Empty;
         public List<SubGroup> SubGroups { get; set; } = new List<SubGroup>();
         public bool IsActive { get; set; } = false;

@@ -9,5 +9,6 @@ namespace RSW.Shared.Interfaces
         Task<PatrolDto> CreateAsync(PatrolCreateDto dto);
         Task<PatrolDto?> UpdateAsync(Guid id, PatrolDto dto);
         Task<bool> DeleteAsync(Guid id);
+        Task<IEnumerable<ScoutDto>> GetScoutsAsync(Guid patrolId);
     }
 }

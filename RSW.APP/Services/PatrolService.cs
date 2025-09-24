@@ -28,6 +28,13 @@ namespace RSW.APP.Services
             return await _httpClient.GetFromJsonAsync<PatrolDto>($"{Endpoint}/{id}");
         }
 
+        public async Task<IEnumerable<ScoutDto>> GetScoutsAsync(Guid id)
+        {
+            var result = await _httpClient.GetFromJsonAsync<List<ScoutDto>>($"{Endpoint}/{id}/scouts");
+
+            return result ?? new List<ScoutDto>();
+        }
+
         public async Task<IEnumerable<GroupDto>> GetGroupsAsync(Guid id)
         {
             throw new NotImplementedException();
