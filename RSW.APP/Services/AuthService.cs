@@ -2,6 +2,7 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using RSW.Shared.Entities;
+using RSW.Shared.Dto;
 
 namespace RSW.APP.Services;
 
@@ -19,23 +20,21 @@ public class AuthService
     }
 
     public async Task<LoginResponse?> LoginAsync(LoginRequest request, bool rememberMe)
+{
+    var response = await _http.PostAsJsonAsync($"{Endpoint}/login", request);
+
+    if (!response.IsSuccessStatusCode)
+        return null;
+
+    var result = await response.Content.ReadFromJsonAsync<LoginResponse>();
+    if (result != null && !string.IsNullOrEmpty(result.Token))
     {
-        var response = await _http.PostAsJsonAsync($"{Endpoint}/login", request);
-
-        if (!response.IsSuccessStatusCode)
-            return null;
-
-        var result = await response.Content.ReadFromJsonAsync<LoginResponse>();
-        if (result != null && !string.IsNullOrEmpty(result.Token))
-        {
-            await _tokenStorage.SetTokenAsync(result.Token, rememberMe);
-
-            // Na token opslaan: current user ophalen
-            CurrentUser = await GetCurrentUser();
-        }
-
-        return result;
+        await _tokenStorage.SetTokenAsync(result.Token, rememberMe);
+        CurrentUser = await GetCurrentUser();
     }
+
+    return result;
+}
 
     public async Task LogoutAsync()
     {
@@ -59,8 +58,22 @@ public class AuthService
             return null;
         }
     }
+    public async Task<RegisterResponse?> RegisterAsync(string email, string password, bool rememberMe)
+    {
+        var request = new RegisterRequest(email, password);
+        var response = await _http.PostAsJsonAsync($"{Endpoint}/register", request);
+
+        if (!response.IsSuccessStatusCode)
+            return null;
+
+        var result = await response.Content.ReadFromJsonAsync<RegisterResponse>();
+        if (result != null && !string.IsNullOrEmpty(result.Token))
+        {
+            await _tokenStorage.SetTokenAsync(result.Token, rememberMe);
+            CurrentUser = await GetCurrentUser();
+        }
+
+        return result;
+    }
 }
 
-public record LoginRequest(string Email, string Password);
-public record LoginResponse(string Token, string? Message);
-public record UserInfo(string Username);
