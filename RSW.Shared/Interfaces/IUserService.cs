@@ -8,6 +8,7 @@ namespace RSW.Shared.Interfaces
         Task<ApplicationUser?> GetByIdAsync(string id);
         Task<ApplicationUser> CreateAsync(ApplicationUser model, string password);
         Task<ApplicationUser?> UpdateAsync(string id, ApplicationUser model);
+        Task<IEnumerable<VolunteerAssignment>?> GetVolunteerAssignmentsAsync(string id);
         Task<bool> DeleteAsync(string id);
     }
 }

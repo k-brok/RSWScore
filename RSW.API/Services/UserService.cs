@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using RSW.API.Data;
 using RSW.Shared.Entities;
 using RSW.Shared.Interfaces;
 
@@ -7,10 +9,12 @@ namespace RSW.API.Services
     public class UserService : IUserService
     {
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly AppDbContext _context;
 
-        public UserService(UserManager<ApplicationUser> userManager)
+        public UserService(AppDbContext context, UserManager<ApplicationUser> userManager)
         {
             _userManager = userManager;
+            _context = context;
         }
 
         public async Task<IEnumerable<ApplicationUser>> GetAllAsync()
@@ -64,6 +68,14 @@ namespace RSW.API.Services
 
             var result = await _userManager.DeleteAsync(user);
             return result.Succeeded;
+        }
+
+        public async Task<IEnumerable<VolunteerAssignment>?> GetVolunteerAssignmentsAsync(string id)
+        {
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null) return null;
+
+            return await _context.VolunteerAssignments.Where(V => V.UserId == id).ToListAsync();
         }
     }
 }
