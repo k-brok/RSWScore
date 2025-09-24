@@ -46,6 +46,7 @@ public class Program
         builder.Services.AddScoped<ISubCategoryService, SubCategoryService>();
         builder.Services.AddScoped<ISubGroupService, SubGroupService>();
         builder.Services.AddScoped<IWebSettingService, WebSettingService>();
+        builder.Services.AddScoped<IVolunteerTaskService, VolunteerTaskService>();
 
         builder.Services.AddScoped<SeedService>();
 
@@ -150,6 +151,7 @@ public class Program
         app.MapSubCategoryEndpoints();
         app.MapSubGroupEndpoints();
         app.MapWebSettingEndpoints();
+        app.MapVolunteerTaskEndpoints();
         app.MapAccountEndpoints();
 
         using (var scope = app.Services.CreateScope())
