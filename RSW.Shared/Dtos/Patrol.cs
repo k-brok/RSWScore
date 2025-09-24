@@ -23,5 +23,6 @@ namespace RSW.Shared.Dto
         public decimal? TotalScore { get; }
         public int? Position { get; }
         public bool IsYoungest { get; set; }
+        public List<ScoutDto> Scouts { get; set; } = new();
     }
 }

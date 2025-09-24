@@ -31,6 +31,20 @@ namespace RSW.API.Services
             return _mapper.Map<PatrolDto>(entity);
         }
 
+        public async Task<IEnumerable<ScoutDto>> GetScoutsAsync(Guid patrolId)
+        {
+            return await _context.Scouts
+                .Where(s => s.PatrolId == patrolId)
+                .Select(s => new ScoutDto
+                {
+                    Id = s.Id,
+                    Firstname = s.Firstname,
+                    Lastname = s.Lastname,
+                    DateOfBirth = s.DateOfBirth,
+                    PatrolId = s.PatrolId,
+                }).ToListAsync();
+        }
+
         public async Task<PatrolDto> CreateAsync(PatrolCreateDto dto)
         {
             var entity = new Patrol

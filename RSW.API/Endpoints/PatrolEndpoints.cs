@@ -23,6 +23,11 @@ namespace RSW.API.Endpoints
                 return found is not null ? Results.Ok(found) : Results.NotFound();
             }).AllowAnonymous();
 
+            Patrol.MapGet("/{id:guid}/scouts", async (Guid id, IPatrolService service) =>
+            {
+                return Results.Ok(await service.GetScoutsAsync(id));
+            }).AllowAnonymous();
+
             Patrol.MapPost("/", async (PatrolCreateDto dto, IPatrolService service) =>
             {
                 var created = await service.CreateAsync(dto);
