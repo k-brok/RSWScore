@@ -1,0 +1,155 @@
+@page "/vrijwilliger-aanmelden"
+@using RSW.Shared.Entities
+@inject IVolunteerAssignmentService AssignmentService
+@inject IVolunteerTaskService volunteerTaskService
+@inject IEditionService EditionService
+@inject AuthService authService
+@inject IUserService userService
+@inject NotificationService NotificationService
+
+<PageTitle>Vrijwilliger aanmelden</PageTitle>
+
+<RadzenCard class="rz-my-5">
+    <h1>Aanmelden als vrijwilliger 🤝</h1>
+    <p>
+        Zonder vrijwilligers geen RSW! 💪 <br />
+        Meld je hieronder aan en draag bij aan een geweldig weekend vol Scoutingavontuur 🌲🔥.  
+        Of je nu helpt bij de keuken, het programma, de opbouw of de logistiek: we kunnen je hulp goed gebruiken! 🙌
+    </p>
+</RadzenCard>
+
+@if (authService.CurrentUser != null)
+{
+    <RadzenRow class="rz-my-5">
+        @if (PreviousVolunteerAssignments != null && PreviousVolunteerAssignments.Any())
+        {
+            <RadzenColumn Size="12" SizeSM="6">
+                <RadzenCard>
+                    <h3>Jouw eerdere inschrijvingen 📋</h3>
+                    <p>Hier zie je voor welke taken je al eens hebt meegeholpen:</p>
+                    <RadzenTable>
+                        <RadzenTableHeader>
+                            <RadzenTableHeaderRow>
+                                <RadzenTableHeaderCell>Editie</RadzenTableHeaderCell>
+                                <RadzenTableHeaderCell>Taak</RadzenTableHeaderCell>
+                            </RadzenTableHeaderRow>
+                        </RadzenTableHeader>
+                        <RadzenTableBody>
+                            @foreach (VolunteerAssignment volunteerAssignment in PreviousVolunteerAssignments)
+                            {
+                                <RadzenTableRow>
+                                    <RadzenTableCell>
+                                        @Editions.FirstOrDefault(E => E.Id == volunteerAssignment.EditionId).RSWStartDate.Year
+                                    </RadzenTableCell>
+                                    <RadzenTableCell>
+                                        @VolunteerTasks.FirstOrDefault(V => V.Id == volunteerAssignment.TaskId).Name
+                                    </RadzenTableCell>
+                                </RadzenTableRow>
+                            }
+                        </RadzenTableBody>
+                    </RadzenTable>
+                </RadzenCard>
+            </RadzenColumn>
+        }
+
+        <RadzenColumn Size="12" SizeSM="6">
+            <RadzenCard>
+                <h3>Nieuwe aanmelding ✍️</h3>
+                <p>
+                    Schrijf je hier in voor de <b>RSW @ActiveEdition?.RSWStartDate.Year</b>.  
+                    Kies een taak die bij jou past en vink aan of je een VOG hebt.
+                </p>
+
+                <RadzenTemplateForm TItem="VolunteerAssignment" Data="@assignment" Submit="@((VolunteerAssignment args) => { HandleValidSubmit(args); })">
+                    <RadzenLabel Text="Taak" Component="TaskId" />
+                    <RadzenDropDown Data="@VolunteerTasks"
+                                    @bind-Value=assignment.TaskId
+                                    ValueProperty=@nameof(VolunteerTask.Id)
+                                    TextProperty=@nameof(VolunteerTask.Name)
+                                    Style="margin-bottom:10px;" />
+
+                    <div style="margin-bottom:10px;">
+                        <RadzenCheckBox @bind-Value="assignment.HasVOG" Name="HasVOG" TValue="bool" />
+                        <RadzenLabel Text="VOG aanwezig" Component="HasVOG" Style="margin-left:5px" />
+                    </div>
+
+                    <RadzenButton ButtonStyle="ButtonStyle.Primary"
+                                  Text="Aanmelden"
+                                  Icon="how_to_reg"
+                                  Type="Submit" />
+                </RadzenTemplateForm>
+            </RadzenCard>
+        </RadzenColumn>
+    </RadzenRow>
+}
+
+@if (VolunteerTasks != null && VolunteerTasks.Any())
+{
+    <RadzenCard class="rz-my-5">
+        <h3>Beschikbare taken 💼</h3>
+        <p>
+            Hier zie je een overzicht van alle mogelijke vrijwilligerstaken.  
+            Klik op een taak om meer informatie te lezen.
+        </p>
+        <RadzenAccordion>
+            <Items>
+                @foreach (VolunteerTask task in VolunteerTasks)
+                {
+                    <RadzenAccordionItem Text=@task.Name>
+                        <p>@task.Description</p>
+                    </RadzenAccordionItem>
+                }
+            </Items>
+        </RadzenAccordion>
+    </RadzenCard>
+}
+
+@code {
+    private VolunteerAssignment assignment = new();
+    private EditionDto? ActiveEdition;
+    private IEnumerable<VolunteerTask>? VolunteerTasks = null!;
+    private IEnumerable<EditionDto>? Editions = null!;
+    private List<VolunteerAssignment>? PreviousVolunteerAssignments = null!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (authService.CurrentUser == null)
+            await authService.GetCurrentUser();
+
+        if (authService.CurrentUser != null)
+        {
+            PreviousVolunteerAssignments = (List<VolunteerAssignment>)await userService.GetVolunteerAssignmentsAsync(authService.CurrentUser.Id);
+        }
+
+        Editions = await EditionService.GetAllAsync();
+        ActiveEdition = await EditionService.GetActiveAsync();
+        VolunteerTasks = await volunteerTaskService.GetAllAsync();
+        await base.OnInitializedAsync();
+    }
+
+    private async Task HandleValidSubmit(VolunteerAssignment volunteerAssignment)
+    {
+        volunteerAssignment.EditionId = ActiveEdition.Id;
+        volunteerAssignment.UserId = authService.CurrentUser.Id;
+
+        if (PreviousVolunteerAssignments.Where(A => A.EditionId == volunteerAssignment.EditionId && A.TaskId == volunteerAssignment.TaskId).Any())
+        {
+            NotificationService.Notify(new NotificationMessage
+            {
+                Summary = $"Je bent reeds aangemeld als {VolunteerTasks.FirstOrDefault(V => V.Id == volunteerAssignment.TaskId).Name} in jaar {Editions.FirstOrDefault(E => E.Id == volunteerAssignment.EditionId).RSWStartDate.Year}."
+            });
+            return;
+        }
+
+        var result = await AssignmentService.CreateAsync(volunteerAssignment);
+        if (result is not null)
+        {
+            PreviousVolunteerAssignments.Add(result);
+            assignment = new(); // reset formulier
+        }
+        else
+        {
+            NotificationService.Notify(new NotificationMessage { Summary = $"Er is iets misgegaan. Probeer later opnieuw." });
+        }
+    }
+}
