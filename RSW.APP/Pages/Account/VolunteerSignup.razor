@@ -6,97 +6,123 @@
 @inject AuthService authService
 @inject IUserService userService
 @inject NotificationService NotificationService
+@inject NavigationManager Nav
 
 <PageTitle>Vrijwilliger aanmelden</PageTitle>
 
-<RadzenCard class="rz-my-5">
-    <h1>Aanmelden als vrijwilliger 🤝</h1>
-    <p>
+<RadzenCard class="rz-m-2 rz-p-2">
+    <RadzenText TextStyle="TextStyle.H4">Aanmelden als vrijwilliger 🤝</RadzenText>
+    <RadzenText>
         Zonder vrijwilligers geen RSW! 💪 <br />
         Meld je hieronder aan en draag bij aan een geweldig weekend vol Scoutingavontuur 🌲🔥.  
         Of je nu helpt bij de keuken, het programma, de opbouw of de logistiek: we kunnen je hulp goed gebruiken! 🙌
-    </p>
+    </RadzenText>
 </RadzenCard>
 
-@if (authService.CurrentUser != null)
-{
-    <RadzenRow class="rz-my-5">
-        @if (PreviousVolunteerAssignments != null && PreviousVolunteerAssignments.Any())
-        {
-            <RadzenColumn Size="12" SizeSM="6">
-                <RadzenCard>
-                    <h3>Jouw eerdere inschrijvingen 📋</h3>
-                    <p>Hier zie je voor welke taken je al eens hebt meegeholpen:</p>
-                    <RadzenTable>
-                        <RadzenTableHeader>
-                            <RadzenTableHeaderRow>
-                                <RadzenTableHeaderCell>Editie</RadzenTableHeaderCell>
-                                <RadzenTableHeaderCell>Taak</RadzenTableHeaderCell>
-                            </RadzenTableHeaderRow>
-                        </RadzenTableHeader>
-                        <RadzenTableBody>
-                            @foreach (VolunteerAssignment volunteerAssignment in PreviousVolunteerAssignments)
-                            {
-                                <RadzenTableRow>
-                                    <RadzenTableCell>
-                                        @Editions.FirstOrDefault(E => E.Id == volunteerAssignment.EditionId).RSWStartDate.Year
-                                    </RadzenTableCell>
-                                    <RadzenTableCell>
-                                        @VolunteerTasks.FirstOrDefault(V => V.Id == volunteerAssignment.TaskId).Name
-                                    </RadzenTableCell>
-                                </RadzenTableRow>
-                            }
-                        </RadzenTableBody>
-                    </RadzenTable>
-                </RadzenCard>
-            </RadzenColumn>
-        }
+<RadzenSteps @ref="radzenSteps" Change="OnChange" class="rz-m-2 rz-p-2">
+    <Steps>
+        <RadzenStepsItem Text="Account aanmaken" Disabled=@(authService.CurrentUser != null)>
+            @if(authService.CurrentUser == null)
+            {
+                <RadzenStack Orientation="Orientation.Horizontal">
+                    <LoginForm />
+                    <RegisterForm />
+                </RadzenStack>
+            }
+            else
+            {
+                <RadzenText>Je bent reeds aangemeld, ga door naar de volgende stap.</RadzenText>
+            }
+        </RadzenStepsItem>
+        <RadzenStepsItem Text="Gegevens invullen">
+            @if (authService.CurrentUser != null)
+            {
+                <UserDetailsForm User="authService.CurrentUser"/>
+            }
+        </RadzenStepsItem>
+        <RadzenStepsItem Text="Als vrijwilliger aanmeleden">
+            @if (authService.CurrentUser != null)
+            {
+                <RadzenRow class="rz-my-5">
+                    @if (PreviousVolunteerAssignments != null && PreviousVolunteerAssignments.Any())
+                    {
+                        <RadzenColumn Size="12" SizeSM="6">
+                            <RadzenCard>
+                                <h3>Jouw eerdere inschrijvingen 📋</h3>
+                                <p>Hier zie je voor welke taken je al eens hebt meegeholpen:</p>
+                                <RadzenTable>
+                                    <RadzenTableHeader>
+                                        <RadzenTableHeaderRow>
+                                            <RadzenTableHeaderCell>Editie</RadzenTableHeaderCell>
+                                            <RadzenTableHeaderCell>Taak</RadzenTableHeaderCell>
+                                        </RadzenTableHeaderRow>
+                                    </RadzenTableHeader>
+                                    <RadzenTableBody>
+                                        @foreach (VolunteerAssignment volunteerAssignment in PreviousVolunteerAssignments)
+                                        {
+                                            <RadzenTableRow>
+                                                <RadzenTableCell>
+                                                    @Editions.FirstOrDefault(E => E.Id == volunteerAssignment.EditionId).RSWStartDate.Year
+                                                </RadzenTableCell>
+                                                <RadzenTableCell>
+                                                    @VolunteerTasks.FirstOrDefault(V => V.Id == volunteerAssignment.TaskId).Name
+                                                </RadzenTableCell>
+                                            </RadzenTableRow>
+                                        }
+                                    </RadzenTableBody>
+                                </RadzenTable>
+                            </RadzenCard>
+                        </RadzenColumn>
+                    }
 
-        <RadzenColumn Size="12" SizeSM="6">
-            <RadzenCard>
-                <h3>Nieuwe aanmelding ✍️</h3>
-                <p>
-                    Schrijf je hier in voor de <b>RSW @ActiveEdition?.RSWStartDate.Year</b>.  
-                    Kies een taak die bij jou past en vink aan of je een VOG hebt.
-                </p>
+                    <RadzenColumn Size="12" SizeSM="6">
+                        <RadzenCard class="rz-m-2 rz-p-2">
+                            <h3>Nieuwe aanmelding ✍️</h3>
+                            <p>
+                                Schrijf je hier in voor de <b>RSW @ActiveEdition?.RSWStartDate.Year</b>.  
+                                Kies een taak die bij jou past en vink aan of je een VOG hebt.
+                            </p>
 
-                <RadzenTemplateForm TItem="VolunteerAssignment" Data="@assignment" Submit="@((VolunteerAssignment args) => { HandleValidSubmit(args); })">
-                    <RadzenLabel Text="Taak" Component="TaskId" />
-                    <RadzenDropDown Data="@VolunteerTasks"
-                                    @bind-Value=assignment.TaskId
-                                    ValueProperty=@nameof(VolunteerTask.Id)
-                                    TextProperty=@nameof(VolunteerTask.Name)
-                                    Style="margin-bottom:10px;" />
+                            <RadzenTemplateForm TItem="VolunteerAssignment" Data="@assignment" Submit="@((VolunteerAssignment args) => { HandleValidSubmit(args); })">
+                                <RadzenLabel Text="Taak" Component="TaskId" />
+                                <RadzenDropDown Data="@VolunteerTasks"
+                                                @bind-Value=assignment.TaskId
+                                                ValueProperty=@nameof(VolunteerTask.Id)
+                                                TextProperty=@nameof(VolunteerTask.Name)
+                                                Style="margin-bottom:10px;" />
 
-                    <div style="margin-bottom:10px;">
-                        <RadzenCheckBox @bind-Value="assignment.HasVOG" Name="HasVOG" TValue="bool" />
-                        <RadzenLabel Text="VOG aanwezig" Component="HasVOG" Style="margin-left:5px" />
-                    </div>
+                                <div style="margin-bottom:10px;">
+                                    <RadzenCheckBox @bind-Value="assignment.HasVOG" Name="HasVOG" TValue="bool" />
+                                    <RadzenLabel Text="VOG aanwezig" Component="HasVOG" Style="margin-left:5px" />
+                                </div>
 
-                    <RadzenButton ButtonStyle="ButtonStyle.Primary"
-                                  Text="Aanmelden"
-                                  Icon="how_to_reg"
-                                  Type="Submit" />
-                </RadzenTemplateForm>
-            </RadzenCard>
-        </RadzenColumn>
-    </RadzenRow>
-}
+                                <RadzenButton ButtonStyle="ButtonStyle.Primary"
+                                            Text="Aanmelden"
+                                            Icon="how_to_reg"
+                                            Type="Submit" />
+                            </RadzenTemplateForm>
+                        </RadzenCard>
+                    </RadzenColumn>
+                </RadzenRow>
+            }
+        </RadzenStepsItem>
+    </Steps>
+</RadzenSteps>
 
 @if (VolunteerTasks != null && VolunteerTasks.Any())
 {
-    <RadzenCard class="rz-my-5">
-        <h3>Beschikbare taken 💼</h3>
-        <p>
+    <RadzenCard class="rz-m-2 rz-p-2">
+        <RadzenText TextStyle="TextStyle.H6">Beschikbare taken 💼</RadzenText>
+        <RadzenText>
             Hier zie je een overzicht van alle mogelijke vrijwilligerstaken.  
             Klik op een taak om meer informatie te lezen.
-        </p>
+        </RadzenText>
         <RadzenAccordion>
             <Items>
                 @foreach (VolunteerTask task in VolunteerTasks)
                 {
                     <RadzenAccordionItem Text=@task.Name>
-                        <p>@task.Description</p>
+                        <RadzenText>@task.Description</RadzenText>
                     </RadzenAccordionItem>
                 }
             </Items>
@@ -110,7 +136,7 @@
     private IEnumerable<VolunteerTask>? VolunteerTasks = null!;
     private IEnumerable<EditionDto>? Editions = null!;
     private List<VolunteerAssignment>? PreviousVolunteerAssignments = null!;
-
+    private RadzenSteps radzenSteps = default!;
     protected override async Task OnInitializedAsync()
     {
         if (authService.CurrentUser == null)
@@ -151,5 +177,9 @@
         {
             NotificationService.Notify(new NotificationMessage { Summary = $"Er is iets misgegaan. Probeer later opnieuw." });
         }
+    }
+    void OnChange(int index)
+    {
+        
     }
 }
