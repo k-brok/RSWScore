@@ -36,6 +36,7 @@ public class Program
         builder.Services.AddScoped<ISubCategoryService, SubCategoryService>();
         builder.Services.AddScoped<ISubGroupService, SubGroupService>();
         builder.Services.AddScoped<IWebSettingService, WebSettingService>();
+        builder.Services.AddScoped<IVolunteerTaskService, VolunteerTaskService>();
 
         builder.Services.AddScoped<ITokenStorage, BrowserTokenStorage>();
         builder.Services.AddScoped<AuthService>();

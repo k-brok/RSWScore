@@ -24,5 +24,6 @@ namespace RSW.API.Data
         public DbSet<SubCategory> SubCategories { get; set; } = null!;
         public DbSet<SubGroup> SubGroups { get; set; } = null!;
         public DbSet<WebSetting> WebSettings { get; set; } = null!;
+        public DbSet<VolunteerTask> VolunteerTasks { get; set; } = null!;
     }
 }
