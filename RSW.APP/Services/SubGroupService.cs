@@ -28,11 +28,6 @@ namespace RSW.APP.Services
             return await _httpClient.GetFromJsonAsync<SubGroupDto>($"{Endpoint}/{id}");
         }
 
-        public async Task<IEnumerable<GroupDto>> GetGroupsAsync(Guid id)
-        {
-            throw new NotImplementedException();
-        }
-
         public async Task<SubGroupDto> CreateAsync(SubGroupCreateDto dto)
         {
             var response = await _httpClient.PostAsJsonAsync(Endpoint, dto);
@@ -60,6 +55,13 @@ namespace RSW.APP.Services
         {
             var response = await _httpClient.DeleteAsync($"{Endpoint}/{id}");
             return response.IsSuccessStatusCode;
+        }
+
+        public async Task<IEnumerable<PatrolDto>?> GetPatrolsAsync(Guid id)
+        {
+            var result = await _httpClient.GetFromJsonAsync<List<PatrolDto>>($"{Endpoint}/{id}/patrols");
+
+            return result ?? new List<PatrolDto>();
         }
     }
 }

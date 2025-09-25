@@ -66,6 +66,14 @@ namespace RSW.API.Services
             await _context.SaveChangesAsync();
             return true;
         }
+
+        public async Task<IEnumerable<PatrolDto>?> GetPatrolsAsync(Guid id)
+        {
+            return await _context.Patrols
+                .Where(P => P.SubGroupId == id)
+                .Select(e => _mapper.Map<PatrolDto>(e))
+                .ToListAsync();
+        }
     }
 
 }
