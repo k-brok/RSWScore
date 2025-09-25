@@ -3,9 +3,7 @@ using RSW.API.Data;
 using RSW.API.Endpoints;
 using RSW.API.Services;
 using RSW.Shared.Interfaces;
-using AutoMapper;
 using Microsoft.Extensions.DependencyInjection;
-using RSW.Shared.Mapper;
 using RSW.Shared.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
@@ -30,8 +28,6 @@ public class Program
         builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
             .AddEntityFrameworkStores<AppDbContext>()
             .AddDefaultTokenProviders();
-
-        builder.Services.AddAutoMapper(cfg => { }, typeof(AutoMapperProfile));
 
         builder.Services.AddScoped<IAssociationService, AssociationService>();
         builder.Services.AddScoped<ICategoryService, CategoryService>();

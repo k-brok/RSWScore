@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Radzen;
 using RSW.APP.Services;
 using RSW.Shared.Interfaces;
-using RSW.Shared.Mapper;
 using RSW.APP.Auth;
 using Microsoft.AspNetCore.Components.Authorization;
 
@@ -20,8 +19,6 @@ public class Program
         builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 
         builder.Services.AddRadzenComponents();
-
-        builder.Services.AddAutoMapper(cfg => { }, typeof(AutoMapperProfile));
 
         builder.Services.AddScoped<IAssociationService, AssociationService>();
         builder.Services.AddScoped<ICategoryService, CategoryService>();
