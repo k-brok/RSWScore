@@ -7,7 +7,7 @@ namespace RSW.Shared.Interfaces
         Task<IEnumerable<Category>> GetAllAsync();
         Task<Category?> GetByIdAsync(Guid id);
         Task<Category> CreateAsync(Category model);
-        Task<Category?> UpdateAsync(Guid id, Category dto);
+        Task<Category?> UpdateAsync(Guid id, Category model);
         Task<bool> DeleteAsync(Guid id);
     }
 }

@@ -8,7 +8,7 @@ namespace RSW.Shared.Interfaces
         Task<Association?> GetByIdAsync(Guid id);
         Task<IEnumerable<Group>> GetGroupsAsync(Guid id);
         Task<Association> CreateAsync(Association model);
-        Task<Association?> UpdateAsync(Guid id, Association dto);
+        Task<Association?> UpdateAsync(Guid id, Association model);
         Task<bool> DeleteAsync(Guid id);
     }
 }

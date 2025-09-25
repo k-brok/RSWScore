@@ -1,7 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using RSW.API.Data;
-using RSW.Shared.Dto;
-using RSW.Shared.Entities;
+﻿using RSW.Shared.Entities;
 using RSW.Shared.Interfaces;
 
 namespace RSW.API.Endpoints
