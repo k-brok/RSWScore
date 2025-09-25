@@ -1,0 +1,59 @@
+@page "/JuryForm"
+@using Microsoft.IdentityModel.Tokens
+@inject ISubGroupService subGroupService
+@inject IPatrolService patrolService
+@inject IJurySlotService jurySlotService
+@inject AuthService authService
+@inject ICategoryService categoryService
+
+@if(!IsAuthenticated)
+{
+    <RadzenCard>
+        <RadzenText>U hebt geen toegang tot dit jury formulier.</RadzenText>
+    </RadzenCard>
+}
+
+@code{
+    [SupplyParameterFromQuery]
+    public string? Code {get; set;} = null!;
+    private IEnumerable<SubGroupDto>? subGroups;
+    [SupplyParameterFromQuery]
+    public string? CategoryId {get;set;} = null!;
+    private CategoryDto? Category = null!;
+    private bool IsAuthenticated = false;
+    protected override async Task OnInitializedAsync()
+    {
+        subGroups = await subGroupService.GetAllAsync();
+        foreach(SubGroupDto subGroup in subGroups)
+        {
+            subGroup.Patrols = await subGroupService.GetPatrolsAsync(subGroup.Id);
+        }
+        await base.OnInitializedAsync();
+
+        await ProcessCode();
+    }
+    private async Task ProcessCode(){
+        if(Code == null)
+            return;
+
+        Guid id;
+
+        bool IsGuid = Guid.TryParse(Code,out id);
+
+        if(!IsGuid)
+            return;
+        
+        JurySlotDto? jurySlot = await jurySlotService.GetByIdAsync(id);
+
+        if(jurySlot == null)
+            return;
+        
+        
+
+        StateHasChanged();
+    }
+    private async Task CheckAdmin()
+    {
+
+    }
+}
