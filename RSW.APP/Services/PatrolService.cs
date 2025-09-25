@@ -33,9 +33,11 @@ namespace RSW.APP.Services
             return result ?? new List<Scout>();
         }
 
-        public async Task<IEnumerable<Unit>> GetGroupsAsync(Guid id)
+        public async Task<IEnumerable<Score>> GetScoresAsync(Guid id)
         {
-            throw new NotImplementedException();
+            var result = await _httpClient.GetFromJsonAsync<List<Score>>($"{Endpoint}/{id}/scores");
+
+            return result ?? new List<Score>();
         }
 
         public async Task<Patrol> CreateAsync(Patrol model)

@@ -1,4 +1,5 @@
 using System.Net.Http.Json;
+using System.Runtime.CompilerServices;
 using RSW.Shared.Entities;
 using RSW.Shared.Interfaces;
 
@@ -58,6 +59,19 @@ namespace RSW.APP.Services
         {
             var response = await _httpClient.DeleteAsync($"{Endpoint}/{id}");
             return response.IsSuccessStatusCode;
+        }
+
+        public async Task<Score?> SetValueAsync(Score model)
+        {
+            Console.WriteLine($"Nieuwe waarde is {model.Value}");
+            var response = await _httpClient.PostAsJsonAsync($"{Endpoint}/setvalue", model);
+
+            if (response.IsSuccessStatusCode)
+            {
+                return await response.Content.ReadFromJsonAsync<Score>();
+            }
+
+            return null;
         }
     }
 }

@@ -54,5 +54,12 @@ namespace RSW.APP.Services
             var response = await _httpClient.DeleteAsync($"{Endpoint}/{id}");
             return response.IsSuccessStatusCode;
         }
+
+        public async Task<IEnumerable<SubCategory>> GetSubCategorysAsync(Guid id)
+        {
+            var result = await _httpClient.GetFromJsonAsync<List<SubCategory>>($"{Endpoint}/{id}/subcategories");
+
+            return result ?? new List<SubCategory>();
+        }
     }
 }

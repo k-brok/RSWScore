@@ -57,8 +57,6 @@ namespace RSW.API.Services
 
             await _context.SaveChangesAsync();
 
-            await _hub.Clients.All.SendAsync("ScoreUpdate", existing);
-
             return existing;
         }
         public async Task<bool> DeleteAsync(Guid id)
@@ -69,6 +67,25 @@ namespace RSW.API.Services
             _context.Scores.Remove(found);
             await _context.SaveChangesAsync();
             return true;
+        }
+
+        public async Task<Score?> SetValueAsync(Score model)
+        {
+            Console.WriteLine($" nieuwe waarde is: {model.Value}");
+            var FoundScore = await _context.Scores.FirstOrDefaultAsync(s => s.PatrolId == model.PatrolId && s.CriteriaId == model.CriteriaId);
+            if (FoundScore == null)
+            {
+                _context.Scores.Add(model);
+            }
+            else
+            {
+                FoundScore.Value = model.Value;
+            }
+            await _context.SaveChangesAsync();
+
+            await _hub.Clients.All.SendAsync("ScoreUpdate", FoundScore);
+
+            return FoundScore;
         }
     }
 

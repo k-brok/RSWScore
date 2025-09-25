@@ -26,17 +26,15 @@ namespace RSW.APP.Services
             return await _httpClient.GetFromJsonAsync<JurySlot>($"{Endpoint}/{id}");
         }
 
-        public async Task<IEnumerable<Unit>> GetGroupsAsync(Guid id)
-        {
-            throw new NotImplementedException();
-        }
-
-        public async Task<JurySlot> CreateAsync(JurySlot model)
+        public async Task<JurySlot?> CreateAsync(JurySlot model)
         {
             var response = await _httpClient.PostAsJsonAsync(Endpoint, model);
 
             if (response.IsSuccessStatusCode)
             {
+                if (response.Content == null)
+                    return null;
+
                 return await response.Content.ReadFromJsonAsync<JurySlot>();
             }
 

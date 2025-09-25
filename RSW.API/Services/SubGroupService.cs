@@ -63,11 +63,10 @@ namespace RSW.API.Services
             return true;
         }
 
-        public async Task<IEnumerable<PatrolDto>?> GetPatrolsAsync(Guid id)
+        public async Task<IEnumerable<Patrol>?> GetPatrolsAsync(Guid id)
         {
             return await _context.Patrols
                 .Where(P => P.SubGroupId == id)
-                .Select(e => _mapper.Map<PatrolDto>(e))
                 .ToListAsync();
         }
     }

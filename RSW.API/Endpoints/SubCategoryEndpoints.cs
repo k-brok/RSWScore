@@ -39,6 +39,11 @@ namespace RSW.API.Endpoints
                 var success = await service.DeleteAsync(id);
                 return success ? Results.Ok() : Results.NotFound();
             });
+            SubCategory.MapGet("/{id:guid}/criterias", async (Guid id, ISubCategoryService service) =>
+            {
+                var found = await service.GetCriteriasAsync(id);
+                return found is not null ? Results.Ok(found) : Results.NotFound();
+            }).AllowAnonymous();
         }
     }
 }

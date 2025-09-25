@@ -5,32 +5,119 @@
 @inject IJurySlotService jurySlotService
 @inject AuthService authService
 @inject ICategoryService categoryService
+@inject ISubCategoryService subCategoryService
+@inject ISubGroupService subGroupService
+@inject IScoreService scoreService
+@using Microsoft.AspNetCore.SignalR.Client;
+@inject IConfiguration Configuration
 
-@if(!IsAuthenticated)
+@if(!IsLoaded)
+{
+    <RadzenCard Style="margin:20px;">
+        <RadzenProgressBarCircular Value="50" ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
+        <p>Code controleren...</p>
+    </RadzenCard>
+}
+else if(!IsAuthenticated)
 {
     <RadzenCard>
         <RadzenText>U hebt geen toegang tot dit jury formulier.</RadzenText>
     </RadzenCard>
 }
+else
+{
+    <RadzenTabs>
+        <Tabs>
+            @foreach(SubCategory subCategory in Category.SubCategories)
+            {
+                <RadzenTabsItem Text="@subCategory.Name">
+                    <RadzenTabs>
+                        <Tabs>
+                            @foreach(Patrol patrol in subGroup.Patrols)
+                            {
+                                <RadzenTabsItem Text="@patrol.Number.ToString()">
+                                    <RadzenTable class="rz-m-0">
+                                        <RadzenTableBody>
+                                            @foreach(Criteria criteria in subCategory.criterias)
+                                            {
+                                                <RadzenTableRow>
+                                                    @{
+                                                        var currentScore = patrol.Scores.FirstOrDefault(s => s.CriteriaId == criteria.Id);
+                                                        if (currentScore == null)
+                                                        {
+                                                            currentScore = new Score { PatrolId = patrol.Id, CriteriaId = criteria.Id };
+                                                            patrol.Scores.Add(currentScore);
+                                                        }
+                                                    }
+                                                    <RadzenTableCell>
+                                                        <RadzenLabel Text=@criteria.Name />
+                                                    </RadzenTableCell>
+                                                    <RadzenTableCell>
+                                                        @if(criteria.MaxScore == 1)
+                                                        {
+                                                            <RadzenSwitch Value=@currentScore.BoolValue Change="@(async (bool value) => await SaveScoreAsync(currentScore,value ? 1 : 0))"/>
+                                                        }
+                                                        else if (criteria.MaxScore <= 5)
+                                                        {
+                                                            @currentScore.Value.ToString()
+                                                            <RadzenSlider Value=currentScore.Value TValue="int" Min="0" Max=@criteria.MaxScore Change="@(async (int value) => await SaveScoreAsync(currentScore,value))"/>
+                                                        }
+                                                        else
+                                                        {
+                                                            <RadzenNumeric Value=currentScore.Value TValue="int" Change="@(async (int value) => await SaveScoreAsync(currentScore,value))"/>
+                                                        }
+                                                    </RadzenTableCell>
+                                                </RadzenTableRow>
+                                            }
+                                        </RadzenTableBody>
+                                    </RadzenTable>
+                                </RadzenTabsItem>
+                            }
+                        </Tabs>
+                    </RadzenTabs>
+                </RadzenTabsItem>
+            }
+        </Tabs>
+    </RadzenTabs>
+}
 
 @code{
     [SupplyParameterFromQuery]
     public string? Code {get; set;} = null!;
-    private IEnumerable<SubGroupDto>? subGroups;
+    private SubGroup subGroup;
     [SupplyParameterFromQuery]
     public string? CategoryId {get;set;} = null!;
-    private CategoryDto? Category = null!;
+    private Category? Category = null!;
     private bool IsAuthenticated = false;
+    private bool IsLoaded = false;
+    private HubConnection? hubConnection;
     protected override async Task OnInitializedAsync()
     {
-        subGroups = await subGroupService.GetAllAsync();
-        foreach(SubGroupDto subGroup in subGroups)
+        var hubUrl = Configuration["ApiBaseUrl"];
+
+        hubConnection = new HubConnectionBuilder()
+        .WithUrl($"{hubUrl}/hubs/updates") // let op juiste URL!
+        .WithAutomaticReconnect()
+        .Build();
+
+        hubConnection.On<Score>("ScoreUpdate", (UpdateScore) =>
         {
-            subGroup.Patrols = await subGroupService.GetPatrolsAsync(subGroup.Id);
-        }
+            var score = subGroup.Patrols
+                .Where(p => p.Id == UpdateScore.PatrolId)
+                .SelectMany(p => p.Scores)
+                .FirstOrDefault(s => s.CriteriaId == UpdateScore.CriteriaId);
+            if (score != null)
+            {
+                score.Value = UpdateScore.Value;
+                InvokeAsync(StateHasChanged);
+            }
+        });
+
         await base.OnInitializedAsync();
 
         await ProcessCode();
+        await hubConnection.StartAsync();
+        IsLoaded = true;
     }
     private async Task ProcessCode(){
         if(Code == null)
@@ -43,12 +130,38 @@
         if(!IsGuid)
             return;
         
-        JurySlotDto? jurySlot = await jurySlotService.GetByIdAsync(id);
+        JurySlot? jurySlot = await jurySlotService.GetByIdAsync(id);
 
         if(jurySlot == null)
             return;
         
+        Category = await categoryService.GetByIdAsync(jurySlot.CategoryId);
+
+        if(Category == null)
+            return;
+
+        var subCategories = await categoryService.GetSubCategorysAsync(Category.Id);
+        Category.SubCategories = subCategories.ToList();
+
+        foreach(SubCategory subcategory in Category.SubCategories){
+            var criterias = await subCategoryService.GetCriteriasAsync(subcategory.Id);
+            subcategory.criterias = criterias.ToList();
+        }
+
+        subGroup = await subGroupService.GetByIdAsync(jurySlot.SubgroupId);
+
+        if(subGroup == null)
+            return;
         
+        subGroup.Patrols = await subGroupService.GetPatrolsAsync(subGroup.Id);
+
+        foreach(Patrol patrol in subGroup.Patrols)
+        {
+            var patrols = await patrolService.GetScoresAsync(patrol.Id);
+            patrol.Scores = patrols.ToList();
+        }
+
+        IsAuthenticated = true;
 
         StateHasChanged();
     }
@@ -56,4 +169,11 @@
     {
 
     }
+    private async Task SaveScoreAsync(Score score, int Value)
+    {
+        score.Value = Value;
+
+        await scoreService.SetValueAsync(score);
+    }
+
 }

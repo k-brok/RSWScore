@@ -62,7 +62,13 @@ namespace RSW.APP.Services
 
         public async Task<Edition?> GetActiveAsync()
         {
-            return await _httpClient.GetFromJsonAsync<Edition>($"{Endpoint}/active");
+            var responce = await _httpClient.GetAsync($"{Endpoint}/active");
+
+            if (responce.IsSuccessStatusCode)
+            {
+                return await responce.Content.ReadFromJsonAsync<Edition>();
+            }
+            return null;
         }
 
         public async Task<Edition?> ActivateAsync(Guid id)

@@ -8,6 +8,7 @@ namespace RSW.Shared.Interfaces
         Task<Score?> GetByIdAsync(Guid id);
         Task<Score> CreateAsync(Score model);
         Task<Score?> UpdateAsync(Guid id, Score model);
+        Task<Score?> SetValueAsync(Score model);
         Task<bool> DeleteAsync(Guid id);
     }
 }

@@ -27,6 +27,11 @@ namespace RSW.API.Endpoints
                 return Results.Ok(await service.GetScoutsAsync(id));
             }).AllowAnonymous();
 
+            Patrol.MapGet("/{id:guid}/scores", async (Guid id, IPatrolService service) =>
+            {
+                return Results.Ok(await service.GetScoresAsync(id));
+            }).AllowAnonymous();
+
             Patrol.MapPost("/", async (Patrol model, IPatrolService service) =>
             {
                 var created = await service.CreateAsync(model);

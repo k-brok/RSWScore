@@ -2,6 +2,7 @@
 @inject NotificationService NotificationService
 @inject ISubGroupService subGroupService
 @inject ICategoryService categoryService
+@inject NavigationManager Nav
 
 @if(categorys == null || subGroups == null){
     <RadzenCard Style="margin:20px;">
@@ -20,7 +21,7 @@ else
                     }
                     else
                     {
-                        @jurySlot.Id
+                        <RadzenButton Variant="Variant.Text" Click=@(args => Nav.NavigateTo($"/JuryForm?Code={jurySlot.Id.ToString()}")) Text=@jurySlot.Id.ToString() />
                     }
                 </Template>
             </RadzenDataGridColumn>
@@ -130,7 +131,8 @@ else
                 ClosingTime = juryslot.ClosingTime,
                 OpeningTime = juryslot.OpeningTime
             });
-            juryslot.Id = NewJurySlot.Id;
+            if(NewJurySlot != null)
+                juryslot.Id = NewJurySlot.Id;
         }
         else
         {

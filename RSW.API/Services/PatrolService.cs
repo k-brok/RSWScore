@@ -31,14 +31,13 @@ namespace RSW.API.Services
         {
             return await _context.Scouts
                 .Where(s => s.PatrolId == patrolId)
-                .Select(s => new Scout
-                {
-                    Id = s.Id,
-                    Firstname = s.Firstname,
-                    Lastname = s.Lastname,
-                    DateOfBirth = s.DateOfBirth,
-                    PatrolId = s.PatrolId,
-                }).ToListAsync();
+                .ToListAsync();
+        }
+        public async Task<IEnumerable<Score>> GetScoresAsync(Guid patrolId)
+        {
+            return await _context.Scores
+                .Where(s => s.PatrolId == patrolId)
+                .ToListAsync();
         }
 
         public async Task<Patrol> CreateAsync(Patrol model)

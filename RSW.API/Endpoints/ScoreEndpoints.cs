@@ -28,6 +28,13 @@ namespace RSW.API.Endpoints
                 return Results.Created($"/api/Score/{created.Id}", created);
             });
 
+            Score.MapPost("/setvalue", async (Score model, IScoreService service) =>
+            {
+                Console.WriteLine($"Nieuwe API waarde is {model.Value}");
+                var updated = await service.SetValueAsync(model);
+                return updated is not null ? Results.Ok(updated) : Results.NotFound();
+            });
+
             Score.MapPut("/{id:guid}", async (Guid id, Score model, IScoreService service) =>
             {
                 var updated = await service.UpdateAsync(id, model);
