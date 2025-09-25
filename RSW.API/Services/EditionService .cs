@@ -9,25 +9,22 @@ namespace RSW.API.Services
     public class EditionService : IEditionService
     {
         private readonly AppDbContext _context;
-        private readonly IMapper _mapper;
 
-        public EditionService(AppDbContext context, IMapper mapper)
+        public EditionService(AppDbContext context)
         {
             _context = context;
-            _mapper = mapper;
         }
 
         public async Task<IEnumerable<Edition>> GetAllAsync()
         {
             return await _context.Editions
-                .Select(e => _mapper.Map<Edition>(e))
                 .ToListAsync();
         }
 
         public async Task<Edition?> GetByIdAsync(Guid id)
         {
             var entity = await _context.Editions.FirstOrDefaultAsync(e => e.Id == id);
-            return _mapper.Map<Edition>(entity);
+            return entity;
         }
 
         public async Task<Edition?> GetActiveAsync()
@@ -61,7 +58,7 @@ namespace RSW.API.Services
             _context.Editions.Add(entity);
             await _context.SaveChangesAsync();
 
-            return _mapper.Map<Edition>(entity);
+            return entity;
         }
 
         public async Task<Edition?> UpdateAsync(Guid id, Edition model)
@@ -75,7 +72,7 @@ namespace RSW.API.Services
             existing.PreSignupClose = model.PreSignupClose;
 
             await _context.SaveChangesAsync();
-            return _mapper.Map<Edition>(existing);
+            return existing;
         }
 
         public async Task<Edition?> ActivateAsync(Guid id)

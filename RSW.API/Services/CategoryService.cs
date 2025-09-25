@@ -9,25 +9,22 @@ namespace RSW.API.Services
     public class CategoryService : ICategoryService
     {
         private readonly AppDbContext _context;
-        private readonly IMapper _mapper;
 
-        public CategoryService(AppDbContext context, IMapper mapper)
+        public CategoryService(AppDbContext context)
         {
             _context = context;
-            _mapper = mapper;
         }
 
         public async Task<IEnumerable<Category>> GetAllAsync()
         {
             return await _context.Categories
-                .Select(e => _mapper.Map<Category>(e))
                 .ToListAsync();
         }
 
         public async Task<Category?> GetByIdAsync(Guid id)
         {
             var entity = await _context.Categories.FirstOrDefaultAsync(e => e.Id == id);
-            return _mapper.Map<Category>(entity);
+            return entity;
         }
 
         public async Task<Category> CreateAsync(Category model)
@@ -42,7 +39,7 @@ namespace RSW.API.Services
             _context.Categories.Add(entity);
             await _context.SaveChangesAsync();
 
-            return _mapper.Map<Category>(entity);
+            return entity;
         }
 
         public async Task<Category?> UpdateAsync(Guid id, Category model)
@@ -54,7 +51,7 @@ namespace RSW.API.Services
             existing.Weight = model.Weight;
 
             await _context.SaveChangesAsync();
-            return _mapper.Map<Category>(existing);
+            return existing;
         }
         public async Task<bool> DeleteAsync(Guid id)
         {

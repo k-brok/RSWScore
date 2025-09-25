@@ -9,25 +9,22 @@ namespace RSW.API.Services
     public class ScoutService : IScoutService
     {
         private readonly AppDbContext _context;
-        private readonly IMapper _mapper;
 
-        public ScoutService(AppDbContext context, IMapper mapper)
+        public ScoutService(AppDbContext context)
         {
             _context = context;
-            _mapper = mapper;
         }
 
         public async Task<IEnumerable<Scout>> GetAllAsync()
         {
             return await _context.Scouts
-                .Select(e => _mapper.Map<Scout>(e))
                 .ToListAsync();
         }
 
         public async Task<Scout?> GetByIdAsync(Guid id)
         {
             var entity = await _context.Scouts.FirstOrDefaultAsync(e => e.Id == id);
-            return _mapper.Map<Scout>(entity);
+            return entity;
         }
 
         public async Task<Scout> CreateAsync(Scout model)
@@ -44,7 +41,7 @@ namespace RSW.API.Services
             _context.Scouts.Add(entity);
             await _context.SaveChangesAsync();
 
-            return _mapper.Map<Scout>(entity);
+            return entity;
         }
 
         public async Task<Scout?> UpdateAsync(Guid id, Scout model)
@@ -60,7 +57,7 @@ namespace RSW.API.Services
             existing.DateOfBirth = model.DateOfBirth;
 
             await _context.SaveChangesAsync();
-            return _mapper.Map<Scout>(existing);
+            return existing;
         }
         public async Task<bool> DeleteAsync(Guid id)
         {

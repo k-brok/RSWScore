@@ -9,25 +9,22 @@ namespace RSW.API.Services
     public class PatrolService : IPatrolService
     {
         private readonly AppDbContext _context;
-        private readonly IMapper _mapper;
 
-        public PatrolService(AppDbContext context, IMapper mapper)
+        public PatrolService(AppDbContext context)
         {
             _context = context;
-            _mapper = mapper;
         }
 
         public async Task<IEnumerable<Patrol>> GetAllAsync()
         {
             return await _context.Patrols
-                .Select(e => _mapper.Map<Patrol>(e))
                 .ToListAsync();
         }
 
         public async Task<Patrol?> GetByIdAsync(Guid id)
         {
             var entity = await _context.Patrols.FirstOrDefaultAsync(e => e.Id == id);
-            return _mapper.Map<Patrol>(entity);
+            return entity;
         }
 
         public async Task<IEnumerable<Scout>> GetScoutsAsync(Guid patrolId)
@@ -57,7 +54,7 @@ namespace RSW.API.Services
             _context.Patrols.Add(entity);
             await _context.SaveChangesAsync();
 
-            return _mapper.Map<Patrol>(entity);
+            return entity;
         }
 
         public async Task<Patrol?> UpdateAsync(Guid id, Patrol model)
@@ -72,7 +69,7 @@ namespace RSW.API.Services
             existing.SubGroupId = model.SubGroupId;
 
             await _context.SaveChangesAsync();
-            return _mapper.Map<Patrol>(existing);
+            return existing;
         }
         public async Task<bool> DeleteAsync(Guid id)
         {

@@ -10,27 +10,24 @@ namespace RSW.API.Services
     public class ScoreService : IScoreService
     {
         private readonly AppDbContext _context;
-        private readonly IMapper _mapper;
         private readonly IHubContext<UpdatesHub> _hub;
 
-        public ScoreService(AppDbContext context, IMapper mapper, IHubContext<UpdatesHub> hub)
+        public ScoreService(AppDbContext context, IHubContext<UpdatesHub> hub)
         {
             _context = context;
-            _mapper = mapper;
             _hub = hub;
         }
 
         public async Task<IEnumerable<Score>> GetAllAsync()
         {
             return await _context.Scores
-                .Select(e => _mapper.Map<Score>(e))
                 .ToListAsync();
         }
 
         public async Task<Score?> GetByIdAsync(Guid id)
         {
             var entity = await _context.Scores.FirstOrDefaultAsync(e => e.Id == id);
-            return _mapper.Map<Score>(entity);
+            return entity;
         }
 
         public async Task<Score> CreateAsync(Score model)
@@ -46,7 +43,7 @@ namespace RSW.API.Services
             _context.Scores.Add(entity);
             await _context.SaveChangesAsync();
 
-            return _mapper.Map<Score>(entity);
+            return entity;
         }
 
         public async Task<Score?> UpdateAsync(Guid id, Score model)
@@ -62,7 +59,7 @@ namespace RSW.API.Services
 
             await _hub.Clients.All.SendAsync("ScoreUpdate", existing);
 
-            return _mapper.Map<Score>(existing);
+            return existing;
         }
         public async Task<bool> DeleteAsync(Guid id)
         {

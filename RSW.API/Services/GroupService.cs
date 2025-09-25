@@ -9,25 +9,22 @@ namespace RSW.API.Services
     public class GroupService : IGroupService
     {
         private readonly AppDbContext _context;
-        private readonly IMapper _mapper;
 
-        public GroupService(AppDbContext context, IMapper mapper)
+        public GroupService(AppDbContext context)
         {
             _context = context;
-            _mapper = mapper;
         }
 
         public async Task<IEnumerable<Group>> GetAllAsync()
         {
             return await _context.Groups
-                .Select(e => _mapper.Map<Group>(e))
                 .ToListAsync();
         }
 
         public async Task<Group?> GetByIdAsync(Guid id)
         {
             var entity = await _context.Groups.FirstOrDefaultAsync(e => e.Id == id);
-            return _mapper.Map<Group>(entity);
+            return entity;
         }
 
         public async Task<Group> CreateAsync(Group model)
@@ -42,7 +39,7 @@ namespace RSW.API.Services
             _context.Groups.Add(entity);
             await _context.SaveChangesAsync();
 
-            return _mapper.Map<Group>(entity);
+            return entity;
         }
 
         public async Task<Group?> UpdateAsync(Guid id, Group model)
@@ -54,7 +51,7 @@ namespace RSW.API.Services
             existing.AssociationId = model.AssociationId;
 
             await _context.SaveChangesAsync();
-            return _mapper.Map<Group>(existing);
+            return existing;
         }
         public async Task<bool> DeleteAsync(Guid id)
         {
@@ -71,8 +68,7 @@ namespace RSW.API.Services
             var existing = await _context.Groups.FirstOrDefaultAsync(e => e.Id == id);
                 if (existing == null) return null;
 
-            var patrols = await _context.Patrols.Where(p => p.GroupId == id).ToListAsync();
-            return patrols.Select(p => _mapper.Map<Patrol>(p)).ToList();
+            return await _context.Patrols.Where(p => p.GroupId == id).ToListAsync();
         }
     }
 

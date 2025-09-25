@@ -9,25 +9,22 @@ namespace RSW.API.Services
     public class SignupCodeService : ISignupCodeService
     {
         private readonly AppDbContext _context;
-        private readonly IMapper _mapper;
 
-        public SignupCodeService(AppDbContext context, IMapper mapper)
+        public SignupCodeService(AppDbContext context)
         {
             _context = context;
-            _mapper = mapper;
         }
 
         public async Task<IEnumerable<SignupCode>> GetAllAsync()
         {
             return await _context.SignupCodes
-                .Select(e => _mapper.Map<SignupCode>(e))
                 .ToListAsync();
         }
 
         public async Task<SignupCode?> GetByIdAsync(Guid id)
         {
             var entity = await _context.SignupCodes.FirstOrDefaultAsync(e => e.Id == id);
-            return _mapper.Map<SignupCode>(entity);
+            return entity;
         }
 
         public async Task<SignupCode> CreateAsync(SignupCode model)
@@ -42,7 +39,7 @@ namespace RSW.API.Services
             _context.SignupCodes.Add(entity);
             await _context.SaveChangesAsync();
 
-            return _mapper.Map<SignupCode>(entity);
+            return entity;
         }
 
         public async Task<SignupCode?> UpdateAsync(Guid id, SignupCode model)
@@ -55,7 +52,7 @@ namespace RSW.API.Services
             existing.Lock = model.Lock;
 
             await _context.SaveChangesAsync();
-            return _mapper.Map<SignupCode>(existing);
+            return existing;
         }
         public async Task<bool> DeleteAsync(Guid id)
         {
@@ -80,7 +77,7 @@ namespace RSW.API.Services
             if (entity.ExpiryDate < DateTime.UtcNow)
                 return null;
 
-            return _mapper.Map<SignupCode>(entity);
+            return entity;
         }
     }
 

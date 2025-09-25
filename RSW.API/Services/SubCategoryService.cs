@@ -9,25 +9,22 @@ namespace RSW.API.Services
     public class SubCategoryService : ISubCategoryService
     {
         private readonly AppDbContext _context;
-        private readonly IMapper _mapper;
 
-        public SubCategoryService(AppDbContext context, IMapper mapper)
+        public SubCategoryService(AppDbContext context)
         {
             _context = context;
-            _mapper = mapper;
         }
 
         public async Task<IEnumerable<SubCategory>> GetAllAsync()
         {
             return await _context.SubCategories
-                .Select(e => _mapper.Map<SubCategory>(e))
                 .ToListAsync();
         }
 
         public async Task<SubCategory?> GetByIdAsync(Guid id)
         {
             var entity = await _context.SubCategories.FirstOrDefaultAsync(e => e.Id == id);
-            return _mapper.Map<SubCategory>(entity);
+            return entity;
         }
 
         public async Task<SubCategory> CreateAsync(SubCategory model)
@@ -42,7 +39,7 @@ namespace RSW.API.Services
             _context.SubCategories.Add(entity);
             await _context.SaveChangesAsync();
 
-            return _mapper.Map<SubCategory>(entity);
+            return entity;
         }
 
         public async Task<SubCategory?> UpdateAsync(Guid id, SubCategory model)
@@ -54,7 +51,7 @@ namespace RSW.API.Services
             existing.CategoryId = model.CategoryId;
             
             await _context.SaveChangesAsync();
-            return _mapper.Map<SubCategory>(existing);
+            return existing;
         }
         public async Task<bool> DeleteAsync(Guid id)
         {

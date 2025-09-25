@@ -9,25 +9,22 @@ namespace RSW.API.Services
     public class SubGroupService : ISubGroupService
     {
         private readonly AppDbContext _context;
-        private readonly IMapper _mapper;
 
-        public SubGroupService(AppDbContext context, IMapper mapper)
+        public SubGroupService(AppDbContext context)
         {
             _context = context;
-            _mapper = mapper;
         }
 
         public async Task<IEnumerable<SubGroup>> GetAllAsync()
         {
             return await _context.SubGroups
-                .Select(e => _mapper.Map<SubGroup>(e))
                 .ToListAsync();
         }
 
         public async Task<SubGroup?> GetByIdAsync(Guid id)
         {
             var entity = await _context.SubGroups.FirstOrDefaultAsync(e => e.Id == id);
-            return _mapper.Map<SubGroup>(entity);
+            return entity;
         }
 
         public async Task<SubGroup> CreateAsync(SubGroup model)
@@ -42,7 +39,7 @@ namespace RSW.API.Services
             _context.SubGroups.Add(entity);
             await _context.SaveChangesAsync();
 
-            return _mapper.Map<SubGroup>(entity);
+            return entity;
         }
 
         public async Task<SubGroup?> UpdateAsync(Guid id, SubGroup model)
@@ -54,7 +51,7 @@ namespace RSW.API.Services
             existing.EditionId = model.EditionId;
 
             await _context.SaveChangesAsync();
-            return _mapper.Map<SubGroup>(existing);
+            return existing;
         }
         public async Task<bool> DeleteAsync(Guid id)
         {

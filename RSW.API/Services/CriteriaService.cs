@@ -9,25 +9,22 @@ namespace RSW.API.Services
     public class CriteriaService : ICriteriaService
     {
         private readonly AppDbContext _context;
-        private readonly IMapper _mapper;
 
-        public CriteriaService(AppDbContext context, IMapper mapper)
+        public CriteriaService(AppDbContext context)
         {
             _context = context;
-            _mapper = mapper;
         }
 
         public async Task<IEnumerable<Criteria>> GetAllAsync()
         {
             return await _context.Criterias
-                .Select(e => _mapper.Map<Criteria>(e))
                 .ToListAsync();
         }
 
         public async Task<Criteria?> GetByIdAsync(Guid id)
         {
             var entity = await _context.Criterias.FirstOrDefaultAsync(e => e.Id == id);
-            return _mapper.Map<Criteria>(entity);
+            return entity;
         }
 
         public async Task<Criteria> CreateAsync(Criteria model)
@@ -43,7 +40,7 @@ namespace RSW.API.Services
             _context.Criterias.Add(entity);
             await _context.SaveChangesAsync();
 
-            return _mapper.Map<Criteria>(entity);
+            return entity;
         }
 
         public async Task<Criteria?> UpdateAsync(Guid id, Criteria model)
@@ -56,7 +53,7 @@ namespace RSW.API.Services
             existing.SubCategoryId = model.SubCategoryId;
 
             await _context.SaveChangesAsync();
-            return _mapper.Map<Criteria>(existing);
+            return existing;
         }
         public async Task<bool> DeleteAsync(Guid id)
         {

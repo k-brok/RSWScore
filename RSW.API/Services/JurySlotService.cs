@@ -9,25 +9,22 @@ namespace RSW.API.Services
     public class JurySlotService : IJurySlotService
     {
         private readonly AppDbContext _context;
-        private readonly IMapper _mapper;
 
-        public JurySlotService(AppDbContext context, IMapper mapper)
+        public JurySlotService(AppDbContext context)
         {
             _context = context;
-            _mapper = mapper;
         }
 
         public async Task<IEnumerable<JurySlot>> GetAllAsync()
         {
             return await _context.JurySlots
-                .Select(e => _mapper.Map<JurySlot>(e))
                 .ToListAsync();
         }
 
         public async Task<JurySlot?> GetByIdAsync(Guid id)
         {
             var entity = await _context.JurySlots.FirstOrDefaultAsync(e => e.Id == id);
-            return _mapper.Map<JurySlot>(entity);
+            return entity;
         }
 
         public async Task<JurySlot> CreateAsync(JurySlot model)
@@ -44,7 +41,7 @@ namespace RSW.API.Services
             _context.JurySlots.Add(entity);
             await _context.SaveChangesAsync();
 
-            return _mapper.Map<JurySlot>(entity);
+            return entity;
         }
 
         public async Task<JurySlot?> UpdateAsync(Guid id, JurySlot model)
@@ -58,7 +55,7 @@ namespace RSW.API.Services
             existing.SubgroupId = model.SubgroupId;
 
             await _context.SaveChangesAsync();
-            return _mapper.Map<JurySlot>(existing);
+            return existing;
         }
         public async Task<bool> DeleteAsync(Guid id)
         {
