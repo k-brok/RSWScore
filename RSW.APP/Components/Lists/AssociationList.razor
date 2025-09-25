@@ -89,7 +89,7 @@
     {
         if (association.Id == Guid.Empty)
         {
-            await associationService.CreateAsync(new AssociationCreate
+            await associationService.CreateAsync(new Association
             {
                 Name = association.Name,
                 Abbreviation = association.Abbreviation
@@ -107,7 +107,7 @@
         {
             if (association.Id == Guid.Empty)
             {
-                await associationService.CreateAsync(new AssociationCreate
+                await associationService.CreateAsync(new Association
                     {
                         Name = association.Name,
                         Abbreviation = association.Abbreviation

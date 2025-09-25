@@ -5,9 +5,10 @@ namespace RSW.Shared.Entities
 {
     public class Association : BaseEntity
     {
-        public required string Name { get; set; }
+        [Required]
+        public string? Name { get; set; }
         public string Abbreviation { get; set; } = string.Empty;
         [JsonIgnore]
-        public List<Group> Groups { get; set; } = new List<Group>();
+        public List<Unit> Groups { get; set; } = new List<Unit>();
     }
 }

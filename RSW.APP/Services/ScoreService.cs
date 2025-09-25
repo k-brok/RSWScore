@@ -26,7 +26,7 @@ namespace RSW.APP.Services
             return await _httpClient.GetFromJsonAsync<Score>($"{Endpoint}/{id}");
         }
 
-        public async Task<IEnumerable<Group>> GetGroupsAsync(Guid id)
+        public async Task<IEnumerable<Unit>> GetGroupsAsync(Guid id)
         {
             throw new NotImplementedException();
         }

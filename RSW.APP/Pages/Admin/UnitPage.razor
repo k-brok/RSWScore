@@ -1,24 +1,24 @@
-﻿@page "/admin/groups"
+﻿@page "/admin/units"
 @attribute [Authorize(Roles = "Admin")]
 
-@inject IGroupService GroupService
+@inject IUnitService UnitService
 
-<h3>Groups</h3>
+<h3>Units</h3>
 
-@if (groups == null)
+@if (units == null)
 {
     <RadzenProgressBarCircular Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
 }
 else
 {
-    <GroupList groups="@groups.ToList()" />
+    <UnitList units="@units.ToList()" />
 }
 
 @code {
-    public IEnumerable<Group>? groups { get; set; }
+    public IEnumerable<Unit>? units { get; set; }
     protected override async Task OnInitializedAsync()
     {
-        groups = await GroupService.GetAllAsync();
+        units = await UnitService.GetAllAsync();
         await base.OnInitializedAsync();
     }
 }

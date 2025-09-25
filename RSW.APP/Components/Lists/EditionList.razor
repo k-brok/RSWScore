@@ -107,7 +107,7 @@
     {
         if (edition.Id == Guid.Empty)
         {
-            var NewEdition = await editionService.CreateAsync(new EditionCreate
+            var NewEdition = await editionService.CreateAsync(new Edition
             {
                 RSWStartDate = edition.RSWStartDate,
                 LSWStartDate = edition.LSWStartDate,
@@ -128,7 +128,7 @@
         {
             if (edition.Id == Guid.Empty)
             {
-                var NewEdition = await editionService.CreateAsync(new EditionCreate
+                var NewEdition = await editionService.CreateAsync(new Edition
                     {
                         RSWStartDate = edition.RSWStartDate,
                         LSWStartDate = edition.LSWStartDate,

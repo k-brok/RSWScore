@@ -4,52 +4,46 @@ using RSW.Shared.Interfaces;
 
 namespace RSW.APP.Services
 {
-    public class GroupService : IGroupService
+    public class UnitService : IUnitService
     {
         private readonly HttpClient _httpClient;
-        private const string Endpoint = "api/group";
+        private const string Endpoint = "api/unit";
 
-        public GroupService(HttpClient httpClient)
+        public UnitService(HttpClient httpClient)
         {
             _httpClient = httpClient;
         }
 
-        public async Task<IEnumerable<Group>> GetAllAsync()
+        public async Task<IEnumerable<Unit>> GetAllAsync()
         {
-            var result = await _httpClient.GetFromJsonAsync<List<Group>>(Endpoint);
+            var result = await _httpClient.GetFromJsonAsync<List<Unit>>(Endpoint);
 
-            return result ?? new List<Group>();
+            return result ?? new List<Unit>();
         }
 
-        public async Task<Group?> GetByIdAsync(Guid id)
+        public async Task<Unit?> GetByIdAsync(Guid id)
         {
-            return await _httpClient.GetFromJsonAsync<Group>($"{Endpoint}/{id}");
+            return await _httpClient.GetFromJsonAsync<Unit>($"{Endpoint}/{id}");
         }
-
-        public async Task<IEnumerable<Group>> GetGroupsAsync(Guid id)
-        {
-            throw new NotImplementedException();
-        }
-
-        public async Task<Group> CreateAsync(Group model)
+        public async Task<Unit> CreateAsync(Unit model)
         {
             var response = await _httpClient.PostAsJsonAsync(Endpoint, model);
 
             if (response.IsSuccessStatusCode)
             {
-                return await response.Content.ReadFromJsonAsync<Group>();
+                return await response.Content.ReadFromJsonAsync<Unit>();
             }
 
             return null;
         }
 
-        public async Task<Group?> UpdateAsync(Guid id, Group model)
+        public async Task<Unit?> UpdateAsync(Guid id, Unit model)
         {
             var response = await _httpClient.PutAsJsonAsync($"{Endpoint}/{id}", model);
 
             if (response.IsSuccessStatusCode)
             {
-                return await response.Content.ReadFromJsonAsync<Group>();
+                return await response.Content.ReadFromJsonAsync<Unit>();
             }
 
             return null;

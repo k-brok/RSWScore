@@ -103,7 +103,7 @@ else
     {
         if (subcategory.Id == Guid.Empty)
         {
-            await subcategoryService.CreateAsync(new SubCategoryCreate
+            await subcategoryService.CreateAsync(new SubCategory
             {
                 Name = subcategory.Name,
                 CategoryId = subcategory.CategoryId
@@ -121,7 +121,7 @@ else
         {
             if (subcategory.Id == Guid.Empty)
             {
-                await subcategoryService.CreateAsync(new SubCategoryCreate
+                await subcategoryService.CreateAsync(new SubCategory
                     {
                         Name = subcategory.Name,
                         CategoryId = subcategory.CategoryId

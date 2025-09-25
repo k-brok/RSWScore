@@ -32,7 +32,7 @@ namespace RSW.API.Services
             var entity = new SignupCode
             {
                 Id = Guid.NewGuid(),
-                GroupId = model.GroupId,
+                UnitId = model.UnitId,
                 ExpiryDate = DateTime.UtcNow.AddDays(7)
             };
 
@@ -48,7 +48,7 @@ namespace RSW.API.Services
             if (existing == null) return null;
 
             existing.ExpiryDate = model.ExpiryDate;
-            existing.GroupId = model.GroupId;
+            existing.UnitId = model.UnitId;
             existing.Lock = model.Lock;
 
             await _context.SaveChangesAsync();

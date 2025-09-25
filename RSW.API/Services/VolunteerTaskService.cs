@@ -9,25 +9,21 @@ namespace RSW.API.Services
     public class VolunteerTaskService : IVolunteerTaskService
     {
         private readonly AppDbContext _context;
-        private readonly IMapper _mapper;
-
-        public VolunteerTaskService(AppDbContext context, IMapper mapper)
+        public VolunteerTaskService(AppDbContext context)
         {
             _context = context;
-            _mapper = mapper;
         }
 
         public async Task<IEnumerable<VolunteerTask>> GetAllAsync()
         {
             return await _context.VolunteerTasks
-                .Select(e => _mapper.Map<VolunteerTask>(e))
                 .ToListAsync();
         }
 
         public async Task<VolunteerTask?> GetByIdAsync(Guid id)
         {
             var entity = await _context.VolunteerTasks.FirstOrDefaultAsync(e => e.Id == id);
-            return _mapper.Map<VolunteerTask>(entity);
+            return entity;
         }
 
         public async Task<VolunteerTask> CreateAsync(VolunteerTask model)
@@ -47,7 +43,7 @@ namespace RSW.API.Services
             existing.Description = model.Description;
 
             await _context.SaveChangesAsync();
-            return _mapper.Map<VolunteerTask>(existing);
+            return existing;
         }
         public async Task<bool> DeleteAsync(Guid id)
         {

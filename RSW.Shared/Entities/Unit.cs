@@ -1,10 +1,12 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace RSW.Shared.Entities
 {
-    public class Group : BaseEntity
+    public class Unit : BaseEntity
     {
-        public required string Name { get; set; }
+        [Required]
+        public string? Name { get; set; }
         public Guid AssociationId { get; set; }
         [JsonIgnore]
         public Association Association { get; set; } = null!;

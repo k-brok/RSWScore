@@ -26,9 +26,12 @@ namespace RSW.APP.Services
             return await _httpClient.GetFromJsonAsync<Association>($"{Endpoint}/{id}");
         }
 
-        public async Task<IEnumerable<Group>> GetGroupsAsync(Guid id)
+        public async Task<IEnumerable<Unit>> GetUnitsAsync(Guid id)
         {
-            throw new NotImplementedException();
+            
+            var result = await _httpClient.GetFromJsonAsync<List<Unit>>($"{Endpoint}/{id}/units");
+
+            return result ?? new List<Unit>();
         }
 
         public async Task<Association> CreateAsync(Association model)

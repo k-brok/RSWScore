@@ -63,9 +63,9 @@ namespace RSW.API.Services
             return true;
         }
 
-        public async Task<IEnumerable<Group>> GetGroupsAsync(Guid id)
+        public async Task<IEnumerable<Unit>> GetUnitsAsync(Guid id)
         {
-            return await _context.Groups.Where(g => g.AssociationId == id).ToListAsync();
+            return await _context.Units.Where(g => g.AssociationId == id).ToListAsync();
         }
     }
 

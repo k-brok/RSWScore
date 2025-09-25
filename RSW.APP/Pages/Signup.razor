@@ -2,7 +2,7 @@
 @page "/signup"
 @using AutoMapper
 @inject ISignupCodeService SignupCodeService
-@inject IGroupService GroupService
+@inject IUnitService UnitService
 @inject IAssociationService AssociationService
 @inject IPatrolService PatrolService
 @inject IEditionService EditionService
@@ -40,7 +40,7 @@ else
 {
     <RadzenCard Style="margin:20px;">
         <h2>Inschrijfformulier RSW @ActiveEdition.RSWStartDate.Year ⚜️</h2>
-        <p>Voor groep: <b>@Group.Name @Association.Name</b></p>
+        <p>Voor groep: <b>@Unit.Name @Association.Name</b></p>
 
 
     <h4 style="margin-top:20px;">Patrouilles</h4>
@@ -161,7 +161,7 @@ else
     private bool loaded = false;
     private bool IsinPresignup = true;
     private SignupCode? signupCode;
-    private RSW.Shared.Entities.Group Group;
+    private Unit Unit;
     private Edition? ActiveEdition;
     private Association? Association;
     private List<Patrol> newpatrols = new List<Patrol>();
@@ -191,12 +191,12 @@ else
             signupCode = await SignupCodeService.ValidateAsync((Guid)id);
 
             if(signupCode != null){
-                Group = await GroupService.GetByIdAsync(signupCode.GroupId);
+                Unit = await UnitService.GetByIdAsync(signupCode.UnitId);
 
-                if(Group != null)
+                if(Unit != null)
                 {
-                    Association = await AssociationService.GetByIdAsync(Group.AssociationId);
-                    ExistingPatrol = await GroupService.GetPatrolsAsync(Group.Id);
+                    Association = await AssociationService.GetByIdAsync(Unit.AssociationId);
+                    ExistingPatrol = await UnitService.GetPatrolsAsync(Unit.Id);
 
                     // Load scouts per patrol
                     foreach (var patrol in ExistingPatrol)
@@ -224,7 +224,7 @@ else
             {
                 await PatrolService.CreateAsync(new Patrol
                 {
-                    GroupId = Group.Id,
+                    UnitId = Unit.Id,
                     Name = patrol.Name,
                     IsYoungest = patrol.IsYoungest
                 });

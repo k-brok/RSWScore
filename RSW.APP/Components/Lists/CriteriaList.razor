@@ -114,7 +114,7 @@
     {
         if (criteria.Id == Guid.Empty)
         {
-            await criteriaService.CreateAsync(new CriteriaCreate
+            await criteriaService.CreateAsync(new Criteria
             {
                 Name = criteria.Name,
                 Description = criteria.Description,
@@ -134,7 +134,7 @@
         {
             if (criteria.Id == Guid.Empty)
             {
-                await criteriaService.CreateAsync(new CriteriaCreate
+                await criteriaService.CreateAsync(new Criteria
                     {
                         Name = criteria.Name,
                         Description = criteria.Description,

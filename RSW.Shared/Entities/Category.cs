@@ -1,11 +1,13 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 
 namespace RSW.Shared.Entities
 {
     public class Category : BaseEntity
     {
-        public required string Name { get; set; }
+        [Required]
+        public string? Name { get; set; }
         public int Weight { get; set; }
         [JsonIgnore]
         public List<SubCategory> SubCategories { get; set; } = new List<SubCategory>();

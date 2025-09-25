@@ -33,7 +33,7 @@ namespace RSW.APP.Services
             return result ?? new List<Scout>();
         }
 
-        public async Task<IEnumerable<Group>> GetGroupsAsync(Guid id)
+        public async Task<IEnumerable<Unit>> GetGroupsAsync(Guid id)
         {
             throw new NotImplementedException();
         }

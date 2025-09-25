@@ -6,45 +6,45 @@ using RSW.Shared.Interfaces;
 
 namespace RSW.API.Services
 {
-    public class GroupService : IGroupService
+    public class UnitService : IUnitService
     {
         private readonly AppDbContext _context;
 
-        public GroupService(AppDbContext context)
+        public UnitService(AppDbContext context)
         {
             _context = context;
         }
 
-        public async Task<IEnumerable<Group>> GetAllAsync()
+        public async Task<IEnumerable<Unit>> GetAllAsync()
         {
-            return await _context.Groups
+            return await _context.Units
                 .ToListAsync();
         }
 
-        public async Task<Group?> GetByIdAsync(Guid id)
+        public async Task<Unit?> GetByIdAsync(Guid id)
         {
-            var entity = await _context.Groups.FirstOrDefaultAsync(e => e.Id == id);
+            var entity = await _context.Units.FirstOrDefaultAsync(e => e.Id == id);
             return entity;
         }
 
-        public async Task<Group> CreateAsync(Group model)
+        public async Task<Unit> CreateAsync(Unit model)
         {
-            var entity = new Group
+            var entity = new Unit
             {
                 Id = Guid.NewGuid(),
                 Name = model.Name,
                 AssociationId = model.AssociationId
             };
 
-            _context.Groups.Add(entity);
+            _context.Units.Add(entity);
             await _context.SaveChangesAsync();
 
             return entity;
         }
 
-        public async Task<Group?> UpdateAsync(Guid id, Group model)
+        public async Task<Unit?> UpdateAsync(Guid id, Unit model)
         {
-            var existing = await _context.Groups.FirstOrDefaultAsync(e => e.Id == id);
+            var existing = await _context.Units.FirstOrDefaultAsync(e => e.Id == id);
             if (existing == null) return null;
 
             existing.Name = model.Name;
@@ -55,20 +55,20 @@ namespace RSW.API.Services
         }
         public async Task<bool> DeleteAsync(Guid id)
         {
-            var found = await _context.Groups.FirstOrDefaultAsync(e => e.Id == id);
+            var found = await _context.Units.FirstOrDefaultAsync(e => e.Id == id);
             if (found == null) return false;
 
-            _context.Groups.Remove(found);
+            _context.Units.Remove(found);
             await _context.SaveChangesAsync();
             return true;
         }
 
         public async Task<List<Patrol>>? GetPatrolsAsync(Guid id)
         {
-            var existing = await _context.Groups.FirstOrDefaultAsync(e => e.Id == id);
+            var existing = await _context.Units.FirstOrDefaultAsync(e => e.Id == id);
                 if (existing == null) return null;
 
-            return await _context.Patrols.Where(p => p.GroupId == id).ToListAsync();
+            return await _context.Patrols.Where(p => p.UnitId == id).ToListAsync();
         }
     }
 

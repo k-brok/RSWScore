@@ -121,7 +121,7 @@ else
     {
         if (scout.Id == Guid.Empty)
         {
-            await scoutService.CreateAsync(new ScoutCreate
+            await scoutService.CreateAsync(new Scout
             {
                 Firstname = scout.Firstname,
                 Lastname = scout.Lastname,
@@ -141,7 +141,7 @@ else
         {
             if (scout.Id == Guid.Empty)
             {
-                await scoutService.CreateAsync(new ScoutCreate
+                await scoutService.CreateAsync(new Scout
                     {
                         Firstname = scout.Firstname,
                         Lastname = scout.Lastname,

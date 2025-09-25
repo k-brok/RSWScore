@@ -40,9 +40,9 @@ namespace RSW.API.Endpoints
                 return success ? Results.Ok() : Results.NotFound();
             });
 
-            group.MapGet("/{id:guid}/groups", async (Guid id, IAssociationService service) =>
+            group.MapGet("/{id:guid}/units", async (Guid id, IAssociationService service) =>
             {
-                return Results.Ok(await service.GetGroupsAsync(id));
+                return Results.Ok(await service.GetUnitsAsync(id));
             }).AllowAnonymous();
         }
     }

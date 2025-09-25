@@ -1,8 +1,8 @@
 ﻿@inject DialogService DialogService
 @inject NotificationService NotificationService
-@inject IGroupService groupService
+@inject IUnitService unitService
 @inject ISubGroupService subGroupService
-@if(groups == null || subGroups == null){
+@if(units == null || subGroups == null){
     <RadzenCard Style="margin:20px;">
         <RadzenProgressBarCircular Value="50" ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
         <p>Data ophalen...</p>
@@ -19,15 +19,15 @@ else
                     </RadzenFormField>
                 </EditTemplate>
             </RadzenDataGridColumn>
-            <RadzenDataGridColumn TItem="Patrol" Property="GroupId" Title="Groep">
+            <RadzenDataGridColumn TItem="Patrol" Property="UnitId" Title="Groep">
                 <Template Context="patrol">
-                    @(groups.FirstOrDefault(C => C.Id == patrol.GroupId)?.Name ?? "Onbekend")
+                    @(units.FirstOrDefault(C => C.Id == patrol.UnitId)?.Name ?? "Onbekend")
                 </Template>
                 <EditTemplate Context="patrol">
                     <RadzenFormField Text="Groep" Style="width:100%">
-                        <RadzenDropDown Data="@groups" @bind-Value=patrol.GroupId ValueProperty=@nameof(Group.Id)>
+                        <RadzenDropDown Data="@units" @bind-Value=patrol.UnitId ValueProperty=@nameof(Unit.Id)>
                             <Template>
-                                @((context as Group).Name)
+                                @((context as Unit).Name)
                             </Template>
                         </RadzenDropDown>
                     </RadzenFormField>
@@ -47,7 +47,7 @@ else
             </RadzenDataGridColumn>
             <RadzenDataGridColumn TItem="Patrol" Property="Position" Title="Positie" >
             </RadzenDataGridColumn>
-            <RadzenDataGridColumn TItem="Patrol" Property="SubgroupId" Title="Sub-kamp">
+            <RadzenDataGridColumn TItem="Patrol" Property="SubGroupId" Title="Sub-kamp">
                 <Template Context="patrol">
                     @(subGroups.FirstOrDefault(C => C.Id == patrol.SubGroupId)?.Color ?? "Onbekend")
                 </Template>
@@ -85,14 +85,14 @@ else
     public List<Patrol> NewPatrols { get; set; } = new List<Patrol>();
     public EventCallback<Patrol> OnPatrolSelected { get; set; }
     private RadzenDataGrid<Patrol> dataGrid;
-    private IEnumerable<Group>? groups { get; set; } = null;
+    private IEnumerable<Unit>? units { get; set; } = null;
     private IEnumerable<SubGroup>? subGroups { get; set; } = null;
 
     [Inject]
     private IPatrolService patrolService { get; set; } = default!;
     protected override async Task OnInitializedAsync()
     {
-        groups = await groupService.GetAllAsync();
+        units = await unitService.GetAllAsync();
         subGroups = await subGroupService.GetAllAsync();
         await base.OnInitializedAsync();
     }
@@ -140,10 +140,10 @@ else
     {
         if (patrol.Id == Guid.Empty)
         {
-            await patrolService.CreateAsync(new PatrolCreate
+            await patrolService.CreateAsync(new Patrol
             {
                 Name = patrol.Name,
-                GroupId = patrol.GroupId,
+                UnitId = patrol.UnitId,
                 IsYoungest = patrol.IsYoungest
             });
         }
@@ -159,10 +159,10 @@ else
         {
             if (patrol.Id == Guid.Empty)
             {
-                await patrolService.CreateAsync(new PatrolCreate
+                await patrolService.CreateAsync(new Patrol
                     {
                         Name = patrol.Name,
-                        GroupId = patrol.GroupId,
+                        UnitId = patrol.UnitId,
                         IsYoungest = patrol.IsYoungest
                     });
             }
@@ -186,7 +186,7 @@ else
             if (OldPatrol != null)
             {
                 patrol.Name = OldPatrol.Name;
-                patrol.GroupId = OldPatrol.GroupId;
+                patrol.UnitId = OldPatrol.UnitId;
                 patrol.IsYoungest = OldPatrol.IsYoungest;
                 patrol.Number = OldPatrol.Number;
                 patrol.SubGroupId = OldPatrol.SubGroupId;

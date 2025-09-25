@@ -47,7 +47,7 @@ namespace RSW.API.Services
             {
                 Id = Guid.NewGuid(),
                 Name = model.Name,
-                GroupId = model.GroupId,
+                UnitId = model.UnitId,
                 IsYoungest = model.IsYoungest,
             };
 
@@ -63,7 +63,7 @@ namespace RSW.API.Services
             if (existing == null) return null;
 
             existing.Name = model.Name;
-            existing.GroupId = model.GroupId;
+            existing.UnitId = model.UnitId;
             existing.IsYoungest = model.IsYoungest;
             existing.Number = model.Number;
             existing.SubGroupId = model.SubGroupId;

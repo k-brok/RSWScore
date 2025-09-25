@@ -26,11 +26,6 @@ namespace RSW.APP.Services
             return await _httpClient.GetFromJsonAsync<WebSetting>($"{Endpoint}/{id}");
         }
 
-        public async Task<IEnumerable<Group>> GetGroupsAsync(Guid id)
-        {
-            throw new NotImplementedException();
-        }
-
         public async Task<WebSetting> CreateAsync(WebSetting model)
         {
             var response = await _httpClient.PostAsJsonAsync(Endpoint, model);

@@ -7,13 +7,13 @@ namespace RSW.Shared.Entities
     public class Patrol : BaseEntity
     {
         [Required]
-        public string Name { get; set; }
+        public string? Name { get; set; }
         public int? Number { get; set; } = null;
         public Guid? SubGroupId { get; set; } = null;
         [JsonIgnore]
         public SubGroup? SubGroup { get; set; } = null;
-        public Guid GroupId { get; set; }
-        public Group Group { get; set; } = null!;
+        public Guid UnitId { get; set; }
+        public Unit Unit { get; set; } = null!;
         [JsonIgnore]
         public List<Score> Scores { get; set; } = new List<Score>();
         public decimal? TotalScore { get; set; } = null;

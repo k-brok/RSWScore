@@ -6,7 +6,7 @@ namespace RSW.Shared.Interfaces
     {
         Task<IEnumerable<Association>> GetAllAsync();
         Task<Association?> GetByIdAsync(Guid id);
-        Task<IEnumerable<Group>> GetGroupsAsync(Guid id);
+        Task<IEnumerable<Unit>> GetUnitsAsync(Guid id);
         Task<Association> CreateAsync(Association model);
         Task<Association?> UpdateAsync(Guid id, Association model);
         Task<bool> DeleteAsync(Guid id);

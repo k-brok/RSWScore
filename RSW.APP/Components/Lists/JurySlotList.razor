@@ -123,7 +123,7 @@ else
     {
         if (juryslot.Id == Guid.Empty)
         {
-            var NewJurySlot = await juryslotService.CreateAsync(new JurySlotCreate
+            var NewJurySlot = await juryslotService.CreateAsync(new JurySlot
             {
                 CategoryId = juryslot.CategoryId,
                 SubgroupId = juryslot.SubgroupId,
@@ -144,7 +144,7 @@ else
         {
             if (juryslot.Id == Guid.Empty)
             {
-                await juryslotService.CreateAsync(new JurySlotCreate
+                await juryslotService.CreateAsync(new JurySlot
                     {
                         CategoryId = juryslot.CategoryId,
                         SubgroupId = juryslot.SubgroupId,

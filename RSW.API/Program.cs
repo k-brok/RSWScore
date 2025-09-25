@@ -33,7 +33,7 @@ public class Program
         builder.Services.AddScoped<ICategoryService, CategoryService>();
         builder.Services.AddScoped<ICriteriaService, CriteriaService>();
         builder.Services.AddScoped<IEditionService, EditionService>();
-        builder.Services.AddScoped<IGroupService, GroupService>();
+        builder.Services.AddScoped<IUnitService, UnitService>();
         builder.Services.AddScoped<IJurySlotService, JurySlotService>();
         builder.Services.AddScoped<IPatrolService, PatrolService>();
         builder.Services.AddScoped<IScoreService, ScoreService>();
@@ -140,7 +140,7 @@ public class Program
         app.MapCategoryEndpoints();
         app.MapCriteriaEndpoints();
         app.MapEditionEndpoints();
-        app.MapGroupEndpoints();
+        app.MapUnitEndpoints();
         app.MapJurySlotEndpoints();
         app.MapPatrolEndpoints();
         app.MapScoreEndpoints();

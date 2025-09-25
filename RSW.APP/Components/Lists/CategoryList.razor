@@ -104,7 +104,7 @@
     {
         if (category.Id == Guid.Empty)
         {
-            await categoryService.CreateAsync(new CategoryCreate
+            await categoryService.CreateAsync(new Category
             {
                 Name = category.Name,
                 Weight = category.Weight
@@ -122,7 +122,7 @@
         {
             if (category.Id == Guid.Empty)
             {
-                await categoryService.CreateAsync(new CategoryCreate
+                await categoryService.CreateAsync(new Category
                     {
                         Name = category.Name,
                         Weight = category.Weight

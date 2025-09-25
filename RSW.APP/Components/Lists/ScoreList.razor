@@ -120,7 +120,7 @@ else
     {
         if (score.Id == Guid.Empty)
         {
-            await scoreService.CreateAsync(new ScoreCreate
+            await scoreService.CreateAsync(new Score
             {
                 CriteriaId = score.CriteriaId,
                 PatrolId = score.PatrolId,
@@ -139,7 +139,7 @@ else
         {
             if (score.Id == Guid.Empty)
             {
-                await scoreService.CreateAsync(new ScoreCreate
+                await scoreService.CreateAsync(new Score
                     {
                         CriteriaId = score.CriteriaId,
                         PatrolId = score.PatrolId,
