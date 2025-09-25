@@ -1,6 +1,4 @@
 using System.Net.Http.Json;
-using AutoMapper;
-using RSW.Shared.Dto;
 using RSW.Shared.Entities;
 using RSW.Shared.Interfaces;
 
@@ -16,42 +14,42 @@ namespace RSW.APP.Services
             _httpClient = httpClient;
         }
 
-        public async Task<IEnumerable<ScoutDto>> GetAllAsync()
+        public async Task<IEnumerable<Scout>> GetAllAsync()
         {
-            var result = await _httpClient.GetFromJsonAsync<List<ScoutDto>>(Endpoint);
+            var result = await _httpClient.GetFromJsonAsync<List<Scout>>(Endpoint);
 
-            return result ?? new List<ScoutDto>();
+            return result ?? new List<Scout>();
         }
 
-        public async Task<ScoutDto?> GetByIdAsync(Guid id)
+        public async Task<Scout?> GetByIdAsync(Guid id)
         {
-            return await _httpClient.GetFromJsonAsync<ScoutDto>($"{Endpoint}/{id}");
+            return await _httpClient.GetFromJsonAsync<Scout>($"{Endpoint}/{id}");
         }
 
-        public async Task<IEnumerable<GroupDto>> GetGroupsAsync(Guid id)
+        public async Task<IEnumerable<Unit>> GetGroupsAsync(Guid id)
         {
             throw new NotImplementedException();
         }
 
-        public async Task<ScoutDto> CreateAsync(ScoutCreateDto dto)
+        public async Task<Scout> CreateAsync(Scout model)
         {
-            var response = await _httpClient.PostAsJsonAsync(Endpoint, dto);
+            var response = await _httpClient.PostAsJsonAsync(Endpoint, model);
 
             if (response.IsSuccessStatusCode)
             {
-                return await response.Content.ReadFromJsonAsync<ScoutDto>();
+                return await response.Content.ReadFromJsonAsync<Scout>();
             }
 
             return null;
         }
 
-        public async Task<ScoutDto?> UpdateAsync(Guid id, ScoutDto dto)
+        public async Task<Scout?> UpdateAsync(Guid id, Scout model)
         {
-            var response = await _httpClient.PutAsJsonAsync($"{Endpoint}/{id}", dto);
+            var response = await _httpClient.PutAsJsonAsync($"{Endpoint}/{id}", model);
 
             if (response.IsSuccessStatusCode)
             {
-                return await response.Content.ReadFromJsonAsync<ScoutDto>();
+                return await response.Content.ReadFromJsonAsync<Scout>();
             }
 
             return null;

@@ -15,7 +15,7 @@ else
 }
 
 @code {
-    public IEnumerable<CategoryDto>? categories { get; set; }
+    public IEnumerable<Category>? categories { get; set; }
     protected override async Task OnInitializedAsync()
     {
         categories = await CategoryService.GetAllAsync();

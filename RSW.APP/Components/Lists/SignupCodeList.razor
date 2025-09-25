@@ -1,7 +1,7 @@
 ﻿@inject DialogService DialogService
 @inject NotificationService NotificationService
-@inject IGroupService groupService
-@if(groupDtos == null){
+@inject IUnitService unitService
+@if(units == null){
     <RadzenCard Style="margin:20px;">
         <RadzenProgressBarCircular Value="50" ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
         <p>Data ophalen...</p>
@@ -9,9 +9,9 @@
 }
 else
 {
-    <RadzenDataGrid @ref="dataGrid" Data="@signupcodes" TItem="SignupCodeDto" RowSelect="@OnRowSelect" AllowPaging="true" PageSize="10" AllowSorting="true" AllowFiltering="true" FilterMode="FilterMode.Simple" Responsive="true" Style="height: 600px;">
+    <RadzenDataGrid @ref="dataGrid" Data="@signupcodes" TItem="SignupCode" RowSelect="@OnRowSelect" AllowPaging="true" PageSize="10" AllowSorting="true" AllowFiltering="true" FilterMode="FilterMode.Simple" Responsive="true" Style="height: 600px;">
         <Columns>
-            <RadzenDataGridColumn TItem="SignupCodeDto" Property="Id" Title="Code" >
+            <RadzenDataGridColumn TItem="SignupCode" Property="Id" Title="Code" >
                 <Template Context="signupcode">
                     @if(signupcode.Id == Guid.Empty){
                         <p>Nog niet gegenereerd.</p>
@@ -22,21 +22,21 @@ else
                     }
                 </Template>
             </RadzenDataGridColumn>
-            <RadzenDataGridColumn TItem="SignupCodeDto" Property="GroupId" Title="Groep">
+            <RadzenDataGridColumn TItem="SignupCode" Property="UnitId" Title="Groep">
                 <Template Context="signupcode">
-                    @groupDtos.FirstOrDefault(C => C.Id == signupcode.GroupId).Name
+                    @units.FirstOrDefault(C => C.Id == signupcode.UnitId).Name
                 </Template>
                 <EditTemplate Context="signupcode">
                     <RadzenFormField Text="Groep" Style="width:100%">
-                        <RadzenDropDown Data="@groupDtos" @bind-Value=signupcode.GroupId ValueProperty=@nameof(GroupDto.Id)>
+                        <RadzenDropDown Data="@units" @bind-Value=signupcode.UnitId ValueProperty=@nameof(Unit.Id)>
                             <Template>
-                                @((context as GroupDto).Name)
+                                @((context as Unit).Name)
                             </Template>
                         </RadzenDropDown>
                     </RadzenFormField>
                 </EditTemplate>
             </RadzenDataGridColumn>
-            <RadzenDataGridColumn TItem="SignupCodeDto" Property="Lock" Title="Lock" >
+            <RadzenDataGridColumn TItem="SignupCode" Property="Lock" Title="Lock" >
                 <Template Context="signupcode">
                     @if(signupcode.Lock){
                         <p>Geblokkeerd</p>
@@ -50,7 +50,7 @@ else
                     <RadzenButton Text="Lock" />
                 </EditTemplate>
             </RadzenDataGridColumn>
-            <RadzenDataGridColumn TItem="SignupCodeDto" Property="ExpiryDate" Title="Vervaldatum" >
+            <RadzenDataGridColumn TItem="SignupCode" Property="ExpiryDate" Title="Vervaldatum" >
                 <EditTemplate Context="signupcode">
                     <RadzenFormField Text="Vervaldatum" Style="width:100%">
                         <RadzenDatePicker @bind-Value="@signupcode.ExpiryDate" />
@@ -79,41 +79,41 @@ else
 
 @code {
     [Parameter]
-    public List<SignupCodeDto> signupcodes { get; set; } = new List<SignupCodeDto>();
-    public List<SignupCodeDto> NewSignupCodes { get; set; } = new List<SignupCodeDto>();
-    public EventCallback<SignupCodeDto> OnSignupCodeDtoSelected { get; set; }
-    private RadzenDataGrid<SignupCodeDto> dataGrid;
-    private IEnumerable<GroupDto>? groupDtos { get; set; } = null;
+    public List<SignupCode> signupcodes { get; set; } = new List<SignupCode>();
+    public List<SignupCode> NewSignupCodes { get; set; } = new List<SignupCode>();
+    public EventCallback<SignupCode> OnSignupCodeSelected { get; set; }
+    private RadzenDataGrid<SignupCode> dataGrid;
+    private IEnumerable<Unit>? units { get; set; } = null;
 
     [Inject]
     private ISignupCodeService signupcodeService { get; set; } = default!;
     protected override async Task OnInitializedAsync()
     {
-        groupDtos = await groupService.GetAllAsync();
+        units = await unitService.GetAllAsync();
         await base.OnInitializedAsync();
     }
-    private async Task OnRowSelect(SignupCodeDto signupcode)
+    private async Task OnRowSelect(SignupCode signupcode)
     {
-        if (OnSignupCodeDtoSelected.HasDelegate)
+        if (OnSignupCodeSelected.HasDelegate)
         {
-            await OnSignupCodeDtoSelected.InvokeAsync(signupcode);
+            await OnSignupCodeSelected.InvokeAsync(signupcode);
         }
     }
     void Insert()
     {
-        var NewSignupCode = new SignupCodeDto();
+        var NewSignupCode = new SignupCode();
         dataGrid.InsertRow(NewSignupCode);
     }
-    void InsertAfterRow(SignupCodeDto signupcode)
+    void InsertAfterRow(SignupCode signupcode)
     {
-        var NewSignupCode = new SignupCodeDto();
+        var NewSignupCode = new SignupCode();
         dataGrid.InsertAfterRow(NewSignupCode, signupcode);
     }
-    void EditRow(SignupCodeDto signupcode)
+    void EditRow(SignupCode signupcode)
     {
         dataGrid.EditRow(signupcode);
     }
-    async Task DeleteRow(SignupCodeDto signupcode)
+    async Task DeleteRow(SignupCode signupcode)
     {
         var ConfirmDelete = await DialogService.Confirm($"Weet je zeker dat je \"{signupcode.Id}\" wilt verwijderen?", "Verwijderen", new ConfirmOptions() { OkButtonText = "Ja", CancelButtonText = "Nee" });
         if (ConfirmDelete == null)
@@ -132,13 +132,13 @@ else
             await dataGrid.Reload();
         }
     }
-    async Task SaveRow(SignupCodeDto signupcode)
+    async Task SaveRow(SignupCode signupcode)
     {
         if (signupcode.Id == Guid.Empty)
         {
-            var NeCode = await signupcodeService.CreateAsync(new SignupCodeCreateDto
+            var NeCode = await signupcodeService.CreateAsync(new SignupCode
             {
-                GroupId = signupcode.GroupId,
+                UnitId = signupcode.UnitId,
             });
             signupcode.Id = NeCode.Id;
         }
@@ -150,13 +150,13 @@ else
     }
     async Task SaveAll()
     {
-        foreach (SignupCodeDto signupcode in signupcodes)
+        foreach (SignupCode signupcode in signupcodes)
         {
             if (signupcode.Id == Guid.Empty)
             {
-                await signupcodeService.CreateAsync(new SignupCodeCreateDto
+                await signupcodeService.CreateAsync(new SignupCode
                     {
-                        GroupId = signupcode.GroupId,
+                        UnitId = signupcode.UnitId,
                     });
             }
             else
@@ -166,7 +166,7 @@ else
             await dataGrid.UpdateRow(signupcode);
         }
     }
-    async Task CancelEdit(SignupCodeDto signupcode)
+    async Task CancelEdit(SignupCode signupcode)
     {
         if (signupcode.Id == Guid.Empty)
         {
@@ -178,7 +178,7 @@ else
             var OldSignupCode = await signupcodeService.GetByIdAsync(signupcode.Id);
             if (OldSignupCode != null)
             {
-                signupcode.GroupId = OldSignupCode.GroupId;
+                signupcode.UnitId = OldSignupCode.UnitId;
                 signupcode.ExpiryDate = OldSignupCode.ExpiryDate;
                 
                 await dataGrid.UpdateRow(signupcode);

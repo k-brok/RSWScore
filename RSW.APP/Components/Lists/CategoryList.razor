@@ -1,16 +1,16 @@
 ﻿@inject DialogService DialogService
 @inject NotificationService NotificationService
 
-<RadzenDataGrid @ref="dataGrid" Data="@categories" TItem="CategoryDto" RowSelect="@OnRowSelect" AllowPaging="true" PageSize="10" AllowSorting="true" AllowFiltering="true" FilterMode="FilterMode.Simple" Responsive="true" Style="height: 600px;">
+<RadzenDataGrid @ref="dataGrid" Data="@categories" TItem="Category" RowSelect="@OnRowSelect" AllowPaging="true" PageSize="10" AllowSorting="true" AllowFiltering="true" FilterMode="FilterMode.Simple" Responsive="true" Style="height: 600px;">
     <Columns>
-        <RadzenDataGridColumn TItem="CategoryDto" Property="Name" Title="Naam" >
+        <RadzenDataGridColumn TItem="Category" Property="Name" Title="Naam" >
             <EditTemplate Context="category">
                 <RadzenFormField Text="Naam" Style="width:100%">
                     <RadzenTextBox @bind-Value="@category.Name" />
                 </RadzenFormField>
             </EditTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="CategoryDto" Property="Weight" Title="Gewicht">
+        <RadzenDataGridColumn TItem="Category" Property="Weight" Title="Gewicht">
             <EditTemplate Context="category">
                 <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Center">
                     @category.Weight
@@ -42,9 +42,9 @@
 
 @code {
     [Parameter]
-    public List<CategoryDto> categories { get; set; } = new List<CategoryDto>();
-    public EventCallback<CategoryDto> OnCategoryDtoSelected { get; set; }
-    private RadzenDataGrid<CategoryDto> dataGrid;
+    public List<Category> categories { get; set; } = new List<Category>();
+    public EventCallback<Category> OnCategorySelected { get; set; }
+    private RadzenDataGrid<Category> dataGrid;
 
     private int WeightCount {get{
             if (categories == null || categories.Count == 0)
@@ -58,30 +58,30 @@
     [Inject]
     private ICategoryService categoryService { get; set; } = default!;
 
-    private async Task OnRowSelect(CategoryDto category)
+    private async Task OnRowSelect(Category category)
     {
-        if (OnCategoryDtoSelected.HasDelegate)
+        if (OnCategorySelected.HasDelegate)
         {
-            await OnCategoryDtoSelected.InvokeAsync(category);
+            await OnCategorySelected.InvokeAsync(category);
         }
     }
     void Insert()
     {
-        var NewCategory = new CategoryDto();
+        var NewCategory = new Category();
         categories.Add(NewCategory);
         dataGrid.InsertRow(NewCategory);
     }
-    void InsertAfterRow(CategoryDto category)
+    void InsertAfterRow(Category category)
     {
-        var NewCategory = new CategoryDto();
+        var NewCategory = new Category();
         categories.Add(NewCategory);
         dataGrid.InsertAfterRow(NewCategory, category);
     }
-    void EditRow(CategoryDto category)
+    void EditRow(Category category)
     {
         dataGrid.EditRow(category);
     }
-    async Task DeleteRow(CategoryDto category)
+    async Task DeleteRow(Category category)
     {
         var ConfirmDelete = await DialogService.Confirm($"Weet je zeker dat je \"{category.Name}\" wilt verwijderen?", "Verwijderen", new ConfirmOptions() { OkButtonText = "Ja", CancelButtonText = "Nee" });
         if (ConfirmDelete == null)
@@ -100,11 +100,11 @@
             await dataGrid.Reload();
         }
     }
-    async Task SaveRow(CategoryDto category)
+    async Task SaveRow(Category category)
     {
         if (category.Id == Guid.Empty)
         {
-            await categoryService.CreateAsync(new CategoryCreateDto
+            await categoryService.CreateAsync(new Category
             {
                 Name = category.Name,
                 Weight = category.Weight
@@ -118,11 +118,11 @@
     }
     async Task SaveAll()
     {
-        foreach (CategoryDto category in categories)
+        foreach (Category category in categories)
         {
             if (category.Id == Guid.Empty)
             {
-                await categoryService.CreateAsync(new CategoryCreateDto
+                await categoryService.CreateAsync(new Category
                     {
                         Name = category.Name,
                         Weight = category.Weight
@@ -135,7 +135,7 @@
             await dataGrid.UpdateRow(category);
         }
     }
-    async Task CancelEdit(CategoryDto category)
+    async Task CancelEdit(Category category)
     {
         if (category.Id == Guid.Empty)
         {

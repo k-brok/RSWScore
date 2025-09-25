@@ -1,6 +1,4 @@
 using System.Net.Http.Json;
-using AutoMapper;
-using RSW.Shared.Dto;
 using RSW.Shared.Entities;
 using RSW.Shared.Interfaces;
 
@@ -16,42 +14,42 @@ namespace RSW.APP.Services
             _httpClient = httpClient;
         }
 
-        public async Task<IEnumerable<JurySlotDto>> GetAllAsync()
+        public async Task<IEnumerable<JurySlot>> GetAllAsync()
         {
-            var result = await _httpClient.GetFromJsonAsync<List<JurySlotDto>>(Endpoint);
+            var result = await _httpClient.GetFromJsonAsync<List<JurySlot>>(Endpoint);
 
-            return result ?? new List<JurySlotDto>();
+            return result ?? new List<JurySlot>();
         }
 
-        public async Task<JurySlotDto?> GetByIdAsync(Guid id)
+        public async Task<JurySlot?> GetByIdAsync(Guid id)
         {
-            return await _httpClient.GetFromJsonAsync<JurySlotDto>($"{Endpoint}/{id}");
+            return await _httpClient.GetFromJsonAsync<JurySlot>($"{Endpoint}/{id}");
         }
 
-        public async Task<IEnumerable<GroupDto>> GetGroupsAsync(Guid id)
+        public async Task<IEnumerable<Unit>> GetGroupsAsync(Guid id)
         {
             throw new NotImplementedException();
         }
 
-        public async Task<JurySlotDto> CreateAsync(JurySlotCreateDto dto)
+        public async Task<JurySlot> CreateAsync(JurySlot model)
         {
-            var response = await _httpClient.PostAsJsonAsync(Endpoint, dto);
+            var response = await _httpClient.PostAsJsonAsync(Endpoint, model);
 
             if (response.IsSuccessStatusCode)
             {
-                return await response.Content.ReadFromJsonAsync<JurySlotDto>();
+                return await response.Content.ReadFromJsonAsync<JurySlot>();
             }
 
             return null;
         }
 
-        public async Task<JurySlotDto?> UpdateAsync(Guid id, JurySlotDto dto)
+        public async Task<JurySlot?> UpdateAsync(Guid id, JurySlot model)
         {
-            var response = await _httpClient.PutAsJsonAsync($"{Endpoint}/{id}", dto);
+            var response = await _httpClient.PutAsJsonAsync($"{Endpoint}/{id}", model);
 
             if (response.IsSuccessStatusCode)
             {
-                return await response.Content.ReadFromJsonAsync<JurySlotDto>();
+                return await response.Content.ReadFromJsonAsync<JurySlot>();
             }
 
             return null;

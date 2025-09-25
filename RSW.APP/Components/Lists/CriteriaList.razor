@@ -3,36 +3,36 @@
 @inject ICriteriaService criteriaService
 @inject ISubCategoryService subCategoryService
 
-<RadzenDataGrid @ref="dataGrid" Data="@criterias" TItem="CriteriaDto" RowSelect="@OnRowSelect" AllowPaging="true" PageSize="10" AllowSorting="true" AllowFiltering="true" FilterMode="FilterMode.Simple" Responsive="true" Style="height: 600px;">
+<RadzenDataGrid @ref="dataGrid" Data="@criterias" TItem="Criteria" RowSelect="@OnRowSelect" AllowPaging="true" PageSize="10" AllowSorting="true" AllowFiltering="true" FilterMode="FilterMode.Simple" Responsive="true" Style="height: 600px;">
     <Columns>
-        <RadzenDataGridColumn TItem="CriteriaDto" Property="Name" Title="Name" >
+        <RadzenDataGridColumn TItem="Criteria" Property="Name" Title="Name" >
             <EditTemplate Context="criteria">
                 <RadzenFormField Text="Naam" Style="width:100%">
                     <RadzenTextBox @bind-Value="@criteria.Name" />
                 </RadzenFormField>
             </EditTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="CriteriaDto" Property="Description" Title="Omschrijving">
+        <RadzenDataGridColumn TItem="Criteria" Property="Description" Title="Omschrijving">
             <EditTemplate Context="criteria">
                 <RadzenFormField Text="Omschrijving" Style="width:100%">
                     <RadzenTextArea @bind-Value="@criteria.Description" />
                 </RadzenFormField>
             </EditTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="CriteriaDto" Property="MaxScore" Title="Maximale score">
+        <RadzenDataGridColumn TItem="Criteria" Property="MaxScore" Title="Maximale score">
             <EditTemplate Context="criteria">
                 <RadzenFormField Text="Maximale score" Style="width:100%">
                     <RadzenNumeric @bind-Value="@criteria.MaxScore" />
                 </RadzenFormField>
             </EditTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="CriteriaDto" Property="SubCategoryId" Title="Sub Categorie">
+        <RadzenDataGridColumn TItem="Criteria" Property="SubCategoryId" Title="Sub Categorie">
             <Template Context="criteria">
-                @subCategoryDtos.FirstOrDefault(C => C.Id == criteria.SubCategoryId).Name
+                @subCategorys.FirstOrDefault(C => C.Id == criteria.SubCategoryId).Name
             </Template>
             <EditTemplate Context="criteria">
                 <RadzenFormField Text="Sub categorie" Style="width:100%">
-                    <RadzenDropDown Data="@subCategoryDtos" @bind-Value=criteria.SubCategoryId ValueProperty=@nameof(SubCategoryDto.Id) TextProperty=@nameof(SubCategoryDto.Name) />
+                    <RadzenDropDown Data="@subCategorys" @bind-Value=criteria.SubCategoryId ValueProperty=@nameof(SubCategory.Id) TextProperty=@nameof(SubCategory.Name) />
                 </RadzenFormField>
             </EditTemplate>
         </RadzenDataGridColumn>
@@ -57,41 +57,41 @@
 
 @code {
     [Parameter]
-    public List<CriteriaDto> criterias { get; set; } = new List<CriteriaDto>();
-    public EventCallback<CriteriaDto> OnCriteriaDtoSelected { get; set; }
+    public List<Criteria> criterias { get; set; } = new List<Criteria>();
+    public EventCallback<Criteria> OnCriteriaSelected { get; set; }
 
-    private IEnumerable<SubCategoryDto> subCategoryDtos { get; set; } = new List<SubCategoryDto>();
+    private IEnumerable<SubCategory> subCategorys { get; set; } = new List<SubCategory>();
 
-    private RadzenDataGrid<CriteriaDto> dataGrid;
+    private RadzenDataGrid<Criteria> dataGrid;
 
     protected override async Task OnInitializedAsync()
     {
-        subCategoryDtos = await subCategoryService.GetAllAsync();
+        subCategorys = await subCategoryService.GetAllAsync();
         await base.OnInitializedAsync();
     }
 
-    private async Task OnRowSelect(CriteriaDto criteria)
+    private async Task OnRowSelect(Criteria criteria)
     {
-        if (OnCriteriaDtoSelected.HasDelegate)
+        if (OnCriteriaSelected.HasDelegate)
         {
-            await OnCriteriaDtoSelected.InvokeAsync(criteria);
+            await OnCriteriaSelected.InvokeAsync(criteria);
         }
     }
     void Insert()
     {
-        var NewCriteria = new CriteriaDto();
+        var NewCriteria = new Criteria();
         dataGrid.InsertRow(NewCriteria);
     }
-    void InsertAfterRow(CriteriaDto criteria)
+    void InsertAfterRow(Criteria criteria)
     {
-        var NewCriteria = new CriteriaDto();
+        var NewCriteria = new Criteria();
         dataGrid.InsertAfterRow(NewCriteria, criteria);
     }
-    void EditRow(CriteriaDto criteria)
+    void EditRow(Criteria criteria)
     {
         dataGrid.EditRow(criteria);
     }
-    async Task DeleteRow(CriteriaDto criteria)
+    async Task DeleteRow(Criteria criteria)
     {
         var ConfirmDelete = await DialogService.Confirm($"Weet je zeker dat je \"{criteria.Name}\" wilt verwijderen?", "Verwijderen", new ConfirmOptions() { OkButtonText = "Ja", CancelButtonText = "Nee" });
         if (ConfirmDelete == null)
@@ -110,11 +110,11 @@
             await dataGrid.Reload();
         }
     }
-    async Task SaveRow(CriteriaDto criteria)
+    async Task SaveRow(Criteria criteria)
     {
         if (criteria.Id == Guid.Empty)
         {
-            await criteriaService.CreateAsync(new CriteriaCreateDto
+            await criteriaService.CreateAsync(new Criteria
             {
                 Name = criteria.Name,
                 Description = criteria.Description,
@@ -130,11 +130,11 @@
     }
     async Task SaveAll()
     {
-        foreach (CriteriaDto criteria in criterias)
+        foreach (Criteria criteria in criterias)
         {
             if (criteria.Id == Guid.Empty)
             {
-                await criteriaService.CreateAsync(new CriteriaCreateDto
+                await criteriaService.CreateAsync(new Criteria
                     {
                         Name = criteria.Name,
                         Description = criteria.Description,
@@ -149,7 +149,7 @@
             await dataGrid.UpdateRow(criteria);
         }
     }
-    async Task CancelEdit(CriteriaDto criteria)
+    async Task CancelEdit(Criteria criteria)
     {
         if (criteria.Id == Guid.Empty)
         {

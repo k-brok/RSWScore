@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using RSW.API.Data;
-using RSW.Shared.Dto;
 using RSW.Shared.Entities;
 using RSW.Shared.Interfaces;
 
@@ -28,15 +27,15 @@ namespace RSW.API.Endpoints
                 return Results.Ok(await service.GetScoutsAsync(id));
             }).AllowAnonymous();
 
-            Patrol.MapPost("/", async (PatrolCreateDto dto, IPatrolService service) =>
+            Patrol.MapPost("/", async (Patrol model, IPatrolService service) =>
             {
-                var created = await service.CreateAsync(dto);
+                var created = await service.CreateAsync(model);
                 return Results.Created($"/api/Patrol/{created.Id}", created);
             });
 
-            Patrol.MapPut("/{id:guid}", async (Guid id, PatrolDto dto, IPatrolService service) =>
+            Patrol.MapPut("/{id:guid}", async (Guid id, Patrol model, IPatrolService service) =>
             {
-                var updated = await service.UpdateAsync(id, dto);
+                var updated = await service.UpdateAsync(id, model);
                 return updated is not null ? Results.Ok(updated) : Results.NotFound();
             });
 

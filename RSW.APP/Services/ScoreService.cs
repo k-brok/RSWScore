@@ -1,6 +1,4 @@
 using System.Net.Http.Json;
-using AutoMapper;
-using RSW.Shared.Dto;
 using RSW.Shared.Entities;
 using RSW.Shared.Interfaces;
 
@@ -16,42 +14,42 @@ namespace RSW.APP.Services
             _httpClient = httpClient;
         }
 
-        public async Task<IEnumerable<ScoreDto>> GetAllAsync()
+        public async Task<IEnumerable<Score>> GetAllAsync()
         {
-            var result = await _httpClient.GetFromJsonAsync<List<ScoreDto>>(Endpoint);
+            var result = await _httpClient.GetFromJsonAsync<List<Score>>(Endpoint);
 
-            return result ?? new List<ScoreDto>();
+            return result ?? new List<Score>();
         }
 
-        public async Task<ScoreDto?> GetByIdAsync(Guid id)
+        public async Task<Score?> GetByIdAsync(Guid id)
         {
-            return await _httpClient.GetFromJsonAsync<ScoreDto>($"{Endpoint}/{id}");
+            return await _httpClient.GetFromJsonAsync<Score>($"{Endpoint}/{id}");
         }
 
-        public async Task<IEnumerable<GroupDto>> GetGroupsAsync(Guid id)
+        public async Task<IEnumerable<Unit>> GetGroupsAsync(Guid id)
         {
             throw new NotImplementedException();
         }
 
-        public async Task<ScoreDto> CreateAsync(ScoreCreateDto dto)
+        public async Task<Score> CreateAsync(Score model)
         {
-            var response = await _httpClient.PostAsJsonAsync(Endpoint, dto);
+            var response = await _httpClient.PostAsJsonAsync(Endpoint, model);
 
             if (response.IsSuccessStatusCode)
             {
-                return await response.Content.ReadFromJsonAsync<ScoreDto>();
+                return await response.Content.ReadFromJsonAsync<Score>();
             }
 
             return null;
         }
 
-        public async Task<ScoreDto?> UpdateAsync(Guid id, ScoreDto dto)
+        public async Task<Score?> UpdateAsync(Guid id, Score model)
         {
-            var response = await _httpClient.PutAsJsonAsync($"{Endpoint}/{id}", dto);
+            var response = await _httpClient.PutAsJsonAsync($"{Endpoint}/{id}", model);
 
             if (response.IsSuccessStatusCode)
             {
-                return await response.Content.ReadFromJsonAsync<ScoreDto>();
+                return await response.Content.ReadFromJsonAsync<Score>();
             }
 
             return null;

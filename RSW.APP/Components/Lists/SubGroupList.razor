@@ -1,7 +1,7 @@
 ﻿@inject DialogService DialogService
 @inject NotificationService NotificationService
 @inject IEditionService editionService
-@if(editionDtos == null){
+@if(editions == null){
     <RadzenCard Style="margin:20px;">
         <RadzenProgressBarCircular Value="50" ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
         <p>Data ophalen...</p>
@@ -9,24 +9,24 @@
 }
 else
 {
-    <RadzenDataGrid @ref="dataGrid" Data="@subgroups" TItem="SubGroupDto" RowSelect="@OnRowSelect" AllowPaging="true" PageSize="10" AllowSorting="true" AllowFiltering="true" FilterMode="FilterMode.Simple" Responsive="true" Style="height: 600px;">
+    <RadzenDataGrid @ref="dataGrid" Data="@subgroups" TItem="SubGroup" RowSelect="@OnRowSelect" AllowPaging="true" PageSize="10" AllowSorting="true" AllowFiltering="true" FilterMode="FilterMode.Simple" Responsive="true" Style="height: 600px;">
         <Columns>
-            <RadzenDataGridColumn TItem="SubGroupDto" Property="Color" Title="Color" >
+            <RadzenDataGridColumn TItem="SubGroup" Property="Color" Title="Color" >
                 <EditTemplate Context="subgroup">
                     <RadzenFormField Text="Kleur" Style="width:100%">
                         <RadzenTextBox @bind-Value="@subgroup.Color" />
                     </RadzenFormField>
                 </EditTemplate>
             </RadzenDataGridColumn>
-            <RadzenDataGridColumn TItem="SubGroupDto" Property="EditionId" Title="Editie">
+            <RadzenDataGridColumn TItem="SubGroup" Property="EditionId" Title="Editie">
                 <Template Context="subgroup">
-                    @editionDtos.FirstOrDefault(C => C.Id == subgroup.EditionId).RSWStartDate.Year
+                    @editions.FirstOrDefault(C => C.Id == subgroup.EditionId).RSWStartDate.Year
                 </Template>
                 <EditTemplate Context="subgroup">
                     <RadzenFormField Text="Editie" Style="width:100%">
-                        <RadzenDropDown Data="@editionDtos" @bind-Value=subgroup.EditionId ValueProperty=@nameof(EditionDto.Id)>
+                        <RadzenDropDown Data="@editions" @bind-Value=subgroup.EditionId ValueProperty=@nameof(Edition.Id)>
                             <Template>
-                                @((context as EditionDto).RSWStartDate.Year)
+                                @((context as Edition).RSWStartDate.Year)
                             </Template>
                         </RadzenDropDown>
                     </RadzenFormField>
@@ -53,42 +53,42 @@ else
 }
 @code {
     [Parameter]
-    public List<SubGroupDto> subgroups { get; set; } = new List<SubGroupDto>();
-    public List<SubGroupDto> NewSubGroups { get; set; } = new List<SubGroupDto>();
-    public EventCallback<SubGroupDto> OnSubGroupDtoSelected { get; set; }
-    private RadzenDataGrid<SubGroupDto> dataGrid;
-    private IEnumerable<EditionDto>? editionDtos { get; set; } = null;
+    public List<SubGroup> subgroups { get; set; } = new List<SubGroup>();
+    public List<SubGroup> NewSubGroups { get; set; } = new List<SubGroup>();
+    public EventCallback<SubGroup> OnSubGroupSelected { get; set; }
+    private RadzenDataGrid<SubGroup> dataGrid;
+    private IEnumerable<Edition>? editions { get; set; } = null;
 
 
     [Inject]
     private ISubGroupService subgroupService { get; set; } = default!;
     protected override async Task OnInitializedAsync()
     {
-        editionDtos = await editionService.GetAllAsync();
+        editions = await editionService.GetAllAsync();
         await base.OnInitializedAsync();
     }
-    private async Task OnRowSelect(SubGroupDto subgroup)
+    private async Task OnRowSelect(SubGroup subgroup)
     {
-        if (OnSubGroupDtoSelected.HasDelegate)
+        if (OnSubGroupSelected.HasDelegate)
         {
-            await OnSubGroupDtoSelected.InvokeAsync(subgroup);
+            await OnSubGroupSelected.InvokeAsync(subgroup);
         }
     }
     void Insert()
     {
-        var NewSubGroup = new SubGroupDto();
+        var NewSubGroup = new SubGroup();
         dataGrid.InsertRow(NewSubGroup);
     }
-    void InsertAfterRow(SubGroupDto subgroup)
+    void InsertAfterRow(SubGroup subgroup)
     {
-        var NewSubGroup = new SubGroupDto();
+        var NewSubGroup = new SubGroup();
         dataGrid.InsertAfterRow(NewSubGroup, subgroup);
     }
-    void EditRow(SubGroupDto subgroup)
+    void EditRow(SubGroup subgroup)
     {
         dataGrid.EditRow(subgroup);
     }
-    async Task DeleteRow(SubGroupDto subgroup)
+    async Task DeleteRow(SubGroup subgroup)
     {
         var ConfirmDelete = await DialogService.Confirm($"Weet je zeker dat je \"{subgroup.Color}\" wilt verwijderen?", "Verwijderen", new ConfirmOptions() { OkButtonText = "Ja", CancelButtonText = "Nee" });
         if (ConfirmDelete == null)
@@ -107,11 +107,11 @@ else
             await dataGrid.Reload();
         }
     }
-    async Task SaveRow(SubGroupDto subgroup)
+    async Task SaveRow(SubGroup subgroup)
     {
         if (subgroup.Id == Guid.Empty)
         {
-            await subgroupService.CreateAsync(new SubGroupCreateDto
+            await subgroupService.CreateAsync(new SubGroup
             {
                 Color = subgroup.Color,
                 EditionId = subgroup.EditionId
@@ -125,11 +125,11 @@ else
     }
     async Task SaveAll()
     {
-        foreach (SubGroupDto subgroup in subgroups)
+        foreach (SubGroup subgroup in subgroups)
         {
             if (subgroup.Id == Guid.Empty)
             {
-                await subgroupService.CreateAsync(new SubGroupCreateDto
+                await subgroupService.CreateAsync(new SubGroup
                     {
                         Color = subgroup.Color,
                         EditionId = subgroup.EditionId
@@ -142,7 +142,7 @@ else
             await dataGrid.UpdateRow(subgroup);
         }
     }
-    async Task CancelEdit(SubGroupDto subgroup)
+    async Task CancelEdit(SubGroup subgroup)
     {
         if (subgroup.Id == Guid.Empty)
         {

@@ -1,7 +1,6 @@
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using RSW.API.Data;
-using RSW.Shared.Dto;
 using RSW.Shared.Entities;
 using RSW.Shared.Interfaces;
 
@@ -10,52 +9,49 @@ namespace RSW.API.Services
     public class CategoryService : ICategoryService
     {
         private readonly AppDbContext _context;
-        private readonly IMapper _mapper;
 
-        public CategoryService(AppDbContext context, IMapper mapper)
+        public CategoryService(AppDbContext context)
         {
             _context = context;
-            _mapper = mapper;
         }
 
-        public async Task<IEnumerable<CategoryDto>> GetAllAsync()
+        public async Task<IEnumerable<Category>> GetAllAsync()
         {
             return await _context.Categories
-                .Select(e => _mapper.Map<CategoryDto>(e))
                 .ToListAsync();
         }
 
-        public async Task<CategoryDto?> GetByIdAsync(Guid id)
+        public async Task<Category?> GetByIdAsync(Guid id)
         {
             var entity = await _context.Categories.FirstOrDefaultAsync(e => e.Id == id);
-            return _mapper.Map<CategoryDto>(entity);
+            return entity;
         }
 
-        public async Task<CategoryDto> CreateAsync(CategoryCreateDto dto)
+        public async Task<Category> CreateAsync(Category model)
         {
             var entity = new Category
             {
                 Id = Guid.NewGuid(),
-                Name = dto.Name,
-                Weight = dto.Weight
+                Name = model.Name,
+                Weight = model.Weight
             };
 
             _context.Categories.Add(entity);
             await _context.SaveChangesAsync();
 
-            return _mapper.Map<CategoryDto>(entity);
+            return entity;
         }
 
-        public async Task<CategoryDto?> UpdateAsync(Guid id, CategoryDto dto)
+        public async Task<Category?> UpdateAsync(Guid id, Category model)
         {
             var existing = await _context.Categories.FirstOrDefaultAsync(e => e.Id == id);
             if (existing == null) return null;
 
-            existing.Name = dto.Name;
-            existing.Weight = dto.Weight;
+            existing.Name = model.Name;
+            existing.Weight = model.Weight;
 
             await _context.SaveChangesAsync();
-            return _mapper.Map<CategoryDto>(existing);
+            return existing;
         }
         public async Task<bool> DeleteAsync(Guid id)
         {

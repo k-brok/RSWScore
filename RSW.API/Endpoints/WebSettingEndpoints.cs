@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using RSW.API.Data;
-using RSW.Shared.Dto;
 using RSW.Shared.Entities;
 using RSW.Shared.Interfaces;
 
@@ -23,15 +22,15 @@ namespace RSW.API.Endpoints
                 return found is not null ? Results.Ok(found) : Results.NotFound();
             }).AllowAnonymous();
 
-            WebSetting.MapPost("/", async (WebSettingCreateDto dto, IWebSettingService service) =>
+            WebSetting.MapPost("/", async (WebSetting model, IWebSettingService service) =>
             {
-                var created = await service.CreateAsync(dto);
+                var created = await service.CreateAsync(model);
                 return Results.Created($"/api/WebSetting/{created.Id}", created);
             });
 
-            WebSetting.MapPut("/{id:guid}", async (Guid id, WebSettingDto dto, IWebSettingService service) =>
+            WebSetting.MapPut("/{id:guid}", async (Guid id, WebSetting model, IWebSettingService service) =>
             {
-                var updated = await service.UpdateAsync(id, dto);
+                var updated = await service.UpdateAsync(id, model);
                 return updated is not null ? Results.Ok(updated) : Results.NotFound();
             });
 

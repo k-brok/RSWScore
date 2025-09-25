@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Radzen;
 using RSW.APP.Services;
 using RSW.Shared.Interfaces;
-using RSW.Shared.Mapper;
 using RSW.APP.Auth;
 using Microsoft.AspNetCore.Components.Authorization;
 
@@ -21,13 +20,11 @@ public class Program
 
         builder.Services.AddRadzenComponents();
 
-        builder.Services.AddAutoMapper(cfg => { }, typeof(AutoMapperProfile));
-
         builder.Services.AddScoped<IAssociationService, AssociationService>();
         builder.Services.AddScoped<ICategoryService, CategoryService>();
         builder.Services.AddScoped<ICriteriaService, CriteriaService>();
         builder.Services.AddScoped<IEditionService, EditionService>();
-        builder.Services.AddScoped<IGroupService, GroupService>();
+        builder.Services.AddScoped<IUnitService, UnitService>();
         builder.Services.AddScoped<IJurySlotService, JurySlotService>();
         builder.Services.AddScoped<IPatrolService, PatrolService>();
         builder.Services.AddScoped<IScoreService, ScoreService>();

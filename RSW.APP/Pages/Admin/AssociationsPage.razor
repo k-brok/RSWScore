@@ -15,7 +15,7 @@ else
 }
 
 @code {
-    public IEnumerable<AssociationDto>? associations { get; set; }
+    public IEnumerable<Association>? associations { get; set; }
     protected override async Task OnInitializedAsync()
     {
         associations = await AssociationService.GetAllAsync();

@@ -1,24 +1,24 @@
-﻿@page "/admin/groups"
+﻿@page "/admin/editions"
 @attribute [Authorize(Roles = "Admin")]
 
-@inject IGroupService GroupService
+@inject IEditionService EditionService
 
-<h3>Groups</h3>
+<h3>Editions</h3>
 
-@if (groups == null)
+@if (editions == null)
 {
     <RadzenProgressBarCircular Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
 }
 else
 {
-    <GroupList groups="@groups.ToList()" />
+    <EditionList editions="@editions.ToList()" />
 }
 
 @code {
-    public IEnumerable<GroupDto>? groups { get; set; }
+    public IEnumerable<Edition>? editions { get; set; }
     protected override async Task OnInitializedAsync()
     {
-        groups = await GroupService.GetAllAsync();
+        editions = await EditionService.GetAllAsync();
         await base.OnInitializedAsync();
     }
 }

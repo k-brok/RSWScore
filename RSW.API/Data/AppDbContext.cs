@@ -15,7 +15,7 @@ namespace RSW.API.Data
         public DbSet<Category> Categories { get; set; } = null!;
         public DbSet<Criteria> Criterias { get; set; } = null!;
         public DbSet<Edition> Editions { get; set; } = null!;
-        public DbSet<Group> Groups { get; set; } = null!;
+        public DbSet<Unit> Units { get; set; } = null!;
         public DbSet<JurySlot> JurySlots { get; set; } = null!;
         public DbSet<Patrol> Patrols { get; set; } = null!;
         public DbSet<Score> Scores { get; set; } = null!;

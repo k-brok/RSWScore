@@ -1,24 +1,24 @@
-﻿@page "/admin/editions"
+﻿@page "/admin/units"
 @attribute [Authorize(Roles = "Admin")]
 
-@inject IEditionService EditionService
+@inject IUnitService UnitService
 
-<h3>Editions</h3>
+<h3>Units</h3>
 
-@if (editions == null)
+@if (units == null)
 {
     <RadzenProgressBarCircular Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
 }
 else
 {
-    <EditionList editions="@editions.ToList()" />
+    <UnitList units="@units.ToList()" />
 }
 
 @code {
-    public IEnumerable<EditionDto>? editions { get; set; }
+    public IEnumerable<Unit>? units { get; set; }
     protected override async Task OnInitializedAsync()
     {
-        editions = await EditionService.GetAllAsync();
+        units = await UnitService.GetAllAsync();
         await base.OnInitializedAsync();
     }
 }

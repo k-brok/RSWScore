@@ -1,7 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using RSW.API.Data;
-using RSW.Shared.Dto;
-using RSW.Shared.Entities;
+﻿using RSW.Shared.Entities;
 using RSW.Shared.Interfaces;
 
 namespace RSW.API.Endpoints
@@ -23,15 +20,15 @@ namespace RSW.API.Endpoints
                 return found is not null ? Results.Ok(found) : Results.NotFound();
             }).AllowAnonymous();
 
-            VolunteerAssignment.MapPost("/", async (VolunteerAssignment dto, IVolunteerAssignmentService service) =>
+            VolunteerAssignment.MapPost("/", async (VolunteerAssignment model, IVolunteerAssignmentService service) =>
             {
-                var created = await service.CreateAsync(dto);
+                var created = await service.CreateAsync(model);
                 return Results.Created($"/api/VolunteerAssignment/{created.Id}", created);
             });
 
-            VolunteerAssignment.MapPut("/{id:guid}", async (Guid id, VolunteerAssignment dto, IVolunteerAssignmentService service) =>
+            VolunteerAssignment.MapPut("/{id:guid}", async (Guid id, VolunteerAssignment model, IVolunteerAssignmentService service) =>
             {
-                var updated = await service.UpdateAsync(id, dto);
+                var updated = await service.UpdateAsync(id, model);
                 return updated is not null ? Results.Ok(updated) : Results.NotFound();
             });
 

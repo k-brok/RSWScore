@@ -3,9 +3,7 @@ using RSW.API.Data;
 using RSW.API.Endpoints;
 using RSW.API.Services;
 using RSW.Shared.Interfaces;
-using AutoMapper;
 using Microsoft.Extensions.DependencyInjection;
-using RSW.Shared.Mapper;
 using RSW.Shared.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
@@ -31,13 +29,11 @@ public class Program
             .AddEntityFrameworkStores<AppDbContext>()
             .AddDefaultTokenProviders();
 
-        builder.Services.AddAutoMapper(cfg => { }, typeof(AutoMapperProfile));
-
         builder.Services.AddScoped<IAssociationService, AssociationService>();
         builder.Services.AddScoped<ICategoryService, CategoryService>();
         builder.Services.AddScoped<ICriteriaService, CriteriaService>();
         builder.Services.AddScoped<IEditionService, EditionService>();
-        builder.Services.AddScoped<IGroupService, GroupService>();
+        builder.Services.AddScoped<IUnitService, UnitService>();
         builder.Services.AddScoped<IJurySlotService, JurySlotService>();
         builder.Services.AddScoped<IPatrolService, PatrolService>();
         builder.Services.AddScoped<IScoreService, ScoreService>();
@@ -144,7 +140,7 @@ public class Program
         app.MapCategoryEndpoints();
         app.MapCriteriaEndpoints();
         app.MapEditionEndpoints();
-        app.MapGroupEndpoints();
+        app.MapUnitEndpoints();
         app.MapJurySlotEndpoints();
         app.MapPatrolEndpoints();
         app.MapScoreEndpoints();

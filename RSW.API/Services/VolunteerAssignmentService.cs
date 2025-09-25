@@ -1,7 +1,6 @@
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using RSW.API.Data;
-using RSW.Shared.Dto;
 using RSW.Shared.Entities;
 using RSW.Shared.Interfaces;
 
@@ -10,25 +9,22 @@ namespace RSW.API.Services
     public class VolunteerAssignmentService : IVolunteerAssignmentService
     {
         private readonly AppDbContext _context;
-        private readonly IMapper _mapper;
 
-        public VolunteerAssignmentService(AppDbContext context, IMapper mapper)
+        public VolunteerAssignmentService(AppDbContext context)
         {
             _context = context;
-            _mapper = mapper;
         }
 
         public async Task<IEnumerable<VolunteerAssignment>> GetAllAsync()
         {
             return await _context.VolunteerAssignments
-                .Select(e => _mapper.Map<VolunteerAssignment>(e))
                 .ToListAsync();
         }
 
         public async Task<VolunteerAssignment?> GetByIdAsync(Guid id)
         {
             var entity = await _context.VolunteerAssignments.FirstOrDefaultAsync(e => e.Id == id);
-            return _mapper.Map<VolunteerAssignment>(entity);
+            return entity;
         }
 
         public async Task<VolunteerAssignment> CreateAsync(VolunteerAssignment model)
@@ -49,7 +45,7 @@ namespace RSW.API.Services
             existing.UserId = model.UserId;
 
             await _context.SaveChangesAsync();
-            return _mapper.Map<VolunteerAssignment>(existing);
+            return existing;
         }
         public async Task<bool> DeleteAsync(Guid id)
         {

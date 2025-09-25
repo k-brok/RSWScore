@@ -4,9 +4,8 @@
 @inject NotificationService NotificationService
 
 @using System.ComponentModel.DataAnnotations
-@using RSW.Shared.Dto
 
-<RadzenTemplateForm Data="@edition" TItem="EditionDto" Submit="@((EditionDto args) => { OnValidSubmit(args); })" InvalidSubmit="@OnInvalidSubmit">
+<RadzenTemplateForm Data="@edition" TItem="Edition" Submit="@((Edition args) => { OnValidSubmit(args); })" InvalidSubmit="@OnInvalidSubmit">
 
                 <RadzenStack Gap="1rem">
 
@@ -65,7 +64,7 @@
 
 @code {
     [Parameter] public Guid? Id { get; set; }
-    [Parameter] public EditionDto edition { get; set; } = new EditionDto();
+    [Parameter] public Edition edition { get; set; } = new Edition();
 
     protected override async Task OnInitializedAsync()
     {
@@ -84,7 +83,7 @@
         }
     }
 
-    private async Task OnValidSubmit(EditionDto args)
+    private async Task OnValidSubmit(Edition args)
     {
         if (args.Id != Guid.Empty)
         {
