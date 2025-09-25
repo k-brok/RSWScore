@@ -2,7 +2,6 @@ using AutoMapper;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using RSW.API.Data;
-using RSW.Shared.Dto;
 using RSW.Shared.Entities;
 using RSW.Shared.Interfaces;
 
@@ -21,49 +20,49 @@ namespace RSW.API.Services
             _hub = hub;
         }
 
-        public async Task<IEnumerable<ScoreDto>> GetAllAsync()
+        public async Task<IEnumerable<Score>> GetAllAsync()
         {
             return await _context.Scores
-                .Select(e => _mapper.Map<ScoreDto>(e))
+                .Select(e => _mapper.Map<Score>(e))
                 .ToListAsync();
         }
 
-        public async Task<ScoreDto?> GetByIdAsync(Guid id)
+        public async Task<Score?> GetByIdAsync(Guid id)
         {
             var entity = await _context.Scores.FirstOrDefaultAsync(e => e.Id == id);
-            return _mapper.Map<ScoreDto>(entity);
+            return _mapper.Map<Score>(entity);
         }
 
-        public async Task<ScoreDto> CreateAsync(ScoreCreateDto dto)
+        public async Task<Score> CreateAsync(Score model)
         {
             var entity = new Score
             {
                 Id = Guid.NewGuid(),
-                CriteriaId = dto.CriteriaId,
-                PatrolId = dto.PatrolId,
-                Value = dto.Value
+                CriteriaId = model.CriteriaId,
+                PatrolId = model.PatrolId,
+                Value = model.Value
             };
 
             _context.Scores.Add(entity);
             await _context.SaveChangesAsync();
 
-            return _mapper.Map<ScoreDto>(entity);
+            return _mapper.Map<Score>(entity);
         }
 
-        public async Task<ScoreDto?> UpdateAsync(Guid id, ScoreDto dto)
+        public async Task<Score?> UpdateAsync(Guid id, Score model)
         {
             var existing = await _context.Scores.FirstOrDefaultAsync(e => e.Id == id);
             if (existing == null) return null;
 
-            existing.CriteriaId = dto.CriteriaId;
-            existing.PatrolId = dto.PatrolId;
-            existing.Value = dto.Value;
+            existing.CriteriaId = model.CriteriaId;
+            existing.PatrolId = model.PatrolId;
+            existing.Value = model.Value;
 
             await _context.SaveChangesAsync();
 
             await _hub.Clients.All.SendAsync("ScoreUpdate", existing);
 
-            return _mapper.Map<ScoreDto>(existing);
+            return _mapper.Map<Score>(existing);
         }
         public async Task<bool> DeleteAsync(Guid id)
         {

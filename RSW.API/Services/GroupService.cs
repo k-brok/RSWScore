@@ -1,7 +1,6 @@
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using RSW.API.Data;
-using RSW.Shared.Dto;
 using RSW.Shared.Entities;
 using RSW.Shared.Interfaces;
 
@@ -18,44 +17,44 @@ namespace RSW.API.Services
             _mapper = mapper;
         }
 
-        public async Task<IEnumerable<GroupDto>> GetAllAsync()
+        public async Task<IEnumerable<Group>> GetAllAsync()
         {
             return await _context.Groups
-                .Select(e => _mapper.Map<GroupDto>(e))
+                .Select(e => _mapper.Map<Group>(e))
                 .ToListAsync();
         }
 
-        public async Task<GroupDto?> GetByIdAsync(Guid id)
+        public async Task<Group?> GetByIdAsync(Guid id)
         {
             var entity = await _context.Groups.FirstOrDefaultAsync(e => e.Id == id);
-            return _mapper.Map<GroupDto>(entity);
+            return _mapper.Map<Group>(entity);
         }
 
-        public async Task<GroupDto> CreateAsync(GroupCreateDto dto)
+        public async Task<Group> CreateAsync(Group model)
         {
             var entity = new Group
             {
                 Id = Guid.NewGuid(),
-                Name = dto.Name,
-                AssociationId = dto.AssociationId
+                Name = model.Name,
+                AssociationId = model.AssociationId
             };
 
             _context.Groups.Add(entity);
             await _context.SaveChangesAsync();
 
-            return _mapper.Map<GroupDto>(entity);
+            return _mapper.Map<Group>(entity);
         }
 
-        public async Task<GroupDto?> UpdateAsync(Guid id, GroupDto dto)
+        public async Task<Group?> UpdateAsync(Guid id, Group model)
         {
             var existing = await _context.Groups.FirstOrDefaultAsync(e => e.Id == id);
             if (existing == null) return null;
 
-            existing.Name = dto.Name;
-            existing.AssociationId = dto.AssociationId;
+            existing.Name = model.Name;
+            existing.AssociationId = model.AssociationId;
 
             await _context.SaveChangesAsync();
-            return _mapper.Map<GroupDto>(existing);
+            return _mapper.Map<Group>(existing);
         }
         public async Task<bool> DeleteAsync(Guid id)
         {
@@ -67,13 +66,13 @@ namespace RSW.API.Services
             return true;
         }
 
-        public async Task<List<PatrolDto>>? GetPatrolsAsync(Guid id)
+        public async Task<List<Patrol>>? GetPatrolsAsync(Guid id)
         {
             var existing = await _context.Groups.FirstOrDefaultAsync(e => e.Id == id);
                 if (existing == null) return null;
 
             var patrols = await _context.Patrols.Where(p => p.GroupId == id).ToListAsync();
-            return patrols.Select(p => _mapper.Map<PatrolDto>(p)).ToList();
+            return patrols.Select(p => _mapper.Map<Patrol>(p)).ToList();
         }
     }
 

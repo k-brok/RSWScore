@@ -1,7 +1,6 @@
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using RSW.API.Data;
-using RSW.Shared.Dto;
 using RSW.Shared.Entities;
 using RSW.Shared.Interfaces;
 
@@ -18,48 +17,48 @@ namespace RSW.API.Services
             _mapper = mapper;
         }
 
-        public async Task<IEnumerable<JurySlotDto>> GetAllAsync()
+        public async Task<IEnumerable<JurySlot>> GetAllAsync()
         {
             return await _context.JurySlots
-                .Select(e => _mapper.Map<JurySlotDto>(e))
+                .Select(e => _mapper.Map<JurySlot>(e))
                 .ToListAsync();
         }
 
-        public async Task<JurySlotDto?> GetByIdAsync(Guid id)
+        public async Task<JurySlot?> GetByIdAsync(Guid id)
         {
             var entity = await _context.JurySlots.FirstOrDefaultAsync(e => e.Id == id);
-            return _mapper.Map<JurySlotDto>(entity);
+            return _mapper.Map<JurySlot>(entity);
         }
 
-        public async Task<JurySlotDto> CreateAsync(JurySlotCreateDto dto)
+        public async Task<JurySlot> CreateAsync(JurySlot model)
         {
             var entity = new JurySlot
             {
                 Id = Guid.NewGuid(),
-                CategoryId = dto.CategoryId,
-                ClosingTime = dto.ClosingTime,
-                OpeningTime = dto.OpeningTime,
-                SubgroupId = dto.SubgroupId
+                CategoryId = model.CategoryId,
+                ClosingTime = model.ClosingTime,
+                OpeningTime = model.OpeningTime,
+                SubgroupId = model.SubgroupId
             };
 
             _context.JurySlots.Add(entity);
             await _context.SaveChangesAsync();
 
-            return _mapper.Map<JurySlotDto>(entity);
+            return _mapper.Map<JurySlot>(entity);
         }
 
-        public async Task<JurySlotDto?> UpdateAsync(Guid id, JurySlotDto dto)
+        public async Task<JurySlot?> UpdateAsync(Guid id, JurySlot model)
         {
             var existing = await _context.JurySlots.FirstOrDefaultAsync(e => e.Id == id);
             if (existing == null) return null;
 
-            existing.CategoryId = dto.CategoryId;
-            existing.ClosingTime = dto.ClosingTime;
-            existing.OpeningTime = dto.OpeningTime;
-            existing.SubgroupId = dto.SubgroupId;
+            existing.CategoryId = model.CategoryId;
+            existing.ClosingTime = model.ClosingTime;
+            existing.OpeningTime = model.OpeningTime;
+            existing.SubgroupId = model.SubgroupId;
 
             await _context.SaveChangesAsync();
-            return _mapper.Map<JurySlotDto>(existing);
+            return _mapper.Map<JurySlot>(existing);
         }
         public async Task<bool> DeleteAsync(Guid id)
         {

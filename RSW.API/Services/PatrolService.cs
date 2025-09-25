@@ -1,7 +1,6 @@
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using RSW.API.Data;
-using RSW.Shared.Dto;
 using RSW.Shared.Entities;
 using RSW.Shared.Interfaces;
 
@@ -18,24 +17,24 @@ namespace RSW.API.Services
             _mapper = mapper;
         }
 
-        public async Task<IEnumerable<PatrolDto>> GetAllAsync()
+        public async Task<IEnumerable<Patrol>> GetAllAsync()
         {
             return await _context.Patrols
-                .Select(e => _mapper.Map<PatrolDto>(e))
+                .Select(e => _mapper.Map<Patrol>(e))
                 .ToListAsync();
         }
 
-        public async Task<PatrolDto?> GetByIdAsync(Guid id)
+        public async Task<Patrol?> GetByIdAsync(Guid id)
         {
             var entity = await _context.Patrols.FirstOrDefaultAsync(e => e.Id == id);
-            return _mapper.Map<PatrolDto>(entity);
+            return _mapper.Map<Patrol>(entity);
         }
 
-        public async Task<IEnumerable<ScoutDto>> GetScoutsAsync(Guid patrolId)
+        public async Task<IEnumerable<Scout>> GetScoutsAsync(Guid patrolId)
         {
             return await _context.Scouts
                 .Where(s => s.PatrolId == patrolId)
-                .Select(s => new ScoutDto
+                .Select(s => new Scout
                 {
                     Id = s.Id,
                     Firstname = s.Firstname,
@@ -45,35 +44,35 @@ namespace RSW.API.Services
                 }).ToListAsync();
         }
 
-        public async Task<PatrolDto> CreateAsync(PatrolCreateDto dto)
+        public async Task<Patrol> CreateAsync(Patrol model)
         {
             var entity = new Patrol
             {
                 Id = Guid.NewGuid(),
-                Name = dto.Name,
-                GroupId = dto.GroupId,
-                IsYoungest = dto.IsYoungest,
+                Name = model.Name,
+                GroupId = model.GroupId,
+                IsYoungest = model.IsYoungest,
             };
 
             _context.Patrols.Add(entity);
             await _context.SaveChangesAsync();
 
-            return _mapper.Map<PatrolDto>(entity);
+            return _mapper.Map<Patrol>(entity);
         }
 
-        public async Task<PatrolDto?> UpdateAsync(Guid id, PatrolDto dto)
+        public async Task<Patrol?> UpdateAsync(Guid id, Patrol model)
         {
             var existing = await _context.Patrols.FirstOrDefaultAsync(e => e.Id == id);
             if (existing == null) return null;
 
-            existing.Name = dto.Name;
-            existing.GroupId = dto.GroupId;
-            existing.IsYoungest = dto.IsYoungest;
-            existing.Number = dto.Number;
-            existing.SubGroupId = dto.SubGroupId;
+            existing.Name = model.Name;
+            existing.GroupId = model.GroupId;
+            existing.IsYoungest = model.IsYoungest;
+            existing.Number = model.Number;
+            existing.SubGroupId = model.SubGroupId;
 
             await _context.SaveChangesAsync();
-            return _mapper.Map<PatrolDto>(existing);
+            return _mapper.Map<Patrol>(existing);
         }
         public async Task<bool> DeleteAsync(Guid id)
         {

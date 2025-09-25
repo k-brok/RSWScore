@@ -1,7 +1,6 @@
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using RSW.API.Data;
-using RSW.Shared.Dto;
 using RSW.Shared.Entities;
 using RSW.Shared.Interfaces;
 
@@ -18,50 +17,50 @@ namespace RSW.API.Services
             _mapper = mapper;
         }
 
-        public async Task<IEnumerable<WebSettingDto>> GetAllAsync()
+        public async Task<IEnumerable<WebSetting>> GetAllAsync()
         {
             return await _context.WebSettings
-                .Select(e => _mapper.Map<WebSettingDto>(e))
+                .Select(e => _mapper.Map<WebSetting>(e))
                 .ToListAsync();
         }
 
-        public async Task<WebSettingDto?> GetByIdAsync(Guid id)
+        public async Task<WebSetting?> GetByIdAsync(Guid id)
         {
             var entity = await _context.WebSettings.FirstOrDefaultAsync(e => e.Id == id);
-            return _mapper.Map<WebSettingDto>(entity);
+            return _mapper.Map<WebSetting>(entity);
         }
 
-        public async Task<WebSettingDto> CreateAsync(WebSettingCreateDto dto)
+        public async Task<WebSetting> CreateAsync(WebSetting model)
         {
             var entity = new WebSetting
             {
                 Id = Guid.NewGuid(),
-                Category = dto.Category,
-                Description = dto.Description,
-                Key = dto.Key,
-                Value = dto.Value,
-                ValueType = dto.ValueType
+                Category = model.Category,
+                Description = model.Description,
+                Key = model.Key,
+                Value = model.Value,
+                ValueType = model.ValueType
             };
 
             _context.WebSettings.Add(entity);
             await _context.SaveChangesAsync();
 
-            return _mapper.Map<WebSettingDto>(entity);
+            return _mapper.Map<WebSetting>(entity);
         }
 
-        public async Task<WebSettingDto?> UpdateAsync(Guid id, WebSettingDto dto)
+        public async Task<WebSetting?> UpdateAsync(Guid id, WebSetting model)
         {
             var existing = await _context.WebSettings.FirstOrDefaultAsync(e => e.Id == id);
             if (existing == null) return null;
 
-            existing.Category = dto.Category;
-            existing.Description = dto.Description;
-            existing.Key = dto.Key;
-            existing.Value = dto.Value;
-            existing.ValueType = dto.ValueType;
+            existing.Category = model.Category;
+            existing.Description = model.Description;
+            existing.Key = model.Key;
+            existing.Value = model.Value;
+            existing.ValueType = model.ValueType;
 
             await _context.SaveChangesAsync();
-            return _mapper.Map<WebSettingDto>(existing);
+            return _mapper.Map<WebSetting>(existing);
         }
         public async Task<bool> DeleteAsync(Guid id)
         {

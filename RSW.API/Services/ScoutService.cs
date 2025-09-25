@@ -1,7 +1,6 @@
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using RSW.API.Data;
-using RSW.Shared.Dto;
 using RSW.Shared.Entities;
 using RSW.Shared.Interfaces;
 
@@ -18,50 +17,50 @@ namespace RSW.API.Services
             _mapper = mapper;
         }
 
-        public async Task<IEnumerable<ScoutDto>> GetAllAsync()
+        public async Task<IEnumerable<Scout>> GetAllAsync()
         {
             return await _context.Scouts
-                .Select(e => _mapper.Map<ScoutDto>(e))
+                .Select(e => _mapper.Map<Scout>(e))
                 .ToListAsync();
         }
 
-        public async Task<ScoutDto?> GetByIdAsync(Guid id)
+        public async Task<Scout?> GetByIdAsync(Guid id)
         {
             var entity = await _context.Scouts.FirstOrDefaultAsync(e => e.Id == id);
-            return _mapper.Map<ScoutDto>(entity);
+            return _mapper.Map<Scout>(entity);
         }
 
-        public async Task<ScoutDto> CreateAsync(ScoutCreateDto dto)
+        public async Task<Scout> CreateAsync(Scout model)
         {
             var entity = new Scout
             {
                 Id = Guid.NewGuid(),
-                Firstname = dto.Firstname,
-                Lastname = dto.Lastname,
-                PatrolId = dto.PatrolId,
-                DateOfBirth = dto.DateOfBirth
+                Firstname = model.Firstname,
+                Lastname = model.Lastname,
+                PatrolId = model.PatrolId,
+                DateOfBirth = model.DateOfBirth
             };
 
             _context.Scouts.Add(entity);
             await _context.SaveChangesAsync();
 
-            return _mapper.Map<ScoutDto>(entity);
+            return _mapper.Map<Scout>(entity);
         }
 
-        public async Task<ScoutDto?> UpdateAsync(Guid id, ScoutDto dto)
+        public async Task<Scout?> UpdateAsync(Guid id, Scout model)
         {
             var existing = await _context.Scouts.FirstOrDefaultAsync(e => e.Id == id);
             if (existing == null) return null;
 
-            existing.Firstname = dto.Firstname;
-            existing.Lastname = dto.Lastname;
-            existing.IsAPL = dto.IsAPL;
-            existing.IsPL = dto.IsPL;
-            existing.PatrolId = dto.PatrolId;
-            existing.DateOfBirth = dto.DateOfBirth;
+            existing.Firstname = model.Firstname;
+            existing.Lastname = model.Lastname;
+            existing.IsAPL = model.IsAPL;
+            existing.IsPL = model.IsPL;
+            existing.PatrolId = model.PatrolId;
+            existing.DateOfBirth = model.DateOfBirth;
 
             await _context.SaveChangesAsync();
-            return _mapper.Map<ScoutDto>(existing);
+            return _mapper.Map<Scout>(existing);
         }
         public async Task<bool> DeleteAsync(Guid id)
         {
