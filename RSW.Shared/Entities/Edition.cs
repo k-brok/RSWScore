@@ -1,4 +1,6 @@
-﻿namespace RSW.Shared.Entities
+﻿using System.Text.Json.Serialization;
+
+namespace RSW.Shared.Entities
 {
     public class Edition : BaseEntity
     {
@@ -13,8 +15,10 @@
             }
         }
         public String? Theme { get; set; } = string.Empty;
+        [JsonIgnore]
         public List<SubGroup> SubGroups { get; set; } = new List<SubGroup>();
         public bool IsActive { get; set; } = false;
+        [JsonIgnore]
         public List<JurySlot> JurySlots { get; set; } = new List<JurySlot>();
     }
 }

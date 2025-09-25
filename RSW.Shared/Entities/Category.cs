@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace RSW.Shared.Entities
 {
@@ -6,7 +7,9 @@ namespace RSW.Shared.Entities
     {
         public required string Name { get; set; }
         public int Weight { get; set; }
+        [JsonIgnore]
         public List<SubCategory> SubCategories { get; set; } = new List<SubCategory>();
+        [JsonIgnore]
         public List<JurySlot> JurySlots { get; set; } = new List<JurySlot>();
         [NotMapped] public int MaxScore { get
             {
