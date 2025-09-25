@@ -1,14 +1,14 @@
-using RSW.Shared.Dto;
+using RSW.Shared.Entities;
 
 namespace RSW.Shared.Interfaces
 {
     public interface IAssociationService
     {
-        Task<IEnumerable<AssociationDto>> GetAllAsync();
-        Task<AssociationDto?> GetByIdAsync(Guid id);
-        Task<IEnumerable<GroupDto>> GetGroupsAsync(Guid id);
-        Task<AssociationDto> CreateAsync(AssociationCreateDto dto);
-        Task<AssociationDto?> UpdateAsync(Guid id, AssociationDto dto);
+        Task<IEnumerable<Association>> GetAllAsync();
+        Task<Association?> GetByIdAsync(Guid id);
+        Task<IEnumerable<Group>> GetGroupsAsync(Guid id);
+        Task<Association> CreateAsync(Association model);
+        Task<Association?> UpdateAsync(Guid id, Association dto);
         Task<bool> DeleteAsync(Guid id);
     }
 }

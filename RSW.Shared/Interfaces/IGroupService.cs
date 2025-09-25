@@ -1,14 +1,14 @@
-using RSW.Shared.Dto;
+using RSW.Shared.Entities;
 
 namespace RSW.Shared.Interfaces
 {
     public interface IGroupService
     {
-        Task<IEnumerable<GroupDto>> GetAllAsync();
-        Task<GroupDto?> GetByIdAsync(Guid id);
-        Task<GroupDto> CreateAsync(GroupCreateDto dto);
-        Task<GroupDto?> UpdateAsync(Guid id, GroupDto dto);
+        Task<IEnumerable<Group>> GetAllAsync();
+        Task<Group?> GetByIdAsync(Guid id);
+        Task<Group> CreateAsync(Group model);
+        Task<Group?> UpdateAsync(Guid id, Group model);
         Task<bool> DeleteAsync(Guid id);
-        Task<List<PatrolDto>>? GetPatrolsAsync(Guid id);
+        Task<List<Patrol>>? GetPatrolsAsync(Guid id);
     }
 }

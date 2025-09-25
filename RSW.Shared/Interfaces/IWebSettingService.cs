@@ -1,13 +1,13 @@
-using RSW.Shared.Dto;
+using RSW.Shared.Entities;
 
 namespace RSW.Shared.Interfaces
 {
     public interface IWebSettingService
     {
-        Task<IEnumerable<WebSettingDto>> GetAllAsync();
-        Task<WebSettingDto?> GetByIdAsync(Guid id);
-        Task<WebSettingDto> CreateAsync(WebSettingCreateDto dto);
-        Task<WebSettingDto?> UpdateAsync(Guid id, WebSettingDto dto);
+        Task<IEnumerable<WebSetting>> GetAllAsync();
+        Task<WebSetting?> GetByIdAsync(Guid id);
+        Task<WebSetting> CreateAsync(WebSetting model);
+        Task<WebSetting?> UpdateAsync(Guid id, WebSetting model);
         Task<bool> DeleteAsync(Guid id);
     }
 }

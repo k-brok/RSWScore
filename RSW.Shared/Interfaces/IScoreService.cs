@@ -1,13 +1,13 @@
-using RSW.Shared.Dto;
+using RSW.Shared.Entities;
 
 namespace RSW.Shared.Interfaces
 {
     public interface IScoreService
     {
-        Task<IEnumerable<ScoreDto>> GetAllAsync();
-        Task<ScoreDto?> GetByIdAsync(Guid id);
-        Task<ScoreDto> CreateAsync(ScoreCreateDto dto);
-        Task<ScoreDto?> UpdateAsync(Guid id, ScoreDto dto);
+        Task<IEnumerable<Score>> GetAllAsync();
+        Task<Score?> GetByIdAsync(Guid id);
+        Task<Score> CreateAsync(Score model);
+        Task<Score?> UpdateAsync(Guid id, Score model);
         Task<bool> DeleteAsync(Guid id);
     }
 }
