@@ -21,9 +21,9 @@ else
                 </Template>
                 <EditTemplate Context="volunteerassignment">
                     <RadzenFormField Text="Editie" Style="width:100%">
-                        <RadzenDropDown Data="@Editions" @bind-Value=volunteerassignment.EditionId ValueProperty=@nameof(EditionDto.Id)>
+                        <RadzenDropDown Data="@Editions" @bind-Value=volunteerassignment.EditionId ValueProperty=@nameof(Edition.Id)>
                         <Template>
-                            @((context as EditionDto).RSWStartDate.Year)
+                            @((context as Edition).RSWStartDate.Year)
                         </Template>
                         </RadzenDropDown>
                     </RadzenFormField>
@@ -78,7 +78,7 @@ else
     public List<VolunteerAssignment> volunteerassignments { get; set; } = new List<VolunteerAssignment>();
     public EventCallback<VolunteerAssignment> OnVolunteerAssignmentSelected { get; set; }
     private RadzenDataGrid<VolunteerAssignment> dataGrid;
-    private IEnumerable<EditionDto>? Editions = null!;
+    private IEnumerable<Edition>? Editions = null!;
     private IEnumerable<VolunteerTask>? VolunteerTasks = null!;
     private IEnumerable<ApplicationUser>? Users = null!;
     [Inject]

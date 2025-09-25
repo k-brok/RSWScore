@@ -15,7 +15,7 @@ else
 }
 
 @code {
-    public IEnumerable<SignupCodeDto>? signupcodes { get; set; }
+    public IEnumerable<SignupCode>? signupcodes { get; set; }
     protected override async Task OnInitializedAsync()
     {
         signupcodes = await SignupCodeService.GetAllAsync();

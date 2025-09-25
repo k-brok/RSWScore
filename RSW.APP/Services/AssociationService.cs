@@ -1,6 +1,4 @@
 using System.Net.Http.Json;
-using AutoMapper;
-using RSW.Shared.Dto;
 using RSW.Shared.Entities;
 using RSW.Shared.Interfaces;
 
@@ -16,42 +14,45 @@ namespace RSW.APP.Services
             _httpClient = httpClient;
         }
 
-        public async Task<IEnumerable<AssociationDto>> GetAllAsync()
+        public async Task<IEnumerable<Association>> GetAllAsync()
         {
-            var result = await _httpClient.GetFromJsonAsync<List<AssociationDto>>(Endpoint);
+            var result = await _httpClient.GetFromJsonAsync<List<Association>>(Endpoint);
 
-            return result ?? new List<AssociationDto>();
+            return result ?? new List<Association>();
         }
 
-        public async Task<AssociationDto?> GetByIdAsync(Guid id)
+        public async Task<Association?> GetByIdAsync(Guid id)
         {
-            return await _httpClient.GetFromJsonAsync<AssociationDto>($"{Endpoint}/{id}");
+            return await _httpClient.GetFromJsonAsync<Association>($"{Endpoint}/{id}");
         }
 
-        public async Task<IEnumerable<GroupDto>> GetGroupsAsync(Guid id)
+        public async Task<IEnumerable<Unit>> GetUnitsAsync(Guid id)
         {
-            throw new NotImplementedException();
+            
+            var result = await _httpClient.GetFromJsonAsync<List<Unit>>($"{Endpoint}/{id}/units");
+
+            return result ?? new List<Unit>();
         }
 
-        public async Task<AssociationDto> CreateAsync(AssociationCreateDto dto)
+        public async Task<Association> CreateAsync(Association model)
         {
-            var response = await _httpClient.PostAsJsonAsync(Endpoint, dto);
+            var response = await _httpClient.PostAsJsonAsync(Endpoint, model);
 
             if (response.IsSuccessStatusCode)
             {
-                return await response.Content.ReadFromJsonAsync<AssociationDto>();
+                return await response.Content.ReadFromJsonAsync<Association>();
             }
 
             return null;
         }
 
-        public async Task<AssociationDto?> UpdateAsync(Guid id, AssociationDto dto)
+        public async Task<Association?> UpdateAsync(Guid id, Association model)
         {
-            var response = await _httpClient.PutAsJsonAsync($"{Endpoint}/{id}", dto);
+            var response = await _httpClient.PutAsJsonAsync($"{Endpoint}/{id}", model);
 
             if (response.IsSuccessStatusCode)
             {
-                return await response.Content.ReadFromJsonAsync<AssociationDto>();
+                return await response.Content.ReadFromJsonAsync<Association>();
             }
 
             return null;

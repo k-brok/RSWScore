@@ -15,7 +15,7 @@ else
 }
 
 @code {
-    public IEnumerable<SubGroupDto>? subgroups { get; set; }
+    public IEnumerable<SubGroup>? subgroups { get; set; }
     protected override async Task OnInitializedAsync()
     {
         subgroups = await SubGroupService.GetAllAsync();

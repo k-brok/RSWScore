@@ -1,24 +1,24 @@
-﻿@page "/admin/scores"
+﻿@page "/admin/scouts"
 @attribute [Authorize(Roles = "Admin")]
 
-@inject IScoreService ScoreService
+@inject IScoutService ScoutService
 
-<h3>Scores</h3>
+<h3>Scouts</h3>
 
-@if (scores == null)
+@if (scouts == null)
 {
     <RadzenProgressBarCircular Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
 }
 else
 {
-    <ScoreList scores="@scores.ToList()" />
+    <ScoutList scouts="@scouts.ToList()" />
 }
 
 @code {
-    public IEnumerable<ScoreDto>? scores { get; set; }
+    public IEnumerable<Scout>? scouts { get; set; }
     protected override async Task OnInitializedAsync()
     {
-        scores = await ScoreService.GetAllAsync();
+        scouts = await ScoutService.GetAllAsync();
         await base.OnInitializedAsync();
     }
 }

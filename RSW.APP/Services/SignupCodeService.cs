@@ -1,6 +1,4 @@
 using System.Net.Http.Json;
-using AutoMapper;
-using RSW.Shared.Dto;
 using RSW.Shared.Entities;
 using RSW.Shared.Interfaces;
 
@@ -16,42 +14,42 @@ namespace RSW.APP.Services
             _httpClient = httpClient;
         }
 
-        public async Task<IEnumerable<SignupCodeDto>> GetAllAsync()
+        public async Task<IEnumerable<SignupCode>> GetAllAsync()
         {
-            var result = await _httpClient.GetFromJsonAsync<List<SignupCodeDto>>(Endpoint);
+            var result = await _httpClient.GetFromJsonAsync<List<SignupCode>>(Endpoint);
 
-            return result ?? new List<SignupCodeDto>();
+            return result ?? new List<SignupCode>();
         }
 
-        public async Task<SignupCodeDto?> GetByIdAsync(Guid id)
+        public async Task<SignupCode?> GetByIdAsync(Guid id)
         {
-            return await _httpClient.GetFromJsonAsync<SignupCodeDto>($"{Endpoint}/{id}");
+            return await _httpClient.GetFromJsonAsync<SignupCode>($"{Endpoint}/{id}");
         }
 
-        public async Task<IEnumerable<GroupDto>> GetGroupsAsync(Guid id)
+        public async Task<IEnumerable<Unit>> GetGroupsAsync(Guid id)
         {
             throw new NotImplementedException();
         }
 
-        public async Task<SignupCodeDto> CreateAsync(SignupCodeCreateDto dto)
+        public async Task<SignupCode> CreateAsync(SignupCode model)
         {
-            var response = await _httpClient.PostAsJsonAsync(Endpoint, dto);
+            var response = await _httpClient.PostAsJsonAsync(Endpoint, model);
 
             if (response.IsSuccessStatusCode)
             {
-                return await response.Content.ReadFromJsonAsync<SignupCodeDto>();
+                return await response.Content.ReadFromJsonAsync<SignupCode>();
             }
 
             return null;
         }
 
-        public async Task<SignupCodeDto?> UpdateAsync(Guid id, SignupCodeDto dto)
+        public async Task<SignupCode?> UpdateAsync(Guid id, SignupCode model)
         {
-            var response = await _httpClient.PutAsJsonAsync($"{Endpoint}/{id}", dto);
+            var response = await _httpClient.PutAsJsonAsync($"{Endpoint}/{id}", model);
 
             if (response.IsSuccessStatusCode)
             {
-                return await response.Content.ReadFromJsonAsync<SignupCodeDto>();
+                return await response.Content.ReadFromJsonAsync<SignupCode>();
             }
 
             return null;
@@ -62,9 +60,9 @@ namespace RSW.APP.Services
             return response.IsSuccessStatusCode;
         }
 
-        public async Task<SignupCodeDto?> ValidateAsync(Guid id)
+        public async Task<SignupCode?> ValidateAsync(Guid id)
         {
-            return await _httpClient.GetFromJsonAsync<SignupCodeDto>($"{Endpoint}/validate/{id}");
+            return await _httpClient.GetFromJsonAsync<SignupCode>($"{Endpoint}/validate/{id}");
         }
     }
 }

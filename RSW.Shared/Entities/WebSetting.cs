@@ -5,7 +5,7 @@ namespace RSW.Shared.Entities
     public class WebSetting : BaseEntity
     {
         [Required]
-        public required string Key { get; set; }
+        public string? Key { get; set; }
         public string Value { get; set; } = string.Empty;
         public string? Description { get; set; } = string.Empty;
         public string? ValueType { get; set; } = string.Empty;

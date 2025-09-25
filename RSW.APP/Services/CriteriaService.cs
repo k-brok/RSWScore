@@ -1,6 +1,4 @@
 using System.Net.Http.Json;
-using AutoMapper;
-using RSW.Shared.Dto;
 using RSW.Shared.Entities;
 using RSW.Shared.Interfaces;
 
@@ -16,42 +14,37 @@ namespace RSW.APP.Services
             _httpClient = httpClient;
         }
 
-        public async Task<IEnumerable<CriteriaDto>> GetAllAsync()
+        public async Task<IEnumerable<Criteria>> GetAllAsync()
         {
-            var result = await _httpClient.GetFromJsonAsync<List<CriteriaDto>>(Endpoint);
+            var result = await _httpClient.GetFromJsonAsync<List<Criteria>>(Endpoint);
 
-            return result ?? new List<CriteriaDto>();
+            return result ?? new List<Criteria>();
         }
 
-        public async Task<CriteriaDto?> GetByIdAsync(Guid id)
+        public async Task<Criteria?> GetByIdAsync(Guid id)
         {
-            return await _httpClient.GetFromJsonAsync<CriteriaDto>($"{Endpoint}/{id}");
+            return await _httpClient.GetFromJsonAsync<Criteria>($"{Endpoint}/{id}");
         }
 
-        public async Task<IEnumerable<GroupDto>> GetGroupsAsync(Guid id)
+        public async Task<Criteria> CreateAsync(Criteria model)
         {
-            throw new NotImplementedException();
-        }
-
-        public async Task<CriteriaDto> CreateAsync(CriteriaCreateDto dto)
-        {
-            var response = await _httpClient.PostAsJsonAsync(Endpoint, dto);
+            var response = await _httpClient.PostAsJsonAsync(Endpoint, model);
 
             if (response.IsSuccessStatusCode)
             {
-                return await response.Content.ReadFromJsonAsync<CriteriaDto>();
+                return await response.Content.ReadFromJsonAsync<Criteria>();
             }
 
             return null;
         }
 
-        public async Task<CriteriaDto?> UpdateAsync(Guid id, CriteriaDto dto)
+        public async Task<Criteria?> UpdateAsync(Guid id, Criteria model)
         {
-            var response = await _httpClient.PutAsJsonAsync($"{Endpoint}/{id}", dto);
+            var response = await _httpClient.PutAsJsonAsync($"{Endpoint}/{id}", model);
 
             if (response.IsSuccessStatusCode)
             {
-                return await response.Content.ReadFromJsonAsync<CriteriaDto>();
+                return await response.Content.ReadFromJsonAsync<Criteria>();
             }
 
             return null;

@@ -1,14 +1,14 @@
-using RSW.Shared.Dto;
+using RSW.Shared.Entities;
 
 namespace RSW.Shared.Interfaces
 {
     public interface IPatrolService
     {
-        Task<IEnumerable<PatrolDto>> GetAllAsync();
-        Task<PatrolDto?> GetByIdAsync(Guid id);
-        Task<PatrolDto> CreateAsync(PatrolCreateDto dto);
-        Task<PatrolDto?> UpdateAsync(Guid id, PatrolDto dto);
+        Task<IEnumerable<Patrol>> GetAllAsync();
+        Task<Patrol?> GetByIdAsync(Guid id);
+        Task<Patrol> CreateAsync(Patrol model);
+        Task<Patrol?> UpdateAsync(Guid id, Patrol model);
         Task<bool> DeleteAsync(Guid id);
-        Task<IEnumerable<ScoutDto>> GetScoutsAsync(Guid patrolId);
+        Task<IEnumerable<Scout>> GetScoutsAsync(Guid patrolId);
     }
 }

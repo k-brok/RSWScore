@@ -1,8 +1,8 @@
 ﻿@inject DialogService DialogService
 @inject NotificationService NotificationService
-@inject IGroupService groupService
+@inject IUnitService unitService
 @inject ISubGroupService subGroupService
-@if(groupDtos == null || subGroupDtos == null){
+@if(units == null || subGroups == null){
     <RadzenCard Style="margin:20px;">
         <RadzenProgressBarCircular Value="50" ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
         <p>Data ophalen...</p>
@@ -10,54 +10,54 @@
 }
 else
 {
-    <RadzenDataGrid @ref="dataGrid" Data="@patrols" TItem="PatrolDto" RowSelect="@OnRowSelect" AllowPaging="true" PageSize="10" AllowSorting="true" AllowFiltering="true" FilterMode="FilterMode.Simple" Responsive="true" Style="height: 600px;">
+    <RadzenDataGrid @ref="dataGrid" Data="@patrols" TItem="Patrol" RowSelect="@OnRowSelect" AllowPaging="true" PageSize="10" AllowSorting="true" AllowFiltering="true" FilterMode="FilterMode.Simple" Responsive="true" Style="height: 600px;">
         <Columns>
-            <RadzenDataGridColumn TItem="PatrolDto" Property="Name" Title="Name" >
+            <RadzenDataGridColumn TItem="Patrol" Property="Name" Title="Name" >
                 <EditTemplate Context="patrol">
                     <RadzenFormField Text="Naam" Style="width:100%">
                         <RadzenTextBox @bind-Value="@patrol.Name" />
                     </RadzenFormField>
                 </EditTemplate>
             </RadzenDataGridColumn>
-            <RadzenDataGridColumn TItem="PatrolDto" Property="GroupId" Title="Groep">
+            <RadzenDataGridColumn TItem="Patrol" Property="UnitId" Title="Groep">
                 <Template Context="patrol">
-                    @(groupDtos.FirstOrDefault(C => C.Id == patrol.GroupId)?.Name ?? "Onbekend")
+                    @(units.FirstOrDefault(C => C.Id == patrol.UnitId)?.Name ?? "Onbekend")
                 </Template>
                 <EditTemplate Context="patrol">
                     <RadzenFormField Text="Groep" Style="width:100%">
-                        <RadzenDropDown Data="@groupDtos" @bind-Value=patrol.GroupId ValueProperty=@nameof(GroupDto.Id)>
+                        <RadzenDropDown Data="@units" @bind-Value=patrol.UnitId ValueProperty=@nameof(Unit.Id)>
                             <Template>
-                                @((context as GroupDto).Name)
+                                @((context as Unit).Name)
                             </Template>
                         </RadzenDropDown>
                     </RadzenFormField>
                 </EditTemplate>
             </RadzenDataGridColumn>
-            <RadzenDataGridColumn TItem="PatrolDto" Property="IsYoungest" Title="Jongste" >
+            <RadzenDataGridColumn TItem="Patrol" Property="IsYoungest" Title="Jongste" >
                 <EditTemplate Context="patrol">
                     <RadzenSwitch @bind-Value="@patrol.IsYoungest" />
                 </EditTemplate>
             </RadzenDataGridColumn>
-            <RadzenDataGridColumn TItem="PatrolDto" Property="Number" Title="Nummer" >
+            <RadzenDataGridColumn TItem="Patrol" Property="Number" Title="Nummer" >
                 <EditTemplate Context="patrol">
                     <RadzenFormField Text="Nummer" Style="width:100%">
                         <RadzenNumeric @bind-Value="@patrol.Number" />
                     </RadzenFormField>
                 </EditTemplate>
             </RadzenDataGridColumn>
-            <RadzenDataGridColumn TItem="PatrolDto" Property="Position" Title="Positie" >
+            <RadzenDataGridColumn TItem="Patrol" Property="Position" Title="Positie" >
             </RadzenDataGridColumn>
-            <RadzenDataGridColumn TItem="PatrolDto" Property="SubgroupId" Title="Sub-kamp">
+            <RadzenDataGridColumn TItem="Patrol" Property="SubGroupId" Title="Sub-kamp">
                 <Template Context="patrol">
-                    @(subGroupDtos.FirstOrDefault(C => C.Id == patrol.SubGroupId)?.Color ?? "Onbekend")
+                    @(subGroups.FirstOrDefault(C => C.Id == patrol.SubGroupId)?.Color ?? "Onbekend")
                 </Template>
                 <EditTemplate Context="patrol">
                     <RadzenFormField Text="sub-kamp" Style="width:100%">
-                        <RadzenDropDown Data="@subGroupDtos" @bind-Value=patrol.SubGroupId ValueProperty=@nameof(SubGroupDto.Id) TextProperty=@nameof(SubGroupDto.Color) />
+                        <RadzenDropDown Data="@subGroups" @bind-Value=patrol.SubGroupId ValueProperty=@nameof(SubGroup.Id) TextProperty=@nameof(SubGroup.Color) />
                     </RadzenFormField>
                 </EditTemplate>
             </RadzenDataGridColumn>
-            <RadzenDataGridColumn TItem="PatrolDto" Property="TotalScore" Title="Totale Scores" >
+            <RadzenDataGridColumn TItem="Patrol" Property="TotalScore" Title="Totale Scores" >
             </RadzenDataGridColumn>
             <RadzenDataGridColumn Context="order" Filterable="false" Sortable="false" TextAlign="TextAlign.Right" Frozen="true" Width="10rem" FrozenPosition="FrozenColumnPosition.Right">
                 <HeaderTemplate>
@@ -81,43 +81,43 @@ else
 
 @code {
     [Parameter]
-    public List<PatrolDto> patrols { get; set; } = new List<PatrolDto>();
-    public List<PatrolDto> NewPatrols { get; set; } = new List<PatrolDto>();
-    public EventCallback<PatrolDto> OnPatrolDtoSelected { get; set; }
-    private RadzenDataGrid<PatrolDto> dataGrid;
-    private IEnumerable<GroupDto>? groupDtos { get; set; } = null;
-    private IEnumerable<SubGroupDto>? subGroupDtos { get; set; } = null;
+    public List<Patrol> patrols { get; set; } = new List<Patrol>();
+    public List<Patrol> NewPatrols { get; set; } = new List<Patrol>();
+    public EventCallback<Patrol> OnPatrolSelected { get; set; }
+    private RadzenDataGrid<Patrol> dataGrid;
+    private IEnumerable<Unit>? units { get; set; } = null;
+    private IEnumerable<SubGroup>? subGroups { get; set; } = null;
 
     [Inject]
     private IPatrolService patrolService { get; set; } = default!;
     protected override async Task OnInitializedAsync()
     {
-        groupDtos = await groupService.GetAllAsync();
-        subGroupDtos = await subGroupService.GetAllAsync();
+        units = await unitService.GetAllAsync();
+        subGroups = await subGroupService.GetAllAsync();
         await base.OnInitializedAsync();
     }
-    private async Task OnRowSelect(PatrolDto patrol)
+    private async Task OnRowSelect(Patrol patrol)
     {
-        if (OnPatrolDtoSelected.HasDelegate)
+        if (OnPatrolSelected.HasDelegate)
         {
-            await OnPatrolDtoSelected.InvokeAsync(patrol);
+            await OnPatrolSelected.InvokeAsync(patrol);
         }
     }
     void Insert()
     {
-        var NewPatrol = new PatrolDto();
+        var NewPatrol = new Patrol();
         dataGrid.InsertRow(NewPatrol);
     }
-    void InsertAfterRow(PatrolDto patrol)
+    void InsertAfterRow(Patrol patrol)
     {
-        var NewPatrol = new PatrolDto();
+        var NewPatrol = new Patrol();
         dataGrid.InsertAfterRow(NewPatrol, patrol);
     }
-    void EditRow(PatrolDto patrol)
+    void EditRow(Patrol patrol)
     {
         dataGrid.EditRow(patrol);
     }
-    async Task DeleteRow(PatrolDto patrol)
+    async Task DeleteRow(Patrol patrol)
     {
         var ConfirmDelete = await DialogService.Confirm($"Weet je zeker dat je \"{patrol.Name}\" wilt verwijderen?", "Verwijderen", new ConfirmOptions() { OkButtonText = "Ja", CancelButtonText = "Nee" });
         if (ConfirmDelete == null)
@@ -136,14 +136,14 @@ else
             await dataGrid.Reload();
         }
     }
-    async Task SaveRow(PatrolDto patrol)
+    async Task SaveRow(Patrol patrol)
     {
         if (patrol.Id == Guid.Empty)
         {
-            await patrolService.CreateAsync(new PatrolCreateDto
+            await patrolService.CreateAsync(new Patrol
             {
                 Name = patrol.Name,
-                GroupId = patrol.GroupId,
+                UnitId = patrol.UnitId,
                 IsYoungest = patrol.IsYoungest
             });
         }
@@ -155,14 +155,14 @@ else
     }
     async Task SaveAll()
     {
-        foreach (PatrolDto patrol in patrols)
+        foreach (Patrol patrol in patrols)
         {
             if (patrol.Id == Guid.Empty)
             {
-                await patrolService.CreateAsync(new PatrolCreateDto
+                await patrolService.CreateAsync(new Patrol
                     {
                         Name = patrol.Name,
-                        GroupId = patrol.GroupId,
+                        UnitId = patrol.UnitId,
                         IsYoungest = patrol.IsYoungest
                     });
             }
@@ -173,7 +173,7 @@ else
             await dataGrid.UpdateRow(patrol);
         }
     }
-    async Task CancelEdit(PatrolDto patrol)
+    async Task CancelEdit(Patrol patrol)
     {
         if (patrol.Id == Guid.Empty)
         {
@@ -186,7 +186,7 @@ else
             if (OldPatrol != null)
             {
                 patrol.Name = OldPatrol.Name;
-                patrol.GroupId = OldPatrol.GroupId;
+                patrol.UnitId = OldPatrol.UnitId;
                 patrol.IsYoungest = OldPatrol.IsYoungest;
                 patrol.Number = OldPatrol.Number;
                 patrol.SubGroupId = OldPatrol.SubGroupId;

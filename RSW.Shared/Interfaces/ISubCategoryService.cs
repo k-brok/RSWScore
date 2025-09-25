@@ -1,13 +1,13 @@
-using RSW.Shared.Dto;
+using RSW.Shared.Entities;
 
 namespace RSW.Shared.Interfaces
 {
     public interface ISubCategoryService
     {
-        Task<IEnumerable<SubCategoryDto>> GetAllAsync();
-        Task<SubCategoryDto?> GetByIdAsync(Guid id);
-        Task<SubCategoryDto> CreateAsync(SubCategoryCreateDto dto);
-        Task<SubCategoryDto?> UpdateAsync(Guid id, SubCategoryDto dto);
+        Task<IEnumerable<SubCategory>> GetAllAsync();
+        Task<SubCategory?> GetByIdAsync(Guid id);
+        Task<SubCategory> CreateAsync(SubCategory model);
+        Task<SubCategory?> UpdateAsync(Guid id, SubCategory model);
         Task<bool> DeleteAsync(Guid id);
     }
 }

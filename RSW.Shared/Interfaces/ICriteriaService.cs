@@ -1,13 +1,13 @@
-using RSW.Shared.Dto;
+using RSW.Shared.Entities;
 
 namespace RSW.Shared.Interfaces
 {
     public interface ICriteriaService
     {
-        Task<IEnumerable<CriteriaDto>> GetAllAsync();
-        Task<CriteriaDto?> GetByIdAsync(Guid id);
-        Task<CriteriaDto> CreateAsync(CriteriaCreateDto dto);
-        Task<CriteriaDto?> UpdateAsync(Guid id, CriteriaDto dto);
+        Task<IEnumerable<Criteria>> GetAllAsync();
+        Task<Criteria?> GetByIdAsync(Guid id);
+        Task<Criteria> CreateAsync(Criteria model);
+        Task<Criteria?> UpdateAsync(Guid id, Criteria model);
         Task<bool> DeleteAsync(Guid id);
     }
 }

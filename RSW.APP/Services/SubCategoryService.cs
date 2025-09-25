@@ -1,6 +1,4 @@
 using System.Net.Http.Json;
-using AutoMapper;
-using RSW.Shared.Dto;
 using RSW.Shared.Entities;
 using RSW.Shared.Interfaces;
 
@@ -16,42 +14,42 @@ namespace RSW.APP.Services
             _httpClient = httpClient;
         }
 
-        public async Task<IEnumerable<SubCategoryDto>> GetAllAsync()
+        public async Task<IEnumerable<SubCategory>> GetAllAsync()
         {
-            var result = await _httpClient.GetFromJsonAsync<List<SubCategoryDto>>(Endpoint);
+            var result = await _httpClient.GetFromJsonAsync<List<SubCategory>>(Endpoint);
 
-            return result ?? new List<SubCategoryDto>();
+            return result ?? new List<SubCategory>();
         }
 
-        public async Task<SubCategoryDto?> GetByIdAsync(Guid id)
+        public async Task<SubCategory?> GetByIdAsync(Guid id)
         {
-            return await _httpClient.GetFromJsonAsync<SubCategoryDto>($"{Endpoint}/{id}");
+            return await _httpClient.GetFromJsonAsync<SubCategory>($"{Endpoint}/{id}");
         }
 
-        public async Task<IEnumerable<GroupDto>> GetGroupsAsync(Guid id)
+        public async Task<IEnumerable<Unit>> GetGroupsAsync(Guid id)
         {
             throw new NotImplementedException();
         }
 
-        public async Task<SubCategoryDto> CreateAsync(SubCategoryCreateDto dto)
+        public async Task<SubCategory> CreateAsync(SubCategory model)
         {
-            var response = await _httpClient.PostAsJsonAsync(Endpoint, dto);
+            var response = await _httpClient.PostAsJsonAsync(Endpoint, model);
 
             if (response.IsSuccessStatusCode)
             {
-                return await response.Content.ReadFromJsonAsync<SubCategoryDto>();
+                return await response.Content.ReadFromJsonAsync<SubCategory>();
             }
 
             return null;
         }
 
-        public async Task<SubCategoryDto?> UpdateAsync(Guid id, SubCategoryDto dto)
+        public async Task<SubCategory?> UpdateAsync(Guid id, SubCategory model)
         {
-            var response = await _httpClient.PutAsJsonAsync($"{Endpoint}/{id}", dto);
+            var response = await _httpClient.PutAsJsonAsync($"{Endpoint}/{id}", model);
 
             if (response.IsSuccessStatusCode)
             {
-                return await response.Content.ReadFromJsonAsync<SubCategoryDto>();
+                return await response.Content.ReadFromJsonAsync<SubCategory>();
             }
 
             return null;

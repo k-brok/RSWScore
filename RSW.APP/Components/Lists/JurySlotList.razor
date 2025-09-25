@@ -3,7 +3,7 @@
 @inject ISubGroupService subGroupService
 @inject ICategoryService categoryService
 
-@if(categoryDtos == null || subGroupDtos == null){
+@if(categorys == null || subGroups == null){
     <RadzenCard Style="margin:20px;">
         <RadzenProgressBarCircular Value="50" ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
         <p>Data ophalen...</p>
@@ -11,9 +11,9 @@
 }
 else
 {
-    <RadzenDataGrid @ref="dataGrid" Data="@juryslots" TItem="JurySlotDto" RowSelect="@OnRowSelect" AllowPaging="true" PageSize="10" AllowSorting="true" AllowFiltering="true" FilterMode="FilterMode.Simple" Responsive="true" Style="height: 600px;">
+    <RadzenDataGrid @ref="dataGrid" Data="@juryslots" TItem="JurySlot" RowSelect="@OnRowSelect" AllowPaging="true" PageSize="10" AllowSorting="true" AllowFiltering="true" FilterMode="FilterMode.Simple" Responsive="true" Style="height: 600px;">
         <Columns>
-            <RadzenDataGridColumn TItem="JurySlotDto" Property="Id" Title="Code" >
+            <RadzenDataGridColumn TItem="JurySlot" Property="Id" Title="Code" >
                 <Template Context="jurySlot">
                     @if(jurySlot.Id == Guid.Empty){
                         <p>Nog niet gegenereerd.</p>
@@ -24,23 +24,23 @@ else
                     }
                 </Template>
             </RadzenDataGridColumn>
-            <RadzenDataGridColumn TItem="JurySlotDto" Property="CategoryId" Title="Categorie">
+            <RadzenDataGridColumn TItem="JurySlot" Property="CategoryId" Title="Categorie">
                 <Template Context="jurySlot">
-                    @categoryDtos.FirstOrDefault(C => C.Id == jurySlot.CategoryId).Name
+                    @categorys.FirstOrDefault(C => C.Id == jurySlot.CategoryId).Name
                 </Template>
                 <EditTemplate Context="jurySlot">
                     <RadzenFormField Text="Categorie" Style="width:100%">
-                        <RadzenDropDown Data="@categoryDtos" @bind-Value=jurySlot.CategoryId ValueProperty=@nameof(CategoryDto.Id) TextProperty=@nameof(CategoryDto.Name) />
+                        <RadzenDropDown Data="@categorys" @bind-Value=jurySlot.CategoryId ValueProperty=@nameof(Category.Id) TextProperty=@nameof(Category.Name) />
                     </RadzenFormField>
                 </EditTemplate>
             </RadzenDataGridColumn>
-            <RadzenDataGridColumn TItem="JurySlotDto" Property="SubgroupId" Title="Sub-kamp">
+            <RadzenDataGridColumn TItem="JurySlot" Property="SubgroupId" Title="Sub-kamp">
                 <Template Context="jurySlot">
-                    @subGroupDtos.FirstOrDefault(C => C.Id == jurySlot.SubgroupId).Color
+                    @subGroups.FirstOrDefault(C => C.Id == jurySlot.SubgroupId).Color
                 </Template>
                 <EditTemplate Context="jurySlot">
                     <RadzenFormField Text="sub-kamp" Style="width:100%">
-                        <RadzenDropDown Data="@subGroupDtos" @bind-Value=jurySlot.SubgroupId ValueProperty=@nameof(SubGroupDto.Id) TextProperty=@nameof(SubGroupDto.Color) />
+                        <RadzenDropDown Data="@subGroups" @bind-Value=jurySlot.SubgroupId ValueProperty=@nameof(SubGroup.Id) TextProperty=@nameof(SubGroup.Color) />
                     </RadzenFormField>
                 </EditTemplate>
             </RadzenDataGridColumn>
@@ -65,42 +65,42 @@ else
 }
 @code {
     [Parameter]
-    public List<JurySlotDto> juryslots { get; set; } = new List<JurySlotDto>();
-    public EventCallback<JurySlotDto> OnJurySlotDtoSelected { get; set; }
-    private RadzenDataGrid<JurySlotDto> dataGrid;
-    private IEnumerable<CategoryDto>? categoryDtos { get; set; } = null;
-    private IEnumerable<SubGroupDto>? subGroupDtos { get; set; } = null;
+    public List<JurySlot> juryslots { get; set; } = new List<JurySlot>();
+    public EventCallback<JurySlot> OnJurySlotSelected { get; set; }
+    private RadzenDataGrid<JurySlot> dataGrid;
+    private IEnumerable<Category>? categorys { get; set; } = null;
+    private IEnumerable<SubGroup>? subGroups { get; set; } = null;
 
     [Inject]
     private IJurySlotService juryslotService { get; set; } = default!;
     protected override async Task OnInitializedAsync()
     {
-        categoryDtos = await categoryService.GetAllAsync();
-        subGroupDtos = await subGroupService.GetAllAsync();
+        categorys = await categoryService.GetAllAsync();
+        subGroups = await subGroupService.GetAllAsync();
         await base.OnInitializedAsync();
     }
-    private async Task OnRowSelect(JurySlotDto juryslot)
+    private async Task OnRowSelect(JurySlot juryslot)
     {
-        if (OnJurySlotDtoSelected.HasDelegate)
+        if (OnJurySlotSelected.HasDelegate)
         {
-            await OnJurySlotDtoSelected.InvokeAsync(juryslot);
+            await OnJurySlotSelected.InvokeAsync(juryslot);
         }
     }
     void Insert()
     {
-        var NewJurySlot = new JurySlotDto();
+        var NewJurySlot = new JurySlot();
         dataGrid.InsertRow(NewJurySlot);
     }
-    void InsertAfterRow(JurySlotDto juryslot)
+    void InsertAfterRow(JurySlot juryslot)
     {
-        var NewJurySlot = new JurySlotDto();
+        var NewJurySlot = new JurySlot();
         dataGrid.InsertAfterRow(NewJurySlot, juryslot);
     }
-    void EditRow(JurySlotDto juryslot)
+    void EditRow(JurySlot juryslot)
     {
         dataGrid.EditRow(juryslot);
     }
-    async Task DeleteRow(JurySlotDto juryslot)
+    async Task DeleteRow(JurySlot juryslot)
     {
         var ConfirmDelete = await DialogService.Confirm($"Weet je zeker dat je \"{juryslot.Id}\" wilt verwijderen?", "Verwijderen", new ConfirmOptions() { OkButtonText = "Ja", CancelButtonText = "Nee" });
         if (ConfirmDelete == null)
@@ -119,11 +119,11 @@ else
             await dataGrid.Reload();
         }
     }
-    async Task SaveRow(JurySlotDto juryslot)
+    async Task SaveRow(JurySlot juryslot)
     {
         if (juryslot.Id == Guid.Empty)
         {
-            var NewJurySlot = await juryslotService.CreateAsync(new JurySlotCreateDto
+            var NewJurySlot = await juryslotService.CreateAsync(new JurySlot
             {
                 CategoryId = juryslot.CategoryId,
                 SubgroupId = juryslot.SubgroupId,
@@ -140,11 +140,11 @@ else
     }
     async Task SaveAll()
     {
-        foreach (JurySlotDto juryslot in juryslots)
+        foreach (JurySlot juryslot in juryslots)
         {
             if (juryslot.Id == Guid.Empty)
             {
-                await juryslotService.CreateAsync(new JurySlotCreateDto
+                await juryslotService.CreateAsync(new JurySlot
                     {
                         CategoryId = juryslot.CategoryId,
                         SubgroupId = juryslot.SubgroupId,
@@ -159,7 +159,7 @@ else
             await dataGrid.UpdateRow(juryslot);
         }
     }
-    async Task CancelEdit(JurySlotDto juryslot)
+    async Task CancelEdit(JurySlot juryslot)
     {
         if (juryslot.Id == Guid.Empty)
         {

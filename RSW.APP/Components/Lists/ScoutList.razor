@@ -1,7 +1,7 @@
 ﻿@inject DialogService DialogService
 @inject NotificationService NotificationService
 @inject IPatrolService patrolService
-@if(patrolDtos == null){
+@if(patrols == null){
     <RadzenCard Style="margin:20px;">
         <RadzenProgressBarCircular Value="50" ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
         <p>Data ophalen...</p>
@@ -9,36 +9,36 @@
 }
 else
 {
-    <RadzenDataGrid @ref="dataGrid" Data="@scouts" TItem="ScoutDto" RowSelect="@OnRowSelect" AllowPaging="true" PageSize="10" AllowSorting="true" AllowFiltering="true" FilterMode="FilterMode.Simple" Responsive="true" Style="height: 600px;">
+    <RadzenDataGrid @ref="dataGrid" Data="@scouts" TItem="Scout" RowSelect="@OnRowSelect" AllowPaging="true" PageSize="10" AllowSorting="true" AllowFiltering="true" FilterMode="FilterMode.Simple" Responsive="true" Style="height: 600px;">
         <Columns>
-            <RadzenDataGridColumn TItem="ScoutDto" Property="Firstname" Title="Voornaam" >
+            <RadzenDataGridColumn TItem="Scout" Property="Firstname" Title="Voornaam" >
                 <EditTemplate Context="scout">
                     <RadzenFormField Text="Voornaam" Style="width:100%">
                         <RadzenTextBox @bind-Value="@scout.Firstname" />
                     </RadzenFormField>
                 </EditTemplate>
             </RadzenDataGridColumn>
-            <RadzenDataGridColumn TItem="ScoutDto" Property="Lastname" Title="Achternaam" >
+            <RadzenDataGridColumn TItem="Scout" Property="Lastname" Title="Achternaam" >
                 <EditTemplate Context="scout">
                     <RadzenFormField Text="Achternaam" Style="width:100%">
                         <RadzenTextBox @bind-Value="@scout.Lastname" />
                     </RadzenFormField>
                 </EditTemplate>
             </RadzenDataGridColumn>
-            <RadzenDataGridColumn TItem="ScoutDto" Property="DateOfBirth" Title="Geboorte datum" >
+            <RadzenDataGridColumn TItem="Scout" Property="DateOfBirth" Title="Geboorte datum" >
                 <EditTemplate Context="scout">
                     <RadzenFormField Text="Geboorte datum" Style="width:100%">
                         <RadzenDatePicker @bind-Value="@scout.DateOfBirth" />
                     </RadzenFormField>
                 </EditTemplate>
             </RadzenDataGridColumn>
-            <RadzenDataGridColumn TItem="ScoutDto" Property="PatrolId" Title="Patrouille">
+            <RadzenDataGridColumn TItem="Scout" Property="PatrolId" Title="Patrouille">
                 <Template Context="score">
-                    @patrolDtos.FirstOrDefault(C => C.Id == score.PatrolId).Name
+                    @patrols.FirstOrDefault(C => C.Id == score.PatrolId).Name
                 </Template>
                 <EditTemplate Context="score">
                     <RadzenFormField Text="Patrouille" Style="width:100%">
-                        <RadzenDropDown Data="@patrolDtos" @bind-Value=score.PatrolId ValueProperty=@nameof(PatrolDto.Id) TextProperty=@nameof(PatrolDto.Name) />
+                        <RadzenDropDown Data="@patrols" @bind-Value=score.PatrolId ValueProperty=@nameof(Patrol.Id) TextProperty=@nameof(Patrol.Name) />
                     </RadzenFormField>
                 </EditTemplate>
             </RadzenDataGridColumn>
@@ -64,41 +64,41 @@ else
 
 @code {
     [Parameter]
-    public List<ScoutDto> scouts { get; set; } = new List<ScoutDto>();
-    public List<ScoutDto> NewScouts { get; set; } = new List<ScoutDto>();
-    public EventCallback<ScoutDto> OnScoutDtoSelected { get; set; }
-    private RadzenDataGrid<ScoutDto> dataGrid;
-    private IEnumerable<PatrolDto>? patrolDtos { get; set; } = null;
+    public List<Scout> scouts { get; set; } = new List<Scout>();
+    public List<Scout> NewScouts { get; set; } = new List<Scout>();
+    public EventCallback<Scout> OnScoutSelected { get; set; }
+    private RadzenDataGrid<Scout> dataGrid;
+    private IEnumerable<Patrol>? patrols { get; set; } = null;
 
     [Inject]
     private IScoutService scoutService { get; set; } = default!;
     protected override async Task OnInitializedAsync()
     {
-        patrolDtos = await patrolService.GetAllAsync();
+        patrols = await patrolService.GetAllAsync();
         await base.OnInitializedAsync();
     }
-    private async Task OnRowSelect(ScoutDto scout)
+    private async Task OnRowSelect(Scout scout)
     {
-        if (OnScoutDtoSelected.HasDelegate)
+        if (OnScoutSelected.HasDelegate)
         {
-            await OnScoutDtoSelected.InvokeAsync(scout);
+            await OnScoutSelected.InvokeAsync(scout);
         }
     }
     void Insert()
     {
-        var NewScout = new ScoutDto();
+        var NewScout = new Scout();
         dataGrid.InsertRow(NewScout);
     }
-    void InsertAfterRow(ScoutDto scout)
+    void InsertAfterRow(Scout scout)
     {
-        var NewScout = new ScoutDto();
+        var NewScout = new Scout();
         dataGrid.InsertAfterRow(NewScout, scout);
     }
-    void EditRow(ScoutDto scout)
+    void EditRow(Scout scout)
     {
         dataGrid.EditRow(scout);
     }
-    async Task DeleteRow(ScoutDto scout)
+    async Task DeleteRow(Scout scout)
     {
         var ConfirmDelete = await DialogService.Confirm($"Weet je zeker dat je \"{scout.Firstname} {scout.Lastname}\" wilt verwijderen?", "Verwijderen", new ConfirmOptions() { OkButtonText = "Ja", CancelButtonText = "Nee" });
         if (ConfirmDelete == null)
@@ -117,11 +117,11 @@ else
             await dataGrid.Reload();
         }
     }
-    async Task SaveRow(ScoutDto scout)
+    async Task SaveRow(Scout scout)
     {
         if (scout.Id == Guid.Empty)
         {
-            await scoutService.CreateAsync(new ScoutCreateDto
+            await scoutService.CreateAsync(new Scout
             {
                 Firstname = scout.Firstname,
                 Lastname = scout.Lastname,
@@ -137,11 +137,11 @@ else
     }
     async Task SaveAll()
     {
-        foreach (ScoutDto scout in scouts)
+        foreach (Scout scout in scouts)
         {
             if (scout.Id == Guid.Empty)
             {
-                await scoutService.CreateAsync(new ScoutCreateDto
+                await scoutService.CreateAsync(new Scout
                     {
                         Firstname = scout.Firstname,
                         Lastname = scout.Lastname,
@@ -156,7 +156,7 @@ else
             await dataGrid.UpdateRow(scout);
         }
     }
-    async Task CancelEdit(ScoutDto scout)
+    async Task CancelEdit(Scout scout)
     {
         if (scout.Id == Guid.Empty)
         {

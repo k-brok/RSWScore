@@ -15,7 +15,7 @@ else
 }
 
 @code {
-    public IEnumerable<CriteriaDto>? criterias { get; set; }
+    public IEnumerable<Criteria>? criterias { get; set; }
     protected override async Task OnInitializedAsync()
     {
         criterias = await CriteriaService.GetAllAsync();

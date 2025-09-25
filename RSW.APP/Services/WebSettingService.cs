@@ -1,6 +1,4 @@
 using System.Net.Http.Json;
-using AutoMapper;
-using RSW.Shared.Dto;
 using RSW.Shared.Entities;
 using RSW.Shared.Interfaces;
 
@@ -16,42 +14,37 @@ namespace RSW.APP.Services
             _httpClient = httpClient;
         }
 
-        public async Task<IEnumerable<WebSettingDto>> GetAllAsync()
+        public async Task<IEnumerable<WebSetting>> GetAllAsync()
         {
-            var result = await _httpClient.GetFromJsonAsync<List<WebSettingDto>>(Endpoint);
+            var result = await _httpClient.GetFromJsonAsync<List<WebSetting>>(Endpoint);
 
-            return result ?? new List<WebSettingDto>();
+            return result ?? new List<WebSetting>();
         }
 
-        public async Task<WebSettingDto?> GetByIdAsync(Guid id)
+        public async Task<WebSetting?> GetByIdAsync(Guid id)
         {
-            return await _httpClient.GetFromJsonAsync<WebSettingDto>($"{Endpoint}/{id}");
+            return await _httpClient.GetFromJsonAsync<WebSetting>($"{Endpoint}/{id}");
         }
 
-        public async Task<IEnumerable<GroupDto>> GetGroupsAsync(Guid id)
+        public async Task<WebSetting> CreateAsync(WebSetting model)
         {
-            throw new NotImplementedException();
-        }
-
-        public async Task<WebSettingDto> CreateAsync(WebSettingCreateDto dto)
-        {
-            var response = await _httpClient.PostAsJsonAsync(Endpoint, dto);
+            var response = await _httpClient.PostAsJsonAsync(Endpoint, model);
 
             if (response.IsSuccessStatusCode)
             {
-                return await response.Content.ReadFromJsonAsync<WebSettingDto>();
+                return await response.Content.ReadFromJsonAsync<WebSetting>();
             }
 
             return null;
         }
 
-        public async Task<WebSettingDto?> UpdateAsync(Guid id, WebSettingDto dto)
+        public async Task<WebSetting?> UpdateAsync(Guid id, WebSetting model)
         {
-            var response = await _httpClient.PutAsJsonAsync($"{Endpoint}/{id}", dto);
+            var response = await _httpClient.PutAsJsonAsync($"{Endpoint}/{id}", model);
 
             if (response.IsSuccessStatusCode)
             {
-                return await response.Content.ReadFromJsonAsync<WebSettingDto>();
+                return await response.Content.ReadFromJsonAsync<WebSetting>();
             }
 
             return null;

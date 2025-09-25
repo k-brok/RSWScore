@@ -1,0 +1,161 @@
+﻿@inject DialogService DialogService
+@inject NotificationService NotificationService
+@inject IAssociationService associationService
+
+@if(associations == null){
+    <RadzenCard Style="margin:20px;">
+        <RadzenProgressBarCircular Value="50" ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
+        <p>Data ophalen...</p>
+    </RadzenCard>
+}
+else
+{
+    <RadzenDataGrid @ref="dataGrid" Data="@units" TItem="Unit" RowSelect="@OnRowSelect" AllowPaging="true" PageSize="10" AllowSorting="true" AllowFiltering="true" FilterMode="FilterMode.Simple" Responsive="true" Style="height: 600px;">
+        <Columns>
+            <RadzenDataGridColumn TItem="Unit" Property="Name" Title="Name" >
+                <EditTemplate Context="unit">
+                    <RadzenFormField Text="Naam" Style="width:100%">
+                        <RadzenTextBox @bind-Value="@unit.Name" />
+                    </RadzenFormField>
+                </EditTemplate>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="Unit" Property="AssociationId" Title="Vereniging">
+                <Template Context="criteria">
+                    @associations.FirstOrDefault(C => C.Id == criteria.AssociationId).Name
+                </Template>
+                <EditTemplate Context="criteria">
+                    <RadzenFormField Text="Vereniging" Style="width:100%">
+                        <RadzenDropDown Data="@associations" @bind-Value=criteria.AssociationId ValueProperty=@nameof(Association.Id) TextProperty=@nameof(Association.Name) />
+                    </RadzenFormField>
+                </EditTemplate>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn Context="order" Filterable="false" Sortable="false" TextAlign="TextAlign.Right" Frozen="true" Width="10rem" FrozenPosition="FrozenColumnPosition.Right">
+                <HeaderTemplate>
+                    <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1 rz-display-none rz-display-sm-inline" Click="@((args) => SaveAll())" aria-label="SaveAll" />
+                    <RadzenButton Icon="add_circle" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-me-4 rz-display-none rz-display-sm-inline" Shade="Shade.Lighter" Click="@(() => Insert())" />
+                </HeaderTemplate>
+                <Template Context="unit">
+                    <RadzenButton Icon="add_circle" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat" Size="ButtonSize.Medium" Shade="Shade.Lighter" Click="@(() => InsertAfterRow(unit))" />
+                    <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Click="@(args => EditRow(unit))" @onclick:stopPropagation="true" />
+                    <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" Size="ButtonSize.Medium" Shade="Shade.Lighter" class="rz-my-1 rz-ms-1 rz-me-4" Click="@(args => DeleteRow(unit))" @onclick:stopPropagation="true" />
+                </Template>
+                <EditTemplate Context="unit">
+                    <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat" Size="ButtonSize.Medium" Click="@((args) => SaveRow(unit))" aria-label="Save" />
+                    <RadzenButton Icon="close" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Click="@((args) => CancelEdit(unit))" aria-label="Cancel" />
+                    <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" Size="ButtonSize.Medium" Shade="Shade.Lighter" class="rz-my-1 rz-ms-1 rz-me-4" Click="@(args => DeleteRow(unit))" aria-label="Delete" />
+                </EditTemplate>
+            </RadzenDataGridColumn>
+        </Columns>
+    </RadzenDataGrid>
+}
+@code {
+    [Parameter]
+    public List<Unit> units { get; set; } = new List<Unit>();
+    public EventCallback<Unit> OnUnitSelected { get; set; }
+    private RadzenDataGrid<Unit> dataGrid;
+    private IEnumerable<Association>? associations { get; set; } = null;
+
+    [Inject]
+    private IUnitService unitService { get; set; } = default!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        associations = await associationService.GetAllAsync();
+        await base.OnInitializedAsync();
+    }
+    private async Task OnRowSelect(Unit unit)
+    {
+        if (OnUnitSelected.HasDelegate)
+        {
+            await OnUnitSelected.InvokeAsync(unit);
+        }
+    }
+    void Insert()
+    {
+        var NewUnit = new Unit();
+        dataGrid.InsertRow(NewUnit);
+    }
+    void InsertAfterRow(Unit unit)
+    {
+        var NewUnit = new Unit();
+        dataGrid.InsertAfterRow(NewUnit, unit);
+    }
+    void EditRow(Unit unit)
+    {
+        dataGrid.EditRow(unit);
+    }
+    async Task DeleteRow(Unit unit)
+    {
+        var ConfirmDelete = await DialogService.Confirm($"Weet je zeker dat je \"{unit.Name}\" wilt verwijderen?", "Verwijderen", new ConfirmOptions() { OkButtonText = "Ja", CancelButtonText = "Nee" });
+        if (ConfirmDelete == null)
+        {
+            NotificationService.Notify(new NotificationMessage{ Summary="Er is iets mis gegaan! neem contact op met een admin." });
+            return;
+        }
+
+        if ((bool)ConfirmDelete)
+        {
+            if (unit.Id != Guid.Empty)
+            {
+                await unitService.DeleteAsync(unit.Id);
+            }
+            units.Remove(unit);
+            await dataGrid.Reload();
+        }
+    }
+    async Task SaveRow(Unit unit)
+    {
+        if (unit.Id == Guid.Empty)
+        {
+            await unitService.CreateAsync(new Unit
+            {
+                Name = unit.Name,
+                AssociationId = unit.AssociationId
+            });
+        }
+        else
+        {
+            await unitService.UpdateAsync(unit.Id, unit);
+        }
+        await dataGrid.UpdateRow(unit);
+    }
+    async Task SaveAll()
+    {
+        foreach (Unit unit in units)
+        {
+            if (unit.Id == Guid.Empty)
+            {
+                await unitService.CreateAsync(new Unit
+                    {
+                        Name = unit.Name,
+                        AssociationId = unit.AssociationId
+                    });
+            }
+            else
+            {
+                await unitService.UpdateAsync(unit.Id, unit);
+            }
+            await dataGrid.UpdateRow(unit);
+        }
+    }
+    async Task CancelEdit(Unit unit)
+    {
+        if (unit.Id == Guid.Empty)
+        {
+            units.Remove(unit);
+            await dataGrid.Reload();
+        }
+        else
+        {
+            var OldUnit = await unitService.GetByIdAsync(unit.Id);
+            if (OldUnit != null)
+            {
+                unit.Name = OldUnit.Name;
+                unit.AssociationId = OldUnit.AssociationId;
+                
+                await dataGrid.UpdateRow(unit);
+                dataGrid.CancelEditRow(unit);
+            }
+        }
+    }
+}

@@ -1,13 +1,13 @@
-using RSW.Shared.Dto;
+using RSW.Shared.Entities;
 
 namespace RSW.Shared.Interfaces
 {
     public interface IJurySlotService
     {
-        Task<IEnumerable<JurySlotDto>> GetAllAsync();
-        Task<JurySlotDto?> GetByIdAsync(Guid id);
-        Task<JurySlotDto> CreateAsync(JurySlotCreateDto dto);
-        Task<JurySlotDto?> UpdateAsync(Guid id, JurySlotDto dto);
+        Task<IEnumerable<JurySlot>> GetAllAsync();
+        Task<JurySlot?> GetByIdAsync(Guid id);
+        Task<JurySlot> CreateAsync(JurySlot model);
+        Task<JurySlot?> UpdateAsync(Guid id, JurySlot model);
         Task<bool> DeleteAsync(Guid id);
     }
 }
