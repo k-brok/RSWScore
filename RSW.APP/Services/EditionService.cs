@@ -1,6 +1,4 @@
 using System.Net.Http.Json;
-using AutoMapper;
-using RSW.Shared.Dto;
 using RSW.Shared.Entities;
 using RSW.Shared.Interfaces;
 
@@ -16,42 +14,42 @@ namespace RSW.APP.Services
             _httpClient = httpClient;
         }
 
-        public async Task<IEnumerable<EditionDto>> GetAllAsync()
+        public async Task<IEnumerable<Edition>> GetAllAsync()
         {
-            var result = await _httpClient.GetFromJsonAsync<List<EditionDto>>(Endpoint);
+            var result = await _httpClient.GetFromJsonAsync<List<Edition>>(Endpoint);
 
-            return result ?? new List<EditionDto>();
+            return result ?? new List<Edition>();
         }
 
-        public async Task<EditionDto?> GetByIdAsync(Guid id)
+        public async Task<Edition?> GetByIdAsync(Guid id)
         {
-            return await _httpClient.GetFromJsonAsync<EditionDto>($"{Endpoint}/{id}");
+            return await _httpClient.GetFromJsonAsync<Edition>($"{Endpoint}/{id}");
         }
 
-        public async Task<IEnumerable<GroupDto>> GetGroupsAsync(Guid id)
+        public async Task<IEnumerable<Group>> GetGroupsAsync(Guid id)
         {
             throw new NotImplementedException();
         }
 
-        public async Task<EditionDto> CreateAsync(EditionCreateDto dto)
+        public async Task<Edition> CreateAsync(Edition model)
         {
-            var response = await _httpClient.PostAsJsonAsync(Endpoint, dto);
+            var response = await _httpClient.PostAsJsonAsync(Endpoint, model);
 
             if (response.IsSuccessStatusCode)
             {
-                return await response.Content.ReadFromJsonAsync<EditionDto>();
+                return await response.Content.ReadFromJsonAsync<Edition>();
             }
 
             return null;
         }
 
-        public async Task<EditionDto?> UpdateAsync(Guid id, EditionDto dto)
+        public async Task<Edition?> UpdateAsync(Guid id, Edition model)
         {
-            var response = await _httpClient.PutAsJsonAsync($"{Endpoint}/{id}", dto);
+            var response = await _httpClient.PutAsJsonAsync($"{Endpoint}/{id}", model);
 
             if (response.IsSuccessStatusCode)
             {
-                return await response.Content.ReadFromJsonAsync<EditionDto>();
+                return await response.Content.ReadFromJsonAsync<Edition>();
             }
 
             return null;
@@ -62,18 +60,18 @@ namespace RSW.APP.Services
             return response.IsSuccessStatusCode;
         }
 
-        public async Task<EditionDto?> GetActiveAsync()
+        public async Task<Edition?> GetActiveAsync()
         {
-            return await _httpClient.GetFromJsonAsync<EditionDto>($"{Endpoint}/active");
+            return await _httpClient.GetFromJsonAsync<Edition>($"{Endpoint}/active");
         }
 
-        public async Task<EditionDto?> ActivateAsync(Guid id)
+        public async Task<Edition?> ActivateAsync(Guid id)
         {
             var response = await _httpClient.PutAsJsonAsync($"{Endpoint}/{id}/activate", (object?)null);
 
             if (response.IsSuccessStatusCode)
             {
-                return await response.Content.ReadFromJsonAsync<EditionDto>();
+                return await response.Content.ReadFromJsonAsync<Edition>();
             }
 
             return null;

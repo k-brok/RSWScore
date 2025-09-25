@@ -1,6 +1,4 @@
 using System.Net.Http.Json;
-using AutoMapper;
-using RSW.Shared.Dto;
 using RSW.Shared.Entities;
 using RSW.Shared.Interfaces;
 
@@ -16,49 +14,49 @@ namespace RSW.APP.Services
             _httpClient = httpClient;
         }
 
-        public async Task<IEnumerable<PatrolDto>> GetAllAsync()
+        public async Task<IEnumerable<Patrol>> GetAllAsync()
         {
-            var result = await _httpClient.GetFromJsonAsync<List<PatrolDto>>(Endpoint);
+            var result = await _httpClient.GetFromJsonAsync<List<Patrol>>(Endpoint);
 
-            return result ?? new List<PatrolDto>();
+            return result ?? new List<Patrol>();
         }
 
-        public async Task<PatrolDto?> GetByIdAsync(Guid id)
+        public async Task<Patrol?> GetByIdAsync(Guid id)
         {
-            return await _httpClient.GetFromJsonAsync<PatrolDto>($"{Endpoint}/{id}");
+            return await _httpClient.GetFromJsonAsync<Patrol>($"{Endpoint}/{id}");
         }
 
-        public async Task<IEnumerable<ScoutDto>> GetScoutsAsync(Guid id)
+        public async Task<IEnumerable<Scout>> GetScoutsAsync(Guid id)
         {
-            var result = await _httpClient.GetFromJsonAsync<List<ScoutDto>>($"{Endpoint}/{id}/scouts");
+            var result = await _httpClient.GetFromJsonAsync<List<Scout>>($"{Endpoint}/{id}/scouts");
 
-            return result ?? new List<ScoutDto>();
+            return result ?? new List<Scout>();
         }
 
-        public async Task<IEnumerable<GroupDto>> GetGroupsAsync(Guid id)
+        public async Task<IEnumerable<Group>> GetGroupsAsync(Guid id)
         {
             throw new NotImplementedException();
         }
 
-        public async Task<PatrolDto> CreateAsync(PatrolCreateDto dto)
+        public async Task<Patrol> CreateAsync(Patrol model)
         {
-            var response = await _httpClient.PostAsJsonAsync(Endpoint, dto);
+            var response = await _httpClient.PostAsJsonAsync(Endpoint, model);
 
             if (response.IsSuccessStatusCode)
             {
-                return await response.Content.ReadFromJsonAsync<PatrolDto>();
+                return await response.Content.ReadFromJsonAsync<Patrol>();
             }
 
             return null;
         }
 
-        public async Task<PatrolDto?> UpdateAsync(Guid id, PatrolDto dto)
+        public async Task<Patrol?> UpdateAsync(Guid id, Patrol model)
         {
-            var response = await _httpClient.PutAsJsonAsync($"{Endpoint}/{id}", dto);
+            var response = await _httpClient.PutAsJsonAsync($"{Endpoint}/{id}", model);
 
             if (response.IsSuccessStatusCode)
             {
-                return await response.Content.ReadFromJsonAsync<PatrolDto>();
+                return await response.Content.ReadFromJsonAsync<Patrol>();
             }
 
             return null;

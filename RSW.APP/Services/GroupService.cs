@@ -1,6 +1,4 @@
 using System.Net.Http.Json;
-using AutoMapper;
-using RSW.Shared.Dto;
 using RSW.Shared.Entities;
 using RSW.Shared.Interfaces;
 
@@ -16,42 +14,42 @@ namespace RSW.APP.Services
             _httpClient = httpClient;
         }
 
-        public async Task<IEnumerable<GroupDto>> GetAllAsync()
+        public async Task<IEnumerable<Group>> GetAllAsync()
         {
-            var result = await _httpClient.GetFromJsonAsync<List<GroupDto>>(Endpoint);
+            var result = await _httpClient.GetFromJsonAsync<List<Group>>(Endpoint);
 
-            return result ?? new List<GroupDto>();
+            return result ?? new List<Group>();
         }
 
-        public async Task<GroupDto?> GetByIdAsync(Guid id)
+        public async Task<Group?> GetByIdAsync(Guid id)
         {
-            return await _httpClient.GetFromJsonAsync<GroupDto>($"{Endpoint}/{id}");
+            return await _httpClient.GetFromJsonAsync<Group>($"{Endpoint}/{id}");
         }
 
-        public async Task<IEnumerable<GroupDto>> GetGroupsAsync(Guid id)
+        public async Task<IEnumerable<Group>> GetGroupsAsync(Guid id)
         {
             throw new NotImplementedException();
         }
 
-        public async Task<GroupDto> CreateAsync(GroupCreateDto dto)
+        public async Task<Group> CreateAsync(Group model)
         {
-            var response = await _httpClient.PostAsJsonAsync(Endpoint, dto);
+            var response = await _httpClient.PostAsJsonAsync(Endpoint, model);
 
             if (response.IsSuccessStatusCode)
             {
-                return await response.Content.ReadFromJsonAsync<GroupDto>();
+                return await response.Content.ReadFromJsonAsync<Group>();
             }
 
             return null;
         }
 
-        public async Task<GroupDto?> UpdateAsync(Guid id, GroupDto dto)
+        public async Task<Group?> UpdateAsync(Guid id, Group model)
         {
-            var response = await _httpClient.PutAsJsonAsync($"{Endpoint}/{id}", dto);
+            var response = await _httpClient.PutAsJsonAsync($"{Endpoint}/{id}", model);
 
             if (response.IsSuccessStatusCode)
             {
-                return await response.Content.ReadFromJsonAsync<GroupDto>();
+                return await response.Content.ReadFromJsonAsync<Group>();
             }
 
             return null;
@@ -62,11 +60,11 @@ namespace RSW.APP.Services
             return response.IsSuccessStatusCode;
         }
 
-        public async Task<List<PatrolDto>>? GetPatrolsAsync(Guid id)
+        public async Task<List<Patrol>>? GetPatrolsAsync(Guid id)
         {
-            var result = await _httpClient.GetFromJsonAsync<List<PatrolDto>>($"{Endpoint}/{id}/patrols");
+            var result = await _httpClient.GetFromJsonAsync<List<Patrol>>($"{Endpoint}/{id}/patrols");
 
-            return result ?? new List<PatrolDto>();
+            return result ?? new List<Patrol>();
         }
     }
 }
