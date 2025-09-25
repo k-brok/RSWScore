@@ -17,6 +17,35 @@ namespace RSW.Shared.Entities
         public Patrol Patrol { get; set; } = null!;
         [Required]
         public Guid PatrolId { get; set; }
-        
+        public int Age
+        {
+            get
+            {
+                DateOnly today = DateOnly.FromDateTime(DateTime.Today);
+
+                int age = today.Year - DateOfBirth.Year;
+
+                // Corrigeren als de verjaardag dit jaar nog niet is geweest
+                if (today < new DateOnly(today.Year, DateOfBirth.Month, DateOfBirth.Day))
+                {
+                    age--;
+                }
+
+                return age;
+            }
+        }
+        public int CalculateAge(DateOnly Date)
+        {
+
+            int age = Date.Year - DateOfBirth.Year;
+
+            // Corrigeren als de verjaardag dit jaar nog niet is geweest
+            if (Date < new DateOnly(Date.Year, DateOfBirth.Month, DateOfBirth.Day))
+            {
+                age--;
+            }
+
+            return age;
+        }
     }
 }

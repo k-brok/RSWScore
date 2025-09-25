@@ -2,7 +2,7 @@
 @inject NotificationService NotificationService
 @inject ISubCategoryService subcategoryService
 @inject ICategoryService categoryService
-@if(categoryDtos == null){
+@if(categorys == null){
     <RadzenCard Style="margin:20px;">
         <RadzenProgressBarCircular Value="50" ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
         <p>Data ophalen...</p>
@@ -10,22 +10,22 @@
 }
 else
 {
-    <RadzenDataGrid @ref="dataGrid" Data="@subcategories" TItem="SubCategoryDto" RowSelect="@OnRowSelect" AllowPaging="true" PageSize="10" AllowSorting="true" AllowFiltering="true" FilterMode="FilterMode.Simple" Responsive="true" Style="height: 600px;">
+    <RadzenDataGrid @ref="dataGrid" Data="@subcategories" TItem="SubCategory" RowSelect="@OnRowSelect" AllowPaging="true" PageSize="10" AllowSorting="true" AllowFiltering="true" FilterMode="FilterMode.Simple" Responsive="true" Style="height: 600px;">
         <Columns>
-            <RadzenDataGridColumn TItem="SubCategoryDto" Property="Name" Title="Name" >
+            <RadzenDataGridColumn TItem="SubCategory" Property="Name" Title="Name" >
                 <EditTemplate Context="subcategory">
                     <RadzenFormField Text="Naam" Style="width:100%">
                         <RadzenTextBox @bind-Value="@subcategory.Name" />
                     </RadzenFormField>
                 </EditTemplate>
             </RadzenDataGridColumn>
-            <RadzenDataGridColumn TItem="SubCategoryDto" Property="CategoryId" Title="Categorie">
+            <RadzenDataGridColumn TItem="SubCategory" Property="CategoryId" Title="Categorie">
                 <Template Context="subcategory">
-                    @categoryDtos.FirstOrDefault(C => C.Id == subcategory.CategoryId).Name
+                    @categorys.FirstOrDefault(C => C.Id == subcategory.CategoryId).Name
                 </Template>
                 <EditTemplate Context="subcategory">
                     <RadzenFormField Text="Sub categorie" Style="width:100%">
-                        <RadzenDropDown Data="@categoryDtos" @bind-Value=subcategory.CategoryId ValueProperty=@nameof(CategoryDto.Id) TextProperty=@nameof(CategoryDto.Name) />
+                        <RadzenDropDown Data="@categorys" @bind-Value=subcategory.CategoryId ValueProperty=@nameof(Category.Id) TextProperty=@nameof(Category.Name) />
                     </RadzenFormField>
                 </EditTemplate>
             </RadzenDataGridColumn>
@@ -50,37 +50,37 @@ else
 }
 @code {
     [Parameter]
-    public List<SubCategoryDto> subcategories { get; set; } = new List<SubCategoryDto>();
-    public EventCallback<SubCategoryDto> OnSubCategoryDtoSelected { get; set; }
-    private RadzenDataGrid<SubCategoryDto> dataGrid;
-    private IEnumerable<CategoryDto>? categoryDtos {get; set;} = null;
+    public List<SubCategory> subcategories { get; set; } = new List<SubCategory>();
+    public EventCallback<SubCategory> OnSubCategorySelected { get; set; }
+    private RadzenDataGrid<SubCategory> dataGrid;
+    private IEnumerable<Category>? categorys {get; set;} = null;
     protected override async Task OnInitializedAsync()
     {
-        categoryDtos = await categoryService.GetAllAsync();
+        categorys = await categoryService.GetAllAsync();
         await base.OnInitializedAsync();
     }
-    private async Task OnRowSelect(SubCategoryDto subcategory)
+    private async Task OnRowSelect(SubCategory subcategory)
     {
-        if (OnSubCategoryDtoSelected.HasDelegate)
+        if (OnSubCategorySelected.HasDelegate)
         {
-            await OnSubCategoryDtoSelected.InvokeAsync(subcategory);
+            await OnSubCategorySelected.InvokeAsync(subcategory);
         }
     }
     void Insert()
     {
-        var NewSubCategory = new SubCategoryDto();
+        var NewSubCategory = new SubCategory();
         dataGrid.InsertRow(NewSubCategory);
     }
-    void InsertAfterRow(SubCategoryDto subcategory)
+    void InsertAfterRow(SubCategory subcategory)
     {
-        var NewSubCategory = new SubCategoryDto();
+        var NewSubCategory = new SubCategory();
         dataGrid.InsertAfterRow(NewSubCategory, subcategory);
     }
-    void EditRow(SubCategoryDto subcategory)
+    void EditRow(SubCategory subcategory)
     {
         dataGrid.EditRow(subcategory);
     }
-    async Task DeleteRow(SubCategoryDto subcategory)
+    async Task DeleteRow(SubCategory subcategory)
     {
         var ConfirmDelete = await DialogService.Confirm($"Weet je zeker dat je \"{subcategory.Name}\" wilt verwijderen?", "Verwijderen", new ConfirmOptions() { OkButtonText = "Ja", CancelButtonText = "Nee" });
         if (ConfirmDelete == null)
@@ -99,11 +99,11 @@ else
             await dataGrid.Reload();
         }
     }
-    async Task SaveRow(SubCategoryDto subcategory)
+    async Task SaveRow(SubCategory subcategory)
     {
         if (subcategory.Id == Guid.Empty)
         {
-            await subcategoryService.CreateAsync(new SubCategoryCreateDto
+            await subcategoryService.CreateAsync(new SubCategoryCreate
             {
                 Name = subcategory.Name,
                 CategoryId = subcategory.CategoryId
@@ -117,11 +117,11 @@ else
     }
     async Task SaveAll()
     {
-        foreach (SubCategoryDto subcategory in subcategories)
+        foreach (SubCategory subcategory in subcategories)
         {
             if (subcategory.Id == Guid.Empty)
             {
-                await subcategoryService.CreateAsync(new SubCategoryCreateDto
+                await subcategoryService.CreateAsync(new SubCategoryCreate
                     {
                         Name = subcategory.Name,
                         CategoryId = subcategory.CategoryId
@@ -134,7 +134,7 @@ else
             await dataGrid.UpdateRow(subcategory);
         }
     }
-    async Task CancelEdit(SubCategoryDto subcategory)
+    async Task CancelEdit(SubCategory subcategory)
     {
         if (subcategory.Id == Guid.Empty)
         {

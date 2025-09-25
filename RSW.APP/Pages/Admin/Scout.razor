@@ -15,7 +15,7 @@ else
 }
 
 @code {
-    public IEnumerable<ScoutDto>? scouts { get; set; }
+    public IEnumerable<Scout>? scouts { get; set; }
     protected override async Task OnInitializedAsync()
     {
         scouts = await ScoutService.GetAllAsync();

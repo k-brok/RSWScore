@@ -1,35 +1,35 @@
 ﻿@inject DialogService DialogService
 @inject NotificationService NotificationService
 
-<RadzenDataGrid @ref="dataGrid" Data="@editions" TItem="EditionDto" RowSelect="@OnRowSelect" AllowPaging="true" PageSize="10" AllowSorting="true" AllowFiltering="true" FilterMode="FilterMode.Simple" Responsive="true" Style="height: 600px;">
+<RadzenDataGrid @ref="dataGrid" Data="@editions" TItem="Edition" RowSelect="@OnRowSelect" AllowPaging="true" PageSize="10" AllowSorting="true" AllowFiltering="true" FilterMode="FilterMode.Simple" Responsive="true" Style="height: 600px;">
     <Columns>
-        <RadzenDataGridColumn TItem="EditionDto" Property="RSWStartDate" Title="RSW datum" >
+        <RadzenDataGridColumn TItem="Edition" Property="RSWStartDate" Title="RSW datum" >
             <EditTemplate Context="edition">
                 <RadzenFormField Text="RSW datum" Style="width:100%">
                     <RadzenDatePicker @bind-Value="@edition.RSWStartDate" />
                 </RadzenFormField>
             </EditTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="EditionDto" Property="LSWStartDate" Title="LSW datum" >
+        <RadzenDataGridColumn TItem="Edition" Property="LSWStartDate" Title="LSW datum" >
             <EditTemplate Context="edition">
                 <RadzenFormField Text="LSW Datum" Style="width:100%">
                     <RadzenDatePicker @bind-Value="@edition.LSWStartDate" />
                 </RadzenFormField>
             </EditTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="EditionDto" Property="Theme" Title="Thema" >
+        <RadzenDataGridColumn TItem="Edition" Property="Theme" Title="Thema" >
             <EditTemplate Context="edition">
                 <RadzenFormField Text="Thema" Style="width:100%">
                     <RadzenTextBox @bind-Value="@edition.Theme" />
                 </RadzenFormField>
             </EditTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="EditionDto" Property="IsActive" Title="Actief" >
+        <RadzenDataGridColumn TItem="Edition" Property="IsActive" Title="Actief" >
             <EditTemplate Context="edition">
                 <RadzenButton Text="Activeren" Click=@(()=> ActivateEdition(edition)) Disabled=@edition.IsActive />
             </EditTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="EditionDto" Title="Details" >
+        <RadzenDataGridColumn TItem="Edition" Title="Details" >
             <Template Context="edition">
                 <RadzenButton Text="Details" Click=@(()=> OpenDialog(edition))/>
             </Template>
@@ -55,36 +55,36 @@
 
 @code {
     [Parameter]
-    public List<EditionDto> editions { get; set; } = new List<EditionDto>();
-    public List<EditionDto> NewEditions { get; set; } = new List<EditionDto>();
-    public EventCallback<EditionDto> OnEditionDtoSelected { get; set; }
-    private RadzenDataGrid<EditionDto> dataGrid;
+    public List<Edition> editions { get; set; } = new List<Edition>();
+    public List<Edition> NewEditions { get; set; } = new List<Edition>();
+    public EventCallback<Edition> OnEditionSelected { get; set; }
+    private RadzenDataGrid<Edition> dataGrid;
 
     [Inject]
     private IEditionService editionService { get; set; } = default!;
 
-    private async Task OnRowSelect(EditionDto edition)
+    private async Task OnRowSelect(Edition edition)
     {
-        if (OnEditionDtoSelected.HasDelegate)
+        if (OnEditionSelected.HasDelegate)
         {
-            await OnEditionDtoSelected.InvokeAsync(edition);
+            await OnEditionSelected.InvokeAsync(edition);
         }
     }
     void Insert()
     {
-        var NewEdition = new EditionDto();
+        var NewEdition = new Edition();
         dataGrid.InsertRow(NewEdition);
     }
-    void InsertAfterRow(EditionDto edition)
+    void InsertAfterRow(Edition edition)
     {
-        var NewEdition = new EditionDto();
+        var NewEdition = new Edition();
         dataGrid.InsertAfterRow(NewEdition, edition);
     }
-    void EditRow(EditionDto edition)
+    void EditRow(Edition edition)
     {
         dataGrid.EditRow(edition);
     }
-    async Task DeleteRow(EditionDto edition)
+    async Task DeleteRow(Edition edition)
     {
         var ConfirmDelete = await DialogService.Confirm($"Weet je zeker dat je \"{edition.Theme}\" wilt verwijderen?", "Verwijderen", new ConfirmOptions() { OkButtonText = "Ja", CancelButtonText = "Nee" });
         if (ConfirmDelete == null)
@@ -103,11 +103,11 @@
             await dataGrid.Reload();
         }
     }
-    async Task SaveRow(EditionDto edition)
+    async Task SaveRow(Edition edition)
     {
         if (edition.Id == Guid.Empty)
         {
-            var NewEdition = await editionService.CreateAsync(new EditionCreateDto
+            var NewEdition = await editionService.CreateAsync(new EditionCreate
             {
                 RSWStartDate = edition.RSWStartDate,
                 LSWStartDate = edition.LSWStartDate,
@@ -124,11 +124,11 @@
     }
     async Task SaveAll()
     {
-        foreach (EditionDto edition in editions)
+        foreach (Edition edition in editions)
         {
             if (edition.Id == Guid.Empty)
             {
-                var NewEdition = await editionService.CreateAsync(new EditionCreateDto
+                var NewEdition = await editionService.CreateAsync(new EditionCreate
                     {
                         RSWStartDate = edition.RSWStartDate,
                         LSWStartDate = edition.LSWStartDate,
@@ -144,7 +144,7 @@
             await dataGrid.UpdateRow(edition);
         }
     }
-    async Task CancelEdit(EditionDto edition)
+    async Task CancelEdit(Edition edition)
     {
         if (edition.Id == Guid.Empty)
         {
@@ -165,10 +165,10 @@
             }
         }
     }
-    async Task ActivateEdition(EditionDto edition){
+    async Task ActivateEdition(Edition edition){
         await editionService.ActivateAsync(edition.Id);
     }
-    async Task OpenDialog(EditionDto edition){
+    async Task OpenDialog(Edition edition){
         await DialogService.OpenAsync<EditionDialog>("Edit Edition", new Dictionary<string, object> { { "edition", edition } });
     }
 }

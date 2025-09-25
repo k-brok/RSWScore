@@ -2,7 +2,7 @@
 @inject NotificationService NotificationService
 @inject IAssociationService associationService
 
-@if(associationDtos == null){
+@if(associations == null){
     <RadzenCard Style="margin:20px;">
         <RadzenProgressBarCircular Value="50" ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
         <p>Data ophalen...</p>
@@ -10,22 +10,22 @@
 }
 else
 {
-    <RadzenDataGrid @ref="dataGrid" Data="@groups" TItem="GroupDto" RowSelect="@OnRowSelect" AllowPaging="true" PageSize="10" AllowSorting="true" AllowFiltering="true" FilterMode="FilterMode.Simple" Responsive="true" Style="height: 600px;">
+    <RadzenDataGrid @ref="dataGrid" Data="@groups" TItem="Group" RowSelect="@OnRowSelect" AllowPaging="true" PageSize="10" AllowSorting="true" AllowFiltering="true" FilterMode="FilterMode.Simple" Responsive="true" Style="height: 600px;">
         <Columns>
-            <RadzenDataGridColumn TItem="GroupDto" Property="Name" Title="Name" >
+            <RadzenDataGridColumn TItem="Group" Property="Name" Title="Name" >
                 <EditTemplate Context="group">
                     <RadzenFormField Text="Naam" Style="width:100%">
                         <RadzenTextBox @bind-Value="@group.Name" />
                     </RadzenFormField>
                 </EditTemplate>
             </RadzenDataGridColumn>
-            <RadzenDataGridColumn TItem="GroupDto" Property="AssociationId" Title="Vereniging">
+            <RadzenDataGridColumn TItem="Group" Property="AssociationId" Title="Vereniging">
                 <Template Context="criteria">
-                    @associationDtos.FirstOrDefault(C => C.Id == criteria.AssociationId).Name
+                    @associations.FirstOrDefault(C => C.Id == criteria.AssociationId).Name
                 </Template>
                 <EditTemplate Context="criteria">
                     <RadzenFormField Text="Vereniging" Style="width:100%">
-                        <RadzenDropDown Data="@associationDtos" @bind-Value=criteria.AssociationId ValueProperty=@nameof(AssociationDto.Id) TextProperty=@nameof(AssociationDto.Name) />
+                        <RadzenDropDown Data="@associations" @bind-Value=criteria.AssociationId ValueProperty=@nameof(Association.Id) TextProperty=@nameof(Association.Name) />
                     </RadzenFormField>
                 </EditTemplate>
             </RadzenDataGridColumn>
@@ -50,41 +50,41 @@ else
 }
 @code {
     [Parameter]
-    public List<GroupDto> groups { get; set; } = new List<GroupDto>();
-    public EventCallback<GroupDto> OnGroupDtoSelected { get; set; }
-    private RadzenDataGrid<GroupDto> dataGrid;
-    private IEnumerable<AssociationDto>? associationDtos { get; set; } = null;
+    public List<Group> groups { get; set; } = new List<Group>();
+    public EventCallback<Group> OnGroupSelected { get; set; }
+    private RadzenDataGrid<Group> dataGrid;
+    private IEnumerable<Association>? associations { get; set; } = null;
 
     [Inject]
     private IGroupService groupService { get; set; } = default!;
 
     protected override async Task OnInitializedAsync()
     {
-        associationDtos = await associationService.GetAllAsync();
+        associations = await associationService.GetAllAsync();
         await base.OnInitializedAsync();
     }
-    private async Task OnRowSelect(GroupDto group)
+    private async Task OnRowSelect(Group group)
     {
-        if (OnGroupDtoSelected.HasDelegate)
+        if (OnGroupSelected.HasDelegate)
         {
-            await OnGroupDtoSelected.InvokeAsync(group);
+            await OnGroupSelected.InvokeAsync(group);
         }
     }
     void Insert()
     {
-        var NewGroup = new GroupDto();
+        var NewGroup = new Group();
         dataGrid.InsertRow(NewGroup);
     }
-    void InsertAfterRow(GroupDto group)
+    void InsertAfterRow(Group group)
     {
-        var NewGroup = new GroupDto();
+        var NewGroup = new Group();
         dataGrid.InsertAfterRow(NewGroup, group);
     }
-    void EditRow(GroupDto group)
+    void EditRow(Group group)
     {
         dataGrid.EditRow(group);
     }
-    async Task DeleteRow(GroupDto group)
+    async Task DeleteRow(Group group)
     {
         var ConfirmDelete = await DialogService.Confirm($"Weet je zeker dat je \"{group.Name}\" wilt verwijderen?", "Verwijderen", new ConfirmOptions() { OkButtonText = "Ja", CancelButtonText = "Nee" });
         if (ConfirmDelete == null)
@@ -103,11 +103,11 @@ else
             await dataGrid.Reload();
         }
     }
-    async Task SaveRow(GroupDto group)
+    async Task SaveRow(Group group)
     {
         if (group.Id == Guid.Empty)
         {
-            await groupService.CreateAsync(new GroupCreateDto
+            await groupService.CreateAsync(new GroupCreate
             {
                 Name = group.Name,
                 AssociationId = group.AssociationId
@@ -121,11 +121,11 @@ else
     }
     async Task SaveAll()
     {
-        foreach (GroupDto group in groups)
+        foreach (Group group in groups)
         {
             if (group.Id == Guid.Empty)
             {
-                await groupService.CreateAsync(new GroupCreateDto
+                await groupService.CreateAsync(new GroupCreate
                     {
                         Name = group.Name,
                         AssociationId = group.AssociationId
@@ -138,7 +138,7 @@ else
             await dataGrid.UpdateRow(group);
         }
     }
-    async Task CancelEdit(GroupDto group)
+    async Task CancelEdit(Group group)
     {
         if (group.Id == Guid.Empty)
         {

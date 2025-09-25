@@ -15,7 +15,7 @@ else
 }
 
 @code {
-    public IEnumerable<PatrolDto>? patrols { get; set; }
+    public IEnumerable<Patrol>? patrols { get; set; }
     protected override async Task OnInitializedAsync()
     {
         patrols = await PatrolService.GetAllAsync();

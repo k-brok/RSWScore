@@ -2,7 +2,7 @@
 @inject NotificationService NotificationService
 @inject IPatrolService patrolService
 @inject ICriteriaService criteriaService
-@if(patrolDtos == null || criteriaDtos == null){
+@if(patrols == null || criterias == null){
     <RadzenCard Style="margin:20px;">
         <RadzenProgressBarCircular Value="50" ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
         <p>Data ophalen...</p>
@@ -10,29 +10,29 @@
 }
 else
 {
-    <RadzenDataGrid @ref="dataGrid" Data="@scores" TItem="ScoreDto" RowSelect="@OnRowSelect" AllowPaging="true" PageSize="10" AllowSorting="true" AllowFiltering="true" FilterMode="FilterMode.Simple" Responsive="true" Style="height: 600px;">
+    <RadzenDataGrid @ref="dataGrid" Data="@scores" TItem="Score" RowSelect="@OnRowSelect" AllowPaging="true" PageSize="10" AllowSorting="true" AllowFiltering="true" FilterMode="FilterMode.Simple" Responsive="true" Style="height: 600px;">
         <Columns>
-            <RadzenDataGridColumn TItem="ScoreDto" Property="PatrolId" Title="Patrouille">
+            <RadzenDataGridColumn TItem="Score" Property="PatrolId" Title="Patrouille">
                 <Template Context="score">
-                    @patrolDtos.FirstOrDefault(C => C.Id == score.PatrolId).Name
+                    @patrols.FirstOrDefault(C => C.Id == score.PatrolId).Name
                 </Template>
                 <EditTemplate Context="score">
                     <RadzenFormField Text="Patrouille" Style="width:100%">
-                        <RadzenDropDown Data="@patrolDtos" @bind-Value=score.PatrolId ValueProperty=@nameof(PatrolDto.Id) TextProperty=@nameof(PatrolDto.Name) />
+                        <RadzenDropDown Data="@patrols" @bind-Value=score.PatrolId ValueProperty=@nameof(Patrol.Id) TextProperty=@nameof(Patrol.Name) />
                     </RadzenFormField>
                 </EditTemplate>
             </RadzenDataGridColumn>
-            <RadzenDataGridColumn TItem="ScoreDto" Property="CriteriaId" Title="criteria">
+            <RadzenDataGridColumn TItem="Score" Property="CriteriaId" Title="criteria">
                 <Template Context="score">
-                    @criteriaDtos.FirstOrDefault(C => C.Id == score.CriteriaId).Name
+                    @criterias.FirstOrDefault(C => C.Id == score.CriteriaId).Name
                 </Template>
                 <EditTemplate Context="score">
                     <RadzenFormField Text="criteria" Style="width:100%">
-                        <RadzenDropDown Data="@criteriaDtos" @bind-Value=score.CriteriaId ValueProperty=@nameof(CriteriaDto.Id) TextProperty=@nameof(CriteriaDto.Name) />
+                        <RadzenDropDown Data="@criterias" @bind-Value=score.CriteriaId ValueProperty=@nameof(Criteria.Id) TextProperty=@nameof(Criteria.Name) />
                     </RadzenFormField>
                 </EditTemplate>
             </RadzenDataGridColumn>
-            <RadzenDataGridColumn TItem="ScoreDto" Property="Value" Title="score" >
+            <RadzenDataGridColumn TItem="Score" Property="Value" Title="score" >
                 <EditTemplate Context="score">
                     <RadzenFormField Text="score" Style="width:100%">
                         <RadzenNumeric @bind-Value="@score.Value" />
@@ -61,43 +61,43 @@ else
 
 @code {
     [Parameter]
-    public List<ScoreDto> scores { get; set; } = new List<ScoreDto>();
-    public List<ScoreDto> NewScores { get; set; } = new List<ScoreDto>();
-    public EventCallback<ScoreDto> OnScoreDtoSelected { get; set; }
-    private RadzenDataGrid<ScoreDto> dataGrid;
-    private IEnumerable<PatrolDto>? patrolDtos { get; set; } = null;
-    private IEnumerable<CriteriaDto>? criteriaDtos { get; set; } = null;
+    public List<Score> scores { get; set; } = new List<Score>();
+    public List<Score> NewScores { get; set; } = new List<Score>();
+    public EventCallback<Score> OnScoreSelected { get; set; }
+    private RadzenDataGrid<Score> dataGrid;
+    private IEnumerable<Patrol>? patrols { get; set; } = null;
+    private IEnumerable<Criteria>? criterias { get; set; } = null;
 
     [Inject]
     private IScoreService scoreService { get; set; } = default!;
     protected override async Task OnInitializedAsync()
     {
-        patrolDtos = await patrolService.GetAllAsync();
-        criteriaDtos = await criteriaService.GetAllAsync();
+        patrols = await patrolService.GetAllAsync();
+        criterias = await criteriaService.GetAllAsync();
         await base.OnInitializedAsync();
     }
-    private async Task OnRowSelect(ScoreDto score)
+    private async Task OnRowSelect(Score score)
     {
-        if (OnScoreDtoSelected.HasDelegate)
+        if (OnScoreSelected.HasDelegate)
         {
-            await OnScoreDtoSelected.InvokeAsync(score);
+            await OnScoreSelected.InvokeAsync(score);
         }
     }
     void Insert()
     {
-        var NewScore = new ScoreDto();
+        var NewScore = new Score();
         dataGrid.InsertRow(NewScore);
     }
-    void InsertAfterRow(ScoreDto score)
+    void InsertAfterRow(Score score)
     {
-        var NewScore = new ScoreDto();
+        var NewScore = new Score();
         dataGrid.InsertAfterRow(NewScore, score);
     }
-    void EditRow(ScoreDto score)
+    void EditRow(Score score)
     {
         dataGrid.EditRow(score);
     }
-    async Task DeleteRow(ScoreDto score)
+    async Task DeleteRow(Score score)
     {
         var ConfirmDelete = await DialogService.Confirm($"Weet je zeker dat je \"{score.Id}\" wilt verwijderen?", "Verwijderen", new ConfirmOptions() { OkButtonText = "Ja", CancelButtonText = "Nee" });
         if (ConfirmDelete == null)
@@ -116,11 +116,11 @@ else
             await dataGrid.Reload();
         }
     }
-    async Task SaveRow(ScoreDto score)
+    async Task SaveRow(Score score)
     {
         if (score.Id == Guid.Empty)
         {
-            await scoreService.CreateAsync(new ScoreCreateDto
+            await scoreService.CreateAsync(new ScoreCreate
             {
                 CriteriaId = score.CriteriaId,
                 PatrolId = score.PatrolId,
@@ -135,11 +135,11 @@ else
     }
     async Task SaveAll()
     {
-        foreach (ScoreDto score in scores)
+        foreach (Score score in scores)
         {
             if (score.Id == Guid.Empty)
             {
-                await scoreService.CreateAsync(new ScoreCreateDto
+                await scoreService.CreateAsync(new ScoreCreate
                     {
                         CriteriaId = score.CriteriaId,
                         PatrolId = score.PatrolId,
@@ -153,7 +153,7 @@ else
             await dataGrid.UpdateRow(score);
         }
     }
-    async Task CancelEdit(ScoreDto score)
+    async Task CancelEdit(Score score)
     {
         if (score.Id == Guid.Empty)
         {

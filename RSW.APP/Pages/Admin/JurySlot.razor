@@ -15,7 +15,7 @@ else
 }
 
 @code {
-    public IEnumerable<JurySlotDto>? jurySlots { get; set; }
+    public IEnumerable<JurySlot>? jurySlots { get; set; }
     protected override async Task OnInitializedAsync()
     {
         jurySlots = await JurySlotService.GetAllAsync();

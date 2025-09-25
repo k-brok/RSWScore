@@ -15,7 +15,7 @@ else
 }
 
 @code {
-    public IEnumerable<EditionDto>? editions { get; set; }
+    public IEnumerable<Edition>? editions { get; set; }
     protected override async Task OnInitializedAsync()
     {
         editions = await EditionService.GetAllAsync();

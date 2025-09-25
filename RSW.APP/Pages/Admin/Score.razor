@@ -15,7 +15,7 @@ else
 }
 
 @code {
-    public IEnumerable<ScoreDto>? scores { get; set; }
+    public IEnumerable<Score>? scores { get; set; }
     protected override async Task OnInitializedAsync()
     {
         scores = await ScoreService.GetAllAsync();

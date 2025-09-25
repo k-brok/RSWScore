@@ -1,16 +1,16 @@
 ﻿@inject DialogService DialogService
 @inject NotificationService NotificationService
 
-<RadzenDataGrid @ref="dataGrid" Data="@associations" TItem="AssociationDto" RowSelect="@OnRowSelect" AllowPaging="true" PageSize="10" AllowSorting="true" AllowFiltering="true" FilterMode="FilterMode.Simple" Responsive="true" Style="height: 600px;">
+<RadzenDataGrid @ref="dataGrid" Data="@associations" TItem="Association" RowSelect="@OnRowSelect" AllowPaging="true" PageSize="10" AllowSorting="true" AllowFiltering="true" FilterMode="FilterMode.Simple" Responsive="true" Style="height: 600px;">
     <Columns>
-        <RadzenDataGridColumn TItem="AssociationDto" Property="Name" Title="Name" >
+        <RadzenDataGridColumn TItem="Association" Property="Name" Title="Name" >
             <EditTemplate Context="association">
                 <RadzenFormField Text="Naam" Style="width:100%">
                     <RadzenTextBox @bind-Value="@association.Name" />
                 </RadzenFormField>
             </EditTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="AssociationDto" Property="Abbreviation" Title="Abbreviation" >
+        <RadzenDataGridColumn TItem="Association" Property="Abbreviation" Title="Abbreviation" >
             <EditTemplate Context="association">
                 <RadzenFormField Text="Afkorting" Style="width:100%">
                     <RadzenTextBox @bind-Value="@association.Abbreviation" />
@@ -38,35 +38,35 @@
 
 @code {
     [Parameter]
-    public List<AssociationDto> associations { get; set; } = new List<AssociationDto>();
-    public EventCallback<AssociationDto> OnAssociationDtoSelected { get; set; }
-    private RadzenDataGrid<AssociationDto> dataGrid;
+    public List<Association> associations { get; set; } = new List<Association>();
+    public EventCallback<Association> OnAssociationSelected { get; set; }
+    private RadzenDataGrid<Association> dataGrid;
 
     [Inject]
     private IAssociationService associationService { get; set; } = default!;
 
-    private async Task OnRowSelect(AssociationDto association)
+    private async Task OnRowSelect(Association association)
     {
-        if (OnAssociationDtoSelected.HasDelegate)
+        if (OnAssociationSelected.HasDelegate)
         {
-            await OnAssociationDtoSelected.InvokeAsync(association);
+            await OnAssociationSelected.InvokeAsync(association);
         }
     }
     void Insert()
     {
-        var NewAssociation = new AssociationDto();
+        var NewAssociation = new Association();
         dataGrid.InsertRow(NewAssociation);
     }
-    void InsertAfterRow(AssociationDto association)
+    void InsertAfterRow(Association association)
     {
-        var NewAssociation = new AssociationDto();
+        var NewAssociation = new Association();
         dataGrid.InsertAfterRow(NewAssociation, association);
     }
-    void EditRow(AssociationDto association)
+    void EditRow(Association association)
     {
         dataGrid.EditRow(association);
     }
-    async Task DeleteRow(AssociationDto association)
+    async Task DeleteRow(Association association)
     {
         var ConfirmDelete = await DialogService.Confirm($"Weet je zeker dat je \"{association.Name}\" wilt verwijderen?", "Verwijderen", new ConfirmOptions() { OkButtonText = "Ja", CancelButtonText = "Nee" });
         if (ConfirmDelete == null)
@@ -85,11 +85,11 @@
             await dataGrid.Reload();
         }
     }
-    async Task SaveRow(AssociationDto association)
+    async Task SaveRow(Association association)
     {
         if (association.Id == Guid.Empty)
         {
-            await associationService.CreateAsync(new AssociationCreateDto
+            await associationService.CreateAsync(new AssociationCreate
             {
                 Name = association.Name,
                 Abbreviation = association.Abbreviation
@@ -103,11 +103,11 @@
     }
     async Task SaveAll()
     {
-        foreach (AssociationDto association in associations)
+        foreach (Association association in associations)
         {
             if (association.Id == Guid.Empty)
             {
-                await associationService.CreateAsync(new AssociationCreateDto
+                await associationService.CreateAsync(new AssociationCreate
                     {
                         Name = association.Name,
                         Abbreviation = association.Abbreviation
@@ -120,7 +120,7 @@
             await dataGrid.UpdateRow(association);
         }
     }
-    async Task CancelEdit(AssociationDto association)
+    async Task CancelEdit(Association association)
     {
         if (association.Id == Guid.Empty)
         {

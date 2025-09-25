@@ -132,9 +132,9 @@
 
 @code {
     private VolunteerAssignment assignment = new();
-    private EditionDto? ActiveEdition;
+    private Edition? ActiveEdition;
     private IEnumerable<VolunteerTask>? VolunteerTasks = null!;
-    private IEnumerable<EditionDto>? Editions = null!;
+    private IEnumerable<Edition>? Editions = null!;
     private List<VolunteerAssignment>? PreviousVolunteerAssignments = null!;
     private RadzenSteps radzenSteps = default!;
     protected override async Task OnInitializedAsync()
