@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using RSW.API.Data;
-using RSW.Shared.Dto;
 using RSW.Shared.Entities;
 using RSW.Shared.Interfaces;
 
@@ -23,15 +22,15 @@ namespace RSW.API.Endpoints
                 return found is not null ? Results.Ok(found) : Results.NotFound();
             }).AllowAnonymous();
 
-            JurySlot.MapPost("/", async (JurySlotCreateDto dto, IJurySlotService service) =>
+            JurySlot.MapPost("/", async (JurySlot model, IJurySlotService service) =>
             {
-                var created = await service.CreateAsync(dto);
+                var created = await service.CreateAsync(model);
                 return Results.Created($"/api/JurySlot/{created.Id}", created);
             }).RequireAuthorization(policy => policy.RequireRole("Admin"));
 
-            JurySlot.MapPut("/{id:guid}", async (Guid id, JurySlotDto dto, IJurySlotService service) =>
+            JurySlot.MapPut("/{id:guid}", async (Guid id, JurySlot model, IJurySlotService service) =>
             {
-                var updated = await service.UpdateAsync(id, dto);
+                var updated = await service.UpdateAsync(id, model);
                 return updated is not null ? Results.Ok(updated) : Results.NotFound();
             }).RequireAuthorization(policy => policy.RequireRole("Admin"));
 

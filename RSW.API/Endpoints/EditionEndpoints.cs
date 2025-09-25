@@ -1,5 +1,5 @@
 using RSW.API.Services;
-using RSW.Shared.Dto;
+using RSW.Shared.Entities;
 using RSW.Shared.Interfaces;
 
 namespace RSW.API.Endpoints
@@ -27,15 +27,15 @@ namespace RSW.API.Endpoints
                 return found is not null ? Results.Ok(found) : Results.NotFound();
             }).AllowAnonymous();
 
-            group.MapPost("/", async (EditionCreateDto dto, IEditionService service) =>
+            group.MapPost("/", async (Edition model, IEditionService service) =>
             {
-                var created = await service.CreateAsync(dto);
+                var created = await service.CreateAsync(model);
                 return Results.Created($"/api/edition/{created.Id}", created);
             });
 
-            group.MapPut("/{id:guid}", async (Guid id, EditionDto dto, IEditionService service) =>
+            group.MapPut("/{id:guid}", async (Guid id, Edition model, IEditionService service) =>
             {
-                var updated = await service.UpdateAsync(id, dto);
+                var updated = await service.UpdateAsync(id, model);
                 return updated is not null ? Results.Ok(updated) : Results.NotFound();
             });
 
