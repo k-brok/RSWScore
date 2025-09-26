@@ -33,6 +33,7 @@ namespace RSW.API.Services
             {
                 Id = Guid.NewGuid(),
                 Name = model.Name,
+                Description = model.Description,
                 MaxScore = model.MaxScore,
                 SubCategoryId = model.SubCategoryId
             };
@@ -49,6 +50,7 @@ namespace RSW.API.Services
             if (existing == null) return null;
 
             existing.Name = model.Name;
+            existing.Description = model.Description;
             existing.MaxScore = model.MaxScore;
             existing.SubCategoryId = model.SubCategoryId;
 
