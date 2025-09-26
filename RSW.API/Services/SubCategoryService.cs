@@ -62,6 +62,11 @@ namespace RSW.API.Services
             await _context.SaveChangesAsync();
             return true;
         }
+
+        public async Task<IEnumerable<Criteria>> GetCriteriasAsync(Guid id)
+        {
+            return await _context.Criterias.Where(C => C.SubCategoryId == id).ToListAsync();
+        }
     }
 
 }

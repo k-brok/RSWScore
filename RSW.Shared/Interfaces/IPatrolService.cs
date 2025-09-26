@@ -9,6 +9,7 @@ namespace RSW.Shared.Interfaces
         Task<Patrol> CreateAsync(Patrol model);
         Task<Patrol?> UpdateAsync(Guid id, Patrol model);
         Task<bool> DeleteAsync(Guid id);
-        Task<IEnumerable<Scout>> GetScoutsAsync(Guid patrolId);
+        Task<IEnumerable<Scout>> GetScoutsAsync(Guid Id);
+        Task<IEnumerable<Score>> GetScoresAsync(Guid Id);
     }
 }

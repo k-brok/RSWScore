@@ -26,11 +26,6 @@ namespace RSW.APP.Services
             return await _httpClient.GetFromJsonAsync<SubGroup>($"{Endpoint}/{id}");
         }
 
-        public async Task<IEnumerable<Unit>> GetGroupsAsync(Guid id)
-        {
-            throw new NotImplementedException();
-        }
-
         public async Task<SubGroup> CreateAsync(SubGroup model)
         {
             var response = await _httpClient.PostAsJsonAsync(Endpoint, model);
@@ -58,6 +53,13 @@ namespace RSW.APP.Services
         {
             var response = await _httpClient.DeleteAsync($"{Endpoint}/{id}");
             return response.IsSuccessStatusCode;
+        }
+
+        public async Task<IEnumerable<Patrol>?> GetPatrolsAsync(Guid id)
+        {
+            var result = await _httpClient.GetFromJsonAsync<List<Patrol>>($"{Endpoint}/{id}/patrols");
+
+            return result ?? new List<Patrol>();
         }
     }
 }

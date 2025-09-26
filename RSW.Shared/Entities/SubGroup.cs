@@ -12,8 +12,8 @@ namespace RSW.Shared.Entities
         [JsonIgnore]
         public Edition Edition { get; set; } = null!;
         [JsonIgnore]
-        public List<Patrol> patrols { get; set; } = new List<Patrol>();
+        public IEnumerable<Patrol> Patrols { get; set; } = new List<Patrol>();
         [JsonIgnore]
-        public List<JurySlot> JurySlots { get; set; } = new List<JurySlot>();
+        public IEnumerable<JurySlot> JurySlots { get; set; } = new List<JurySlot>();
     }
 }

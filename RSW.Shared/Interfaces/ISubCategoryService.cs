@@ -9,5 +9,6 @@ namespace RSW.Shared.Interfaces
         Task<SubCategory> CreateAsync(SubCategory model);
         Task<SubCategory?> UpdateAsync(Guid id, SubCategory model);
         Task<bool> DeleteAsync(Guid id);
+        Task<IEnumerable<Criteria>> GetCriteriasAsync(Guid id);
     }
 }
