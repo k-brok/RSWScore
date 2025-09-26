@@ -1,4 +1,5 @@
 using System.Net.Http.Json;
+using Radzen;
 using RSW.Shared.Entities;
 using RSW.Shared.Interfaces;
 
@@ -7,11 +8,13 @@ namespace RSW.APP.Services
     public class EditionService : IEditionService
     {
         private readonly HttpClient _httpClient;
+        private NotificationService _notificationService;
         private const string Endpoint = "api/edition";
 
-        public EditionService(HttpClient httpClient)
+        public EditionService(HttpClient httpClient, NotificationService notificationService)
         {
             _httpClient = httpClient;
+            _notificationService = notificationService;
         }
 
         public async Task<IEnumerable<Edition>> GetAllAsync()
@@ -68,6 +71,9 @@ namespace RSW.APP.Services
             {
                 return await responce.Content.ReadFromJsonAsync<Edition>();
             }
+
+            _notificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Error, Summary = "Edition error", Detail = "Er is geen actieve editie, vraag de admin om er een te activeren.", Duration = 4000 });
+
             return null;
         }
 
