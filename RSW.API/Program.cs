@@ -47,6 +47,7 @@ public class Program
         builder.Services.AddScoped<IUserService, UserService>();
 
         builder.Services.AddScoped<SeedService>();
+        builder.Services.AddScoped<GraphMailService>();
 
         var jwtSection = builder.Configuration.GetSection("Jwt");
         var key = jwtSection["Key"] ?? throw new Exception("Jwt:Key is missing");
