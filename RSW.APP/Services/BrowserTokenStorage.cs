@@ -1,4 +1,5 @@
 using Microsoft.JSInterop;
+using RSW.Shared.Interfaces;
 
 namespace RSW.APP.Services;
 

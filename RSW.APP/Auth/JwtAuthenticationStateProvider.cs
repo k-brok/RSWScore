@@ -3,6 +3,7 @@ using System.Security.Claims;
 using System.IdentityModel.Tokens.Jwt;
 using System.Threading.Tasks;
 using RSW.APP.Services;
+using RSW.Shared.Interfaces;
 
 namespace RSW.APP.Auth;
 

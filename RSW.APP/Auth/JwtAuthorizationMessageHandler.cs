@@ -1,5 +1,6 @@
 using System.Net.Http.Headers;
 using RSW.APP.Services;
+using RSW.Shared.Interfaces;
 
 namespace RSW.APP.Auth;
 

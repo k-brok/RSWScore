@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using System.Threading.Tasks;
 using RSW.Shared.Entities;
 using RSW.Shared.Dto;
+using RSW.Shared.Interfaces;
 
 namespace RSW.APP.Services;
 

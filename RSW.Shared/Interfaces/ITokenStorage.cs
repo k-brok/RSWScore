@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
 
-namespace RSW.APP.Services;
+namespace RSW.Shared.Interfaces;
 
 public interface ITokenStorage
 {
