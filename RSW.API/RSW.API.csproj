@@ -18,6 +18,8 @@
 		<PrivateAssets>all</PrivateAssets>
 	</PackageReference>
   <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.*" />
+  <PackageReference Include="Azure.Identity" Version="1.*" />
+  <PackageReference Include="Microsoft.Graph" Version="5.*" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\RSW.Shared\RSW.Shared.csproj" />
