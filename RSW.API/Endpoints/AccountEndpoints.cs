@@ -32,12 +32,9 @@ public static class EndpointRouteBuilderExtensions
         // ----------------- REQUEST PASSWORD RESET -----------------
         group.MapPost("/request-password-change", async (ResetPasswordTokenRequest request, IAuthService authService) =>
         {
-            var token = await authService.GeneratePasswordResetTokenAsync(request.Email);
-            if (token == null)
-                return Results.BadRequest("User not found");
+            await authService.GeneratePasswordResetTokenAsync(request.Email);
 
-            // Hier zou je een email trigger kunnen toevoegen in de toekomst
-            return Results.Ok(new { Message = "Reset token generated, check email for instructions", Token = token });
+            return Results.Ok();
         }).AllowAnonymous();
 
         // ----------------- RESET PASSWORD -----------------

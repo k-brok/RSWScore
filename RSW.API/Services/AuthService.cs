@@ -8,6 +8,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using RSW.Shared.Entities;
+using System.Net;
 
 namespace RSW.API.Services
 {
@@ -17,17 +18,20 @@ namespace RSW.API.Services
         private readonly IConfiguration _config;
         private readonly ILogger<AuthService> _logger;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly GraphMailService _graphMailService;
 
         public AuthService(
             UserManager<ApplicationUser> userManager,
             IConfiguration config,
             ILogger<AuthService> logger,
-            IHttpContextAccessor httpContextAccessor)
+            IHttpContextAccessor httpContextAccessor,
+            GraphMailService graphMailService)
         {
             _userManager = userManager;
             _config = config;
             _logger = logger;
             _httpContextAccessor = httpContextAccessor;
+            _graphMailService = graphMailService;
         }
 
         // ---------------------------
@@ -100,21 +104,32 @@ namespace RSW.API.Services
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
-        // ---------------------------
-        // PASSWORD RESET TOKEN
-        // ---------------------------
-        public async Task<string?> GeneratePasswordResetTokenAsync(string email)
+        public async Task GeneratePasswordResetTokenAsync(string email)
         {
             var user = await _userManager.FindByEmailAsync(email);
-            if (user == null) return null;
+            if (user == null) return;
 
             var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-            return token;
+
+            var encodedToken = WebUtility.UrlEncode(token);
+            var BaseUrl = _config["Jwt:Audience"];
+            var resetLink = $"{BaseUrl}/PasswordReset?email={email}&token={encodedToken}";
+
+            // HTML template inlezen
+            var templatePath = Path.Combine(AppContext.BaseDirectory, "Templates", "PasswordReset.html");
+            var template = await File.ReadAllTextAsync(templatePath);
+
+            // Placeholder vervanging
+            var body = template
+                .Replace("{{name}}", user.UserName ?? "gebruiker")
+                .Replace("{{resetLink}}", resetLink)
+                .Replace("{{expiryMinutes}}", "30")
+                .Replace("{{supportEmail}}", "support@regiodelangstraat.nl")
+                .Replace("{{year}}", DateTime.UtcNow.Year.ToString());
+
+            await _graphMailService.SendAsync(email, "Wachtwoord reset voor RSW", body);
         }
 
-        // ---------------------------
-        // RESET PASSWORD
-        // ---------------------------
         public async Task<bool> ResetPasswordAsync(string email, string token, string newPassword)
         {
             var user = await _userManager.FindByEmailAsync(email);

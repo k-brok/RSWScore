@@ -14,7 +14,7 @@ namespace RSW.API.Services
         Task<string?> RegisterAsync(string email, string password);
 
         // Genereer password reset token
-        Task<string?> GeneratePasswordResetTokenAsync(string email);
+        Task GeneratePasswordResetTokenAsync(string email);
 
         // Reset password met token
         Task<bool> ResetPasswordAsync(string email, string token, string newPassword);
