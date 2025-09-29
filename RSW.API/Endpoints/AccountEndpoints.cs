@@ -1,5 +1,6 @@
 using RSW.API.Services;
 using RSW.Shared.Dto;
+using RSW.Shared.Interfaces;
 
 namespace RSW.API.Endpoints;
 

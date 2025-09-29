@@ -3,7 +3,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using RSW.Shared.Entities;
 
-namespace RSW.API.Services
+namespace RSW.Shared.Interfaces
 {
     public interface IAuthService
     {

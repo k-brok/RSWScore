@@ -9,6 +9,7 @@ using System.Security.Claims;
 using System.Text;
 using RSW.Shared.Entities;
 using System.Net;
+using RSW.Shared.Interfaces;
 
 namespace RSW.API.Services
 {
