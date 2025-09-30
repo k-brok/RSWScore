@@ -1,4 +1,3 @@
-using RSW.API.Services;
 using RSW.Shared.Dto;
 using RSW.Shared.Interfaces;
 
@@ -13,47 +12,46 @@ public static class EndpointRouteBuilderExtensions
         // ----------------- LOGIN -----------------
         group.MapPost("/login", async (LoginRequest request, IAuthService authService) =>
         {
-            var token = await authService.LoginAsync(request.Email, request.Password);
-            if (token == null)
+            var response = await authService.LoginAsync(request, rememberMe: false);
+            if (response == null)
                 return Results.Unauthorized();
 
-            return Results.Ok(new LoginResponse("Login successful", true, token));
+            return Results.Ok(response);
         }).AllowAnonymous();
 
         // ----------------- REGISTER -----------------
         group.MapPost("/register", async (RegisterRequest request, IAuthService authService) =>
         {
-            var token = await authService.RegisterAsync(request.Email, request.Password);
-            if (token == null)
-                return Results.BadRequest("Registration failed");
+            var response = await authService.RegisterAsync(request, rememberMe: false);
+            if (response == null)
+                return Results.BadRequest(new { Message = "Registration failed" });
 
-            return Results.Ok(new RegisterResponse("User registered successfully", true, token));
+            return Results.Ok(response);
         }).AllowAnonymous();
 
         // ----------------- REQUEST PASSWORD RESET -----------------
-        group.MapPost("/request-password-change", async (ResetPasswordTokenRequest request, IAuthService authService) =>
+        group.MapPost("/generate-reset-token", async (ResetPasswordTokenRequest request, IAuthService authService) =>
         {
-            await authService.GeneratePasswordResetTokenAsync(request.Email);
-
-            return Results.Ok();
+            await authService.GeneratePasswordResetTokenAsync(request);
+            return Results.Ok(new { Message = "Password reset token sent (if user exists)" });
         }).AllowAnonymous();
 
         // ----------------- RESET PASSWORD -----------------
-        group.MapPost("/password-change", async (ResetPasswordRequest request, IAuthService authService) =>
+        group.MapPost("/reset-password", async (ResetPasswordRequest request, IAuthService authService) =>
         {
-            var success = await authService.ResetPasswordAsync(request.Email, request.Token, request.NewPassword);
+            var success = await authService.ResetPasswordAsync(request);
             return success
                 ? Results.Ok(new { Message = "Password changed successfully" })
-                : Results.BadRequest("Invalid request or token");
+                : Results.BadRequest(new { Message = "Invalid request or token" });
         }).AllowAnonymous();
 
+        // ----------------- GET CURRENT USER -----------------
         group.MapGet("/getcurrentuser", async (IAuthService authService) =>
         {
-            Console.WriteLine("hallo?");
             var user = await authService.GetCurrentUserAsync();
             if (user == null) return Results.Unauthorized();
 
-            // Return enkel relevante info
+            // Tip: eventueel alleen relevante properties terugsturen i.p.v. hele ApplicationUser
             return Results.Ok(user);
         }).RequireAuthorization();
     }

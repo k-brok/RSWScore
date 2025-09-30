@@ -10,6 +10,7 @@ using System.Text;
 using RSW.Shared.Entities;
 using System.Net;
 using RSW.Shared.Interfaces;
+using RSW.Shared.Dto;
 
 namespace RSW.API.Services
 {
@@ -34,50 +35,38 @@ namespace RSW.API.Services
             _httpContextAccessor = httpContextAccessor;
             _graphMailService = graphMailService;
         }
-
-        // ---------------------------
-        // LOGIN
-        // ---------------------------
-        public async Task<string?> LoginAsync(string email, string password)
+        public async Task<LoginResponse?> LoginAsync(LoginRequest request, bool rememberMe)
         {
-            var user = await _userManager.FindByEmailAsync(email);
+            var user = await _userManager.FindByEmailAsync(request.Email);
             if (user == null) return null;
 
-            var check = await _userManager.CheckPasswordAsync(user, password);
+            var check = await _userManager.CheckPasswordAsync(user, request.Password);
             if (!check) return null;
 
-            return await GenerateJwtToken(user);
-        }
+            string Token = await GenerateJwtToken(user);
 
-        // ---------------------------
-        // REGISTER
-        // ---------------------------
-        public async Task<string?> RegisterAsync(string email, string password)
+            return new LoginResponse("Login is gelukt!",true,Token);
+        }
+        public async Task<RegisterResponse?> RegisterAsync(RegisterRequest request, bool rememberMe)
         {
-            // Maak user via reflection / dynamisch, library hoeft velden niet te kennen
             var user = new ApplicationUser
             {
-                UserName = email,
-                Email = email
+                UserName = request.Email,
+                Email = request.Email
             };
 
-            var result = await _userManager.CreateAsync(user, password);
+            var result = await _userManager.CreateAsync(user, request.Password);
             if (!result.Succeeded)
             {
-                foreach (var err in result.Errors)
-                    Console.WriteLine(err.Description);
-                return null;
+                return new RegisterResponse(result);
             }
 
-            // Optioneel: rol toevoegen als er een role manager is
             await _userManager.AddToRoleAsync(user, "User");
 
-            return await GenerateJwtToken(user);
-        }
+            string Token = await GenerateJwtToken(user);
 
-        // ---------------------------
-        // GENERATE JWT
-        // ---------------------------
+            return new RegisterResponse(result, Token);
+        }
         private async Task<string> GenerateJwtToken(ApplicationUser user)
         {
             var roles = await _userManager.GetRolesAsync(user);
@@ -105,22 +94,20 @@ namespace RSW.API.Services
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
-        public async Task GeneratePasswordResetTokenAsync(string email)
+        public async  Task GeneratePasswordResetTokenAsync(ResetPasswordTokenRequest request)
         {
-            var user = await _userManager.FindByEmailAsync(email);
+            var user = await _userManager.FindByEmailAsync(request.Email);
             if (user == null) return;
 
             var token = await _userManager.GeneratePasswordResetTokenAsync(user);
 
             var encodedToken = WebUtility.UrlEncode(token);
             var BaseUrl = _config["Jwt:Audience"];
-            var resetLink = $"{BaseUrl}/PasswordReset?email={email}&token={encodedToken}";
+            var resetLink = $"{BaseUrl}/PasswordReset?email={request.Email}&token={encodedToken}";
 
-            // HTML template inlezen
             var templatePath = Path.Combine(AppContext.BaseDirectory, "Templates", "PasswordReset.html");
             var template = await File.ReadAllTextAsync(templatePath);
 
-            // Placeholder vervanging
             var body = template
                 .Replace("{{name}}", user.UserName ?? "gebruiker")
                 .Replace("{{resetLink}}", resetLink)
@@ -128,21 +115,17 @@ namespace RSW.API.Services
                 .Replace("{{supportEmail}}", "support@regiodelangstraat.nl")
                 .Replace("{{year}}", DateTime.UtcNow.Year.ToString());
 
-            await _graphMailService.SendAsync(email, "Wachtwoord reset voor RSW", body);
+            await _graphMailService.SendAsync(request.Email, "Wachtwoord reset voor RSW", body);
         }
 
-        public async Task<bool> ResetPasswordAsync(string email, string token, string newPassword)
+        public async Task<bool> ResetPasswordAsync(ResetPasswordRequest request)
         {
-            var user = await _userManager.FindByEmailAsync(email);
+            var user = await _userManager.FindByEmailAsync(request.Email);
             if (user == null) return false;
 
-            var result = await _userManager.ResetPasswordAsync(user, token, newPassword);
+            var result = await _userManager.ResetPasswordAsync(user, request.Token, request.NewPassword);
             return result.Succeeded;
         }
-
-        // ---------------------------
-        // GET USER CLAIMS
-        // ---------------------------
         public async Task<IList<Claim>> GetClaimsForUserAsync(ApplicationUser user)
         {
             var roles = await _userManager.GetRolesAsync(user);
@@ -157,32 +140,15 @@ namespace RSW.API.Services
 
             return claims;
         }
-
-        // ---------------------------
-        // LOGOUT (optioneel)
-        // ---------------------------
         public async Task LogoutAsync()
         {
             var ctx = _httpContextAccessor.HttpContext;
             if (ctx != null)
             {
-                // Cookies verwijderen als aanwezig
                 await ctx.SignOutAsync(IdentityConstants.ApplicationScheme);
             }
         }
-
-        // ---------------------------
-        // CHECK IF CURRENT USER OR ADMIN
-        // ---------------------------
-        public bool IsCurrentUserOrAdmin(string userId)
-        {
-            var ctx = _httpContextAccessor.HttpContext;
-            var currentUserId = ctx?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            var isAdmin = ctx?.User.IsInRole("Admin") ?? false;
-
-            return currentUserId == userId || isAdmin;
-        }
-        public async Task<ApplicationUser> GetCurrentUserAsync()
+        public async Task<ApplicationUser?> GetCurrentUserAsync()
         {
             var userId = _httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
             Console.WriteLine(userId);
@@ -190,14 +156,6 @@ namespace RSW.API.Services
 
             var user = await _userManager.FindByIdAsync(userId);
             return user;
-        }
-
-        public bool IsCurrentUserOrAdmin(ClaimsPrincipal user, string userId)
-        {
-            var currentUserId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            var isAdmin = user.IsInRole("Admin");
-
-            return currentUserId == userId || isAdmin;
         }
     }
 }

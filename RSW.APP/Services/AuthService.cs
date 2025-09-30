@@ -4,14 +4,14 @@ using System.Threading.Tasks;
 using RSW.Shared.Entities;
 using RSW.Shared.Dto;
 using RSW.Shared.Interfaces;
+using System.Security.Claims;
 
 namespace RSW.APP.Services;
 
-public class AuthService
+public class AuthService : IAuthService
 {
     private readonly HttpClient _http;
     private readonly ITokenStorage _tokenStorage;
-    public ApplicationUser CurrentUser { get; set; }
     private const string Endpoint = "api/account";
 
     public AuthService(HttpClient http, ITokenStorage tokenStorage)
@@ -21,47 +21,34 @@ public class AuthService
     }
 
     public async Task<LoginResponse?> LoginAsync(LoginRequest request, bool rememberMe)
-{
-    var response = await _http.PostAsJsonAsync($"{Endpoint}/login", request);
-
-    if (!response.IsSuccessStatusCode)
-        return null;
-
-    var result = await response.Content.ReadFromJsonAsync<LoginResponse>();
-    if (result != null && !string.IsNullOrEmpty(result.Token))
     {
-        await _tokenStorage.SetTokenAsync(result.Token, rememberMe);
-        CurrentUser = await GetCurrentUser();
-    }
+        var response = await _http.PostAsJsonAsync($"{Endpoint}/login", request);
 
-    return result;
-}
+        if (!response.IsSuccessStatusCode)
+            return null;
+
+        var result = await response.Content.ReadFromJsonAsync<LoginResponse>();
+        if (result != null && !string.IsNullOrEmpty(result.Token))
+        {
+            await _tokenStorage.SetTokenAsync(result.Token, rememberMe);
+            await GetCurrentUserAsync();
+        }
+
+        return result;
+    }
 
     public async Task LogoutAsync()
     {
         await _tokenStorage.RemoveTokenAsync();
-        CurrentUser = null;
 
     }
-
-    // Voorbeeld: current user ophalen
-    public async Task<ApplicationUser?> GetCurrentUser()
+    public async Task<ApplicationUser?> GetCurrentUserAsync()
     {
-        try
-        {
-            var user = await _http.GetFromJsonAsync<ApplicationUser>($"{Endpoint}/getcurrentuser");
-            CurrentUser = user;
-            return user;
-        }
-        catch
-        {
-            CurrentUser = null;
-            return null;
-        }
+        var user = await _http.GetFromJsonAsync<ApplicationUser>($"{Endpoint}/getcurrentuser");
+        return user;
     }
-    public async Task<RegisterResponse?> RegisterAsync(string email, string password, bool rememberMe)
+    public async Task<RegisterResponse?> RegisterAsync(RegisterRequest request, bool rememberMe)
     {
-        var request = new RegisterRequest(email, password);
         var response = await _http.PostAsJsonAsync($"{Endpoint}/register", request);
 
         if (!response.IsSuccessStatusCode)
@@ -71,10 +58,49 @@ public class AuthService
         if (result != null && !string.IsNullOrEmpty(result.Token))
         {
             await _tokenStorage.SetTokenAsync(result.Token, rememberMe);
-            CurrentUser = await GetCurrentUser();
+            await GetCurrentUserAsync();
         }
 
         return result;
+    }
+
+    public async Task GeneratePasswordResetTokenAsync(ResetPasswordTokenRequest request)
+    {
+        var response = await _http.PostAsJsonAsync($"{Endpoint}/generate-reset-token", request);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            throw new HttpRequestException("Kan reset token niet genereren");
+        }
+    }
+
+    public async Task<bool> ResetPasswordAsync(ResetPasswordRequest request)
+    {
+        var response = await _http.PostAsJsonAsync($"{Endpoint}/reset-password", request);
+
+        if (!response.IsSuccessStatusCode)
+            return false;
+
+        return true;
+    }
+
+    public async Task<IList<Claim>> GetClaimsForUserAsync(ApplicationUser user)
+    {
+        var claims = new List<Claim>();
+
+        if (user == null)
+            return claims;
+
+        if (!string.IsNullOrEmpty(user.Email))
+            claims.Add(new Claim(ClaimTypes.Email, user.Email));
+
+        if (!string.IsNullOrEmpty(user.Id))
+            claims.Add(new Claim(ClaimTypes.NameIdentifier, user.Id));
+
+        if (!string.IsNullOrEmpty(user.UserName))
+            claims.Add(new Claim(ClaimTypes.Name, user.UserName));
+
+        return claims;
     }
 }
 
