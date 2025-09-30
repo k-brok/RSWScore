@@ -25,7 +25,7 @@ else
     {
         if(id == null)
         {
-            await authService.GetCurrentUserAsync();
+            CurrentUser = await authService.GetCurrentUserAsync();
             
             if(CurrentUser != null)
                 user = await UserService.GetByIdAsync(CurrentUser.Id);

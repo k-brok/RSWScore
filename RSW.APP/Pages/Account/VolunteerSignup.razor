@@ -140,7 +140,7 @@
     private RadzenSteps radzenSteps = default!;
     protected override async Task OnInitializedAsync()
     {
-        await authService.GetCurrentUserAsync();
+        CurrentUser = await authService.GetCurrentUserAsync();
 
         if (CurrentUser != null)
         {
