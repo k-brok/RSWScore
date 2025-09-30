@@ -44,8 +44,13 @@ public class AuthService : IAuthService
     }
     public async Task<ApplicationUser?> GetCurrentUserAsync()
     {
-        var user = await _http.GetFromJsonAsync<ApplicationUser>($"{Endpoint}/getcurrentuser");
-        return user;
+        var result = await _http.GetAsync($"{Endpoint}/getcurrentuser");
+        if (result.IsSuccessStatusCode)
+        {
+            return await result.Content.ReadFromJsonAsync<ApplicationUser>();
+        }
+
+        return null;
     }
     public async Task<RegisterResponse?> RegisterAsync(RegisterRequest request, bool rememberMe)
     {

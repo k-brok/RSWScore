@@ -1,5 +1,6 @@
 @using RSW.Shared.Entities
 @using Radzen
+@inject NotificationService notificationService
 @inject RSW.APP.Services.AuthService AuthService
 
 <RadzenTemplateForm Data="@registerModel" Submit="@OnSubmit" TItem="RegisterRequest">
@@ -49,15 +50,21 @@
 
     private async Task OnSubmit()
     {
-        var result = await AuthService.RegisterAsync(registerModel.Email!, registerModel.Password!, rememberMe);
+        var result = await AuthService.RegisterAsync(registerModel, rememberMe);
 
-        if (result != null && result.Success)
+        if (result != null && result.IdentityResult.Succeeded)
         {
             await OnRegisterSuccess.InvokeAsync(result);
         }
         else
         {
-            await OnRegisterFailed.InvokeAsync(result?.Message ?? "Registratie mislukt.");
+            await OnRegisterFailed.InvokeAsync("Registratie mislukt.");
+            if(result.IdentityResult.Errors != null && result.IdentityResult.Errors.Any()){
+                foreach(var error in result.IdentityResult.Errors){
+                    notificationService.Notify(new NotificationMessage{Summary = error.Code, Detail = error.Description, Severity=NotificationSeverity.Error});
+                }
+            }
+
         }
     }
 }

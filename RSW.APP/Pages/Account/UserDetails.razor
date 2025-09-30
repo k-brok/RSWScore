@@ -19,16 +19,16 @@ else
 @code {
     [Parameter] public string id { get; set; } = null!;
     private ApplicationUser? user;
+    private ApplicationUser? CurrentUser;
 
     protected override async Task OnInitializedAsync()
     {
         if(id == null)
         {
-            if(authService.CurrentUser == null)
-                await authService.GetCurrentUser();
+            await authService.GetCurrentUserAsync();
             
-            if(authService.CurrentUser != null)
-                user = await UserService.GetByIdAsync(authService.CurrentUser.Id);
+            if(CurrentUser != null)
+                user = await UserService.GetByIdAsync(CurrentUser.Id);
         }
         else
         {
