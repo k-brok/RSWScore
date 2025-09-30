@@ -22,10 +22,6 @@
         <RadzenPassword @bind-Value="registerModel.ConfirmPassword" Name="ConfirmPassword" Style="width: 100%;" />
         <RadzenDataAnnotationValidator Component="ConfirmPassword" Popup="true" Style="position: absolute;" />
 
-        <!-- Onthoud mij -->
-        <RadzenCheckBox @bind-Value="rememberMe" TValue="bool" />
-        <label style="margin-left: 8px;">Onthoud mij</label>
-
         <!-- Foutmelding -->
         @if (!string.IsNullOrWhiteSpace(ErrorMessage))
         {
@@ -41,30 +37,21 @@
 
 @code {
     private RegisterRequest registerModel = new();
-    private bool rememberMe = true;
-    private bool popup = true; // popup = true -> foutmeldingen verschijnen als tooltip
-
     [Parameter] public EventCallback<RegisterResponse> OnRegisterSuccess { get; set; }
     [Parameter] public EventCallback<string> OnRegisterFailed { get; set; }
     [Parameter] public string? ErrorMessage { get; set; }
 
     private async Task OnSubmit()
     {
-        var result = await AuthService.RegisterAsync(registerModel, rememberMe);
+        var result = await AuthService.RegisterAsync(registerModel, false);
 
-        if (result != null && result.IdentityResult.Succeeded)
+        if (result != null)
         {
             await OnRegisterSuccess.InvokeAsync(result);
         }
         else
         {
             await OnRegisterFailed.InvokeAsync("Registratie mislukt.");
-            if(result.IdentityResult.Errors != null && result.IdentityResult.Errors.Any()){
-                foreach(var error in result.IdentityResult.Errors){
-                    notificationService.Notify(new NotificationMessage{Summary = error.Code, Detail = error.Description, Severity=NotificationSeverity.Error});
-                }
-            }
-
         }
     }
 }

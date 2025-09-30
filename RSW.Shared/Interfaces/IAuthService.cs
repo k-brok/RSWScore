@@ -25,5 +25,6 @@ namespace RSW.Shared.Interfaces
         // Logout
         Task LogoutAsync();
         public Task<ApplicationUser?> GetCurrentUserAsync();
+        Task<ConfirmEmailResponse> ConfirmEmailAsync(ConfirmEmailRequest request);
     }
 }

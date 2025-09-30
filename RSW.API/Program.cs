@@ -25,7 +25,11 @@ public class Program
                 .LogTo(Console.WriteLine, LogLevel.Information)
         );
 
-        builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
+        builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
+            {
+                options.SignIn.RequireConfirmedEmail = true;
+                options.User.RequireUniqueEmail = true;
+            })
             .AddEntityFrameworkStores<AppDbContext>()
             .AddDefaultTokenProviders();
 

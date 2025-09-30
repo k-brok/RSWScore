@@ -59,12 +59,7 @@ public class AuthService : IAuthService
         if (!response.IsSuccessStatusCode)
             return null;
 
-        var result = await response.Content.ReadFromJsonAsync<RegisterResponse>();
-        if (result != null && !string.IsNullOrEmpty(result.Token))
-        {
-            await _tokenStorage.SetTokenAsync(result.Token, rememberMe);
-            await GetCurrentUserAsync();
-        }
+        var result = await response.Content.ReadFromJsonAsync<RegisterResponse?>();
 
         return result;
     }
@@ -106,6 +101,11 @@ public class AuthService : IAuthService
             claims.Add(new Claim(ClaimTypes.Name, user.UserName));
 
         return claims;
+    }
+    public async Task<ConfirmEmailResponse?> ConfirmEmailAsync(ConfirmEmailRequest request)
+    {
+        var url = $"{Endpoint}/confirmemail?userId={request.UserId}&token={Uri.EscapeDataString(request.Token!)}";
+        return await _http.GetFromJsonAsync<ConfirmEmailResponse>(url);
     }
 }
 

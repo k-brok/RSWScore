@@ -54,5 +54,17 @@ public static class EndpointRouteBuilderExtensions
             // Tip: eventueel alleen relevante properties terugsturen i.p.v. hele ApplicationUser
             return Results.Ok(user);
         }).RequireAuthorization();
+        
+        group.MapGet("/confirmemail", async (
+            [AsParameters] ConfirmEmailRequest request,
+            IAuthService authService) =>
+        {
+            var response = await authService.ConfirmEmailAsync(request);
+
+            if (!response.Success)
+                return Results.BadRequest(response);
+
+            return Results.Ok(response);
+        });
     }
 }

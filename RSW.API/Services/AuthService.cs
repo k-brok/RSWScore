@@ -37,15 +37,25 @@ namespace RSW.API.Services
         }
         public async Task<LoginResponse?> LoginAsync(LoginRequest request, bool rememberMe)
         {
-            var user = await _userManager.FindByEmailAsync(request.Email);
-            if (user == null) return null;
+            var user = await _userManager.FindByEmailAsync(request.Email!);
+            if (user == null)
+            {
+                return new LoginResponse("Ongeldig e-mailadres of wachtwoord.");
+            }
 
-            var check = await _userManager.CheckPasswordAsync(user, request.Password);
-            if (!check) return null;
+            if (!await _userManager.IsEmailConfirmedAsync(user))
+            {
+                return new LoginResponse("Je e-mail is nog niet bevestigd. Controleer je mailbox.");
+            }
 
-            string Token = await GenerateJwtToken(user);
+            var check = await _userManager.CheckPasswordAsync(user, request.Password!);
+            if (!check)
+            {
+                return new LoginResponse("Ongeldig e-mailadres of wachtwoord.");
+            }
 
-            return new LoginResponse("Login is gelukt!",true,Token);
+            string token = await GenerateJwtToken(user);
+            return new LoginResponse("Login is gelukt!", true, token);
         }
         public async Task<RegisterResponse?> RegisterAsync(RegisterRequest request, bool rememberMe)
         {
@@ -63,9 +73,24 @@ namespace RSW.API.Services
 
             await _userManager.AddToRoleAsync(user, "User");
 
-            string Token = await GenerateJwtToken(user);
+            var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+            var encodedToken = WebUtility.UrlEncode(token);
 
-            return new RegisterResponse(result, Token);
+            var baseUrl = _config["Jwt:Audience"];
+            var confirmationLink = $"{baseUrl}/confirmemail?userId={user.Id}&token={encodedToken}";
+
+            var templatePath = Path.Combine(AppContext.BaseDirectory, "Templates", "ConfirmEmail.html");
+            var template = await File.ReadAllTextAsync(templatePath);
+
+            var body = template
+                .Replace("{{name}}", user.UserName ?? "gebruiker")
+                .Replace("{{confirmationLink}}", confirmationLink)
+                .Replace("{{supportEmail}}", "support@regiodelangstraat.nl")
+                .Replace("{{year}}", DateTime.UtcNow.Year.ToString());
+
+            await _graphMailService.SendAsync(user.Email!, "Bevestig je e-mail voor RSW", body);
+
+            return new RegisterResponse(result);
         }
         private async Task<string> GenerateJwtToken(ApplicationUser user)
         {
@@ -94,7 +119,7 @@ namespace RSW.API.Services
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
-        public async  Task GeneratePasswordResetTokenAsync(ResetPasswordTokenRequest request)
+        public async Task GeneratePasswordResetTokenAsync(ResetPasswordTokenRequest request)
         {
             var user = await _userManager.FindByEmailAsync(request.Email);
             if (user == null) return;
@@ -156,6 +181,35 @@ namespace RSW.API.Services
 
             var user = await _userManager.FindByIdAsync(userId);
             return user;
+        }
+        public async Task<ConfirmEmailResponse> ConfirmEmailAsync(ConfirmEmailRequest request)
+        {
+            var user = await _userManager.FindByIdAsync(request.UserId!);
+            if (user == null)
+            {
+                return new ConfirmEmailResponse
+                {
+                    Success = false,
+                    Message = "Ongeldige gebruiker."
+                };
+            }
+
+            var result = await _userManager.ConfirmEmailAsync(user, request.Token!);
+            if (!result.Succeeded)
+            {
+                var errors = string.Join("; ", result.Errors.Select(e => e.Description));
+                return new ConfirmEmailResponse
+                {
+                    Success = false,
+                    Message = $"Bevestigen mislukt: {errors}"
+                };
+            }
+
+            return new ConfirmEmailResponse
+            {
+                Success = true,
+                Message = "E-mail succesvol bevestigd!"
+            };
         }
     }
 }

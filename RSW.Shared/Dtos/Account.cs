@@ -112,4 +112,15 @@ namespace RSW.Shared.Dto
 
         public RegisterResponse() { }
     }
+    public class ConfirmEmailRequest
+    {
+        public string? UserId { get; set; }
+        public string? Token { get; set; }
+    }
+
+    public class ConfirmEmailResponse
+    {
+        public bool Success { get; set; }
+        public string? Message { get; set; }
+    }
 }
