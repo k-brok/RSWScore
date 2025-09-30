@@ -1,0 +1,60 @@
+@page "/confirmemail"
+@inject AuthService AuthService
+
+<h3>Email bevestiging</h3>
+
+@if (isLoading)
+{
+    <p>Bezig met bevestigen...</p>
+}
+else if (isSuccess)
+{
+    <RadzenAlert Severity="AlertSeverity.Success" Style="margin-top: 20px;">
+        @message <br />
+        Je kunt nu <a href="/login">inloggen</a>.
+    </RadzenAlert>
+}
+else
+{
+    <RadzenAlert Severity="AlertSeverity.Error" Style="margin-top: 20px;">
+        @message
+    </RadzenAlert>
+}
+
+@code {
+    [SupplyParameterFromQuery] public string? userId { get; set; }
+    [SupplyParameterFromQuery] public string? token { get; set; }
+
+    private bool isLoading = true;
+    private bool isSuccess = false;
+    private string message = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(token))
+        {
+            message = "Ongeldige bevestigingslink.";
+            isLoading = false;
+            return;
+        }
+
+        var response = await AuthService.ConfirmEmailAsync(new ConfirmEmailRequest
+        {
+            UserId = userId,
+            Token = token
+        });
+
+        if (response != null)
+        {
+            isSuccess = response.Success;
+            message = response.Message ?? "";
+        }
+        else
+        {
+            isSuccess = false;
+            message = "Onbekende fout bij e-mail bevestigen.";
+        }
+
+        isLoading = false;
+    }
+}

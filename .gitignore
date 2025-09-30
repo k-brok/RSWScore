@@ -7,6 +7,9 @@
 *.db-shm
 *.db-wal
 
+#excluse development settings
+*.Development.json
+
 # User-specific files
 *.rsuser
 *.suo

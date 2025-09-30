@@ -21,8 +21,8 @@
 
 <RadzenSteps @ref="radzenSteps" Change="OnChange" class="rz-m-2 rz-p-2">
     <Steps>
-        <RadzenStepsItem Text="Account aanmaken" Disabled=@(authService.CurrentUser != null)>
-            @if(authService.CurrentUser == null)
+        <RadzenStepsItem Text="Account aanmaken" Disabled=@(CurrentUser != null)>
+            @if(CurrentUser == null)
             {
                 <RadzenStack Orientation="Orientation.Horizontal">
                     <LoginForm />
@@ -35,13 +35,13 @@
             }
         </RadzenStepsItem>
         <RadzenStepsItem Text="Gegevens invullen">
-            @if (authService.CurrentUser != null)
+            @if (CurrentUser != null)
             {
-                <UserDetailsForm User="authService.CurrentUser"/>
+                <UserDetailsForm User="CurrentUser"/>
             }
         </RadzenStepsItem>
         <RadzenStepsItem Text="Als vrijwilliger aanmeleden">
-            @if (authService.CurrentUser != null)
+            @if (CurrentUser != null)
             {
                 <RadzenRow class="rz-my-5">
                     @if (PreviousVolunteerAssignments != null && PreviousVolunteerAssignments.Any())
@@ -133,18 +133,18 @@
 @code {
     private VolunteerAssignment assignment = new();
     private Edition? ActiveEdition;
+    private ApplicationUser? CurrentUser = null;
     private IEnumerable<VolunteerTask>? VolunteerTasks = null!;
     private IEnumerable<Edition>? Editions = null!;
     private List<VolunteerAssignment>? PreviousVolunteerAssignments = null!;
     private RadzenSteps radzenSteps = default!;
     protected override async Task OnInitializedAsync()
     {
-        if (authService.CurrentUser == null)
-            await authService.GetCurrentUser();
+        CurrentUser = await authService.GetCurrentUserAsync();
 
-        if (authService.CurrentUser != null)
+        if (CurrentUser != null)
         {
-            PreviousVolunteerAssignments = (List<VolunteerAssignment>)await userService.GetVolunteerAssignmentsAsync(authService.CurrentUser.Id);
+            PreviousVolunteerAssignments = (List<VolunteerAssignment>)await userService.GetVolunteerAssignmentsAsync(CurrentUser.Id);
         }
 
         Editions = await EditionService.GetAllAsync();
@@ -156,7 +156,7 @@
     private async Task HandleValidSubmit(VolunteerAssignment volunteerAssignment)
     {
         volunteerAssignment.EditionId = ActiveEdition.Id;
-        volunteerAssignment.UserId = authService.CurrentUser.Id;
+        volunteerAssignment.UserId = CurrentUser.Id;
 
         if (PreviousVolunteerAssignments.Where(A => A.EditionId == volunteerAssignment.EditionId && A.TaskId == volunteerAssignment.TaskId).Any())
         {

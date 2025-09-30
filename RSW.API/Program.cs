@@ -25,7 +25,11 @@ public class Program
                 .LogTo(Console.WriteLine, LogLevel.Information)
         );
 
-        builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
+        builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
+            {
+                options.SignIn.RequireConfirmedEmail = true;
+                options.User.RequireUniqueEmail = true;
+            })
             .AddEntityFrameworkStores<AppDbContext>()
             .AddDefaultTokenProviders();
 
@@ -47,6 +51,7 @@ public class Program
         builder.Services.AddScoped<IUserService, UserService>();
 
         builder.Services.AddScoped<SeedService>();
+        builder.Services.AddScoped<GraphMailService>();
 
         var jwtSection = builder.Configuration.GetSection("Jwt");
         var key = jwtSection["Key"] ?? throw new Exception("Jwt:Key is missing");

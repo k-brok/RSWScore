@@ -1,6 +1,6 @@
 using System.Security.Claims;
 
-namespace RSW.API.Services;
+namespace RSW.Shared.Interfaces;
 
 public interface IJwtService
 {

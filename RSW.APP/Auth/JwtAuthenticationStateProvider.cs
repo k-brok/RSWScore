@@ -3,6 +3,7 @@ using System.Security.Claims;
 using System.IdentityModel.Tokens.Jwt;
 using System.Threading.Tasks;
 using RSW.APP.Services;
+using RSW.Shared.Interfaces;
 
 namespace RSW.APP.Auth;
 
@@ -19,8 +20,11 @@ public class JwtAuthenticationStateProvider : AuthenticationStateProvider
     public override async Task<AuthenticationState> GetAuthenticationStateAsync()
     {
         var token = await _tokenStorage.GetTokenAsync();
-        if (string.IsNullOrEmpty(token))
+        if (string.IsNullOrEmpty(token) || IsTokenExpired(token))
+        {
+            await _tokenStorage.RemoveTokenAsync();
             return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
+        }
 
         var claims = ParseClaimsFromJwt(token);
         var identity = new ClaimsIdentity(claims, "jwt");
@@ -61,5 +65,16 @@ public class JwtAuthenticationStateProvider : AuthenticationStateProvider
         }
 
         return claims;
+    }
+    private bool IsTokenExpired(string token)
+    {
+        var handler = new JwtSecurityTokenHandler();
+        var jwtToken = handler.ReadJwtToken(token);
+
+        var expClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == "exp");
+        if (expClaim == null) return true;
+
+        var expDate = DateTimeOffset.FromUnixTimeSeconds(long.Parse(expClaim.Value));
+        return expDate < DateTimeOffset.UtcNow;
     }
 }
