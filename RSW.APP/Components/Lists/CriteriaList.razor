@@ -58,6 +58,8 @@
 @code {
     [Parameter]
     public List<Criteria> criterias { get; set; } = new List<Criteria>();
+    [Parameter]
+    public SubCategory? subcategory {get; set;} = null!;
     public EventCallback<Criteria> OnCriteriaSelected { get; set; }
 
     private IEnumerable<SubCategory> subCategorys { get; set; } = new List<SubCategory>();
@@ -66,7 +68,19 @@
 
     protected override async Task OnInitializedAsync()
     {
-        subCategorys = await subCategoryService.GetAllAsync();
+        if(subcategory == null)
+        {
+            subCategorys = await subCategoryService.GetAllAsync();
+        }
+        else
+        {
+            if(subcategory.Id != Guid.Empty)
+            {
+                IEnumerable<Criteria>? criteriaquery = await subCategoryService.GetCriteriasAsync(subcategory.Id);
+                criterias = criteriaquery.ToList();
+            }
+        }
+        
         await base.OnInitializedAsync();
     }
 
@@ -80,11 +94,19 @@
     void Insert()
     {
         var NewCriteria = new Criteria();
+
+        if(subcategory != null && subcategory.Id != Guid.Empty)
+            NewCriteria.SubCategoryId = subcategory.Id;
+
         dataGrid.InsertRow(NewCriteria);
     }
     void InsertAfterRow(Criteria criteria)
     {
         var NewCriteria = new Criteria();
+
+        if(subcategory != null && subcategory.Id != Guid.Empty)
+            NewCriteria.SubCategoryId = subcategory.Id;
+            
         dataGrid.InsertAfterRow(NewCriteria, criteria);
     }
     void EditRow(Criteria criteria)
