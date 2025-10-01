@@ -2,7 +2,7 @@
 @inject NotificationService NotificationService
 @inject ISubCategoryService subcategoryService
 @inject ICategoryService categoryService
-@if(categorys == null){
+@if(categorys == null && category == null){
     <RadzenCard Style="margin:20px;">
         <RadzenProgressBarCircular Value="50" ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
         <p>Data ophalen...</p>
@@ -19,7 +19,7 @@ else
                     </RadzenFormField>
                 </EditTemplate>
             </RadzenDataGridColumn>
-            <RadzenDataGridColumn TItem="SubCategory" Property="CategoryId" Title="Categorie">
+            <RadzenDataGridColumn TItem="SubCategory" Property="CategoryId" Title="Categorie" Visible=CategoryVisable()>
                 <Template Context="subcategory">
                     @categorys.FirstOrDefault(C => C.Id == subcategory.CategoryId).Name
                 </Template>
@@ -51,12 +51,25 @@ else
 @code {
     [Parameter]
     public List<SubCategory> subcategories { get; set; } = new List<SubCategory>();
+    [Parameter]
+    public Category? category {get; set;} = null!;
     public EventCallback<SubCategory> OnSubCategorySelected { get; set; }
     private RadzenDataGrid<SubCategory> dataGrid;
     private IEnumerable<Category>? categorys {get; set;} = null;
     protected override async Task OnInitializedAsync()
     {
-        categorys = await categoryService.GetAllAsync();
+        if(category == null)
+        {
+            categorys = await categoryService.GetAllAsync();
+        }
+        else
+        {
+            if(category.Id != Guid.Empty)
+            {
+                IEnumerable<SubCategory>? subcategoriesquery = await categoryService.GetSubCategorysAsync(category.Id);
+                subcategories = subcategoriesquery.ToList();
+            }
+        }
         await base.OnInitializedAsync();
     }
     private async Task OnRowSelect(SubCategory subcategory)
@@ -69,11 +82,19 @@ else
     void Insert()
     {
         var NewSubCategory = new SubCategory();
+
+        if(category != null && category.Id != Guid.Empty)
+            NewSubCategory.CategoryId = category.Id;
+
         dataGrid.InsertRow(NewSubCategory);
     }
     void InsertAfterRow(SubCategory subcategory)
     {
         var NewSubCategory = new SubCategory();
+
+        if(category != null && category.Id != Guid.Empty)
+            NewSubCategory.CategoryId = category.Id;
+
         dataGrid.InsertAfterRow(NewSubCategory, subcategory);
     }
     void EditRow(SubCategory subcategory)
@@ -153,5 +174,12 @@ else
                 dataGrid.CancelEditRow(subcategory);
             }
         }
+    }
+    private bool CategoryVisable()
+    {
+        if(category != null)
+            return false;
+        
+        return true;
     }
 }

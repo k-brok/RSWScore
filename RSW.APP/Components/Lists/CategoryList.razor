@@ -38,6 +38,9 @@
             </EditTemplate>
         </RadzenDataGridColumn>
     </Columns>
+    <Template Context="Category">
+        <SubCategoryList category="Category" />
+    </Template>
 </RadzenDataGrid>
 
 @code {
@@ -45,7 +48,6 @@
     public List<Category> categories { get; set; } = new List<Category>();
     public EventCallback<Category> OnCategorySelected { get; set; }
     private RadzenDataGrid<Category> dataGrid;
-
     private int WeightCount {get{
             if (categories == null || categories.Count == 0)
             {
