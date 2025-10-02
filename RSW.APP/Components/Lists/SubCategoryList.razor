@@ -10,7 +10,7 @@
 }
 else
 {
-    <RadzenDataGrid @ref="dataGrid" Data="@subcategories" TItem="SubCategory" RowSelect="@OnRowSelect" AllowPaging="true" PageSize="10" AllowSorting="true" AllowFiltering="true" FilterMode="FilterMode.Simple" Responsive="true" Style="height: 600px;">
+    <RadzenDataGrid @ref="dataGrid" Data="@subcategories" TItem="SubCategory" RowSelect="@OnRowSelect" AllowPaging=@allowPaging PageSize="10" AllowSorting="true" AllowFiltering="true" FilterMode="FilterMode.Simple" Responsive="true" >
         <Columns>
             <RadzenDataGridColumn TItem="SubCategory" Property="Name" Title="Name" >
                 <EditTemplate Context="subcategory">
@@ -59,6 +59,7 @@ else
     public EventCallback<SubCategory> OnSubCategorySelected { get; set; }
     private RadzenDataGrid<SubCategory> dataGrid;
     private IEnumerable<Category>? categorys {get; set;} = null;
+    private bool allowPaging = true;
     protected override async Task OnInitializedAsync()
     {
         if(category == null)
@@ -69,6 +70,7 @@ else
         {
             if(category.Id != Guid.Empty)
             {
+                allowPaging = false;
                 IEnumerable<SubCategory>? subcategoriesquery = await categoryService.GetSubCategorysAsync(category.Id);
                 subcategories = subcategoriesquery.ToList();
             }

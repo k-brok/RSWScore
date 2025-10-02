@@ -1,7 +1,7 @@
 ﻿@inject DialogService DialogService
 @inject NotificationService NotificationService
 
-<RadzenDataGrid @ref="dataGrid" Data="@categories" TItem="Category" RowSelect="@OnRowSelect" AllowPaging="true" PageSize="10" AllowSorting="true" AllowFiltering="true" FilterMode="FilterMode.Simple" Responsive="true" Style="height: 600px;">
+<RadzenDataGrid @ref="dataGrid" Data="@categories" TItem="Category" RowSelect="@OnRowSelect" AllowPaging="true" PageSize="10" AllowSorting="true" AllowFiltering="true" FilterMode="FilterMode.Simple" Responsive="true" >
     <Columns>
         <RadzenDataGridColumn TItem="Category" Property="Name" Title="Naam" >
             <EditTemplate Context="category">

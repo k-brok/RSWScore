@@ -3,7 +3,7 @@
 @inject ICriteriaService criteriaService
 @inject ISubCategoryService subCategoryService
 
-<RadzenDataGrid @ref="dataGrid" Data="@criterias" TItem="Criteria" RowSelect="@OnRowSelect" AllowPaging="true" PageSize="10" AllowSorting="true" AllowFiltering="true" FilterMode="FilterMode.Simple" Responsive="true" Style="height: 600px;">
+<RadzenDataGrid @ref="dataGrid" Data="@criterias" TItem="Criteria" RowSelect="@OnRowSelect" AllowPaging="true" PageSize="10" AllowSorting="true" AllowFiltering="true" FilterMode="FilterMode.Simple" Responsive="true" >
     <Columns>
         <RadzenDataGridColumn TItem="Criteria" Property="Name" Title="Name" >
             <EditTemplate Context="criteria">
@@ -106,7 +106,7 @@
 
         if(subcategory != null && subcategory.Id != Guid.Empty)
             NewCriteria.SubCategoryId = subcategory.Id;
-            
+
         dataGrid.InsertAfterRow(NewCriteria, criteria);
     }
     void EditRow(Criteria criteria)
