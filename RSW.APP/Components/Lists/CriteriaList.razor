@@ -34,13 +34,13 @@ else
                     </RadzenFormField>
                 </EditTemplate>
             </RadzenDataGridColumn>
-            <RadzenDataGridColumn TItem="Criteria" Property="SubCategoryId" Title="Sub Categorie">
+            <RadzenDataGridColumn TItem="Criteria" Property="SubCategoryId" Title="Sub Categorie" Visible=SubCategoryVisable()>
                 <Template Context="criteria">
-                @{
-                    var subCat = subCategorys.FirstOrDefault(c => c.Id == criteria.SubCategoryId);
-                }
-                @(subCat != null ? subCat.Name : "Onbekend")
-            </Template>
+                    @{
+                        var subCat = subCategorys.FirstOrDefault(c => c.Id == criteria.SubCategoryId);
+                    }
+                    @(subCat != null ? subCat.Name : "Onbekend")
+                </Template>
                 <EditTemplate Context="criteria">
                     <RadzenFormField Text="Sub categorie" Style="width:100%">
                         <RadzenDropDown Data="@subCategorys" @bind-Value=criteria.SubCategoryId ValueProperty=@nameof(SubCategory.Id) TextProperty=@nameof(SubCategory.Name) />
@@ -199,5 +199,12 @@ else
                 dataGrid.CancelEditRow(criteria);
             }
         }
+    }
+    private bool SubCategoryVisable()
+    {
+        if(subcategory != null)
+            return false;
+        
+        return true;
     }
 }
