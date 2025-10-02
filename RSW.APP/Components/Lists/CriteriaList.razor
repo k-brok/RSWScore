@@ -62,23 +62,18 @@
     public SubCategory? subcategory {get; set;} = null!;
     public EventCallback<Criteria> OnCriteriaSelected { get; set; }
 
-    private IEnumerable<SubCategory> subCategorys { get; set; } = new List<SubCategory>();
+    private IEnumerable<SubCategory>? subCategorys { get; set; } = null;
 
     private RadzenDataGrid<Criteria> dataGrid;
 
     protected override async Task OnInitializedAsync()
-    {
-        if(subcategory == null)
         {
             subCategorys = await subCategoryService.GetAllAsync();
-        }
-        else
-        {
-            if(subcategory.Id != Guid.Empty)
+        
+        if(subcategory != null && subcategory.Id != Guid.Empty)
             {
                 IEnumerable<Criteria>? criteriaquery = await subCategoryService.GetCriteriasAsync(subcategory.Id);
                 criterias = criteriaquery.ToList();
-            }
         }
         
         await base.OnInitializedAsync();
