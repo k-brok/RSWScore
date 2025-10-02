@@ -88,5 +88,13 @@ namespace RSW.APP.Services
 
             return null;
         }
+
+        public async Task<IEnumerable<SubGroup>> GetSubGroupsAsync(Guid id)
+        {
+            var responce = await _httpClient.GetAsync($"{Endpoint}/{id}/subgroups");
+            
+            return await responce.Content.ReadFromJsonAsync<IEnumerable<SubGroup>>();
+
+        }
     }
 }

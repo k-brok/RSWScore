@@ -107,6 +107,13 @@ namespace RSW.API.Services
             await _context.SaveChangesAsync();
             return true;
         }
+
+        public async Task<IEnumerable<SubGroup>> GetSubGroupsAsync(Guid id)
+        {
+            return await _context.SubGroups
+                .Where(S => S.EditionId == id)
+                .ToListAsync();
+        }
     }
 
 }

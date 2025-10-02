@@ -27,6 +27,11 @@ namespace RSW.API.Endpoints
                 return found is not null ? Results.Ok(found) : Results.NotFound();
             }).AllowAnonymous();
 
+            group.MapGet("/{id:guid}/subgroups", async (Guid id, IEditionService service) =>
+            {
+                return Results.Ok(await service.GetSubGroupsAsync(id));
+            }).AllowAnonymous();
+
             group.MapPost("/", async (Edition model, IEditionService service) =>
             {
                 var created = await service.CreateAsync(model);
