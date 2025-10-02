@@ -9,7 +9,7 @@
 }
 else
 {
-    <RadzenDataGrid @ref="dataGrid" Data="@subgroups" TItem="SubGroup" RowSelect="@OnRowSelect" AllowPaging="true" PageSize="10" AllowSorting="true" AllowFiltering="true" FilterMode="FilterMode.Simple" Responsive="true" Style="height: 600px;">
+    <RadzenDataGrid @ref="dataGrid" Data="@subgroups" TItem="SubGroup" RowSelect="@OnRowSelect" AllowPaging="true" PageSize="10" AllowSorting="true" AllowFiltering="true" FilterMode="FilterMode.Simple" Responsive="true">
         <Columns>
             <RadzenDataGridColumn TItem="SubGroup" Property="Color" Title="Color" >
                 <EditTemplate Context="subgroup">
@@ -18,7 +18,7 @@ else
                     </RadzenFormField>
                 </EditTemplate>
             </RadzenDataGridColumn>
-            <RadzenDataGridColumn TItem="SubGroup" Property="EditionId" Title="Editie">
+            <RadzenDataGridColumn TItem="SubGroup" Property="EditionId" Title="Editie" Visible=EditionVisable()>
                 <Template Context="subgroup">
                     @editions.FirstOrDefault(C => C.Id == subgroup.EditionId).RSWStartDate.Year
                 </Template>
@@ -54,6 +54,8 @@ else
 @code {
     [Parameter]
     public List<SubGroup> subgroups { get; set; } = new List<SubGroup>();
+    [Parameter]
+    public Edition? edition {get; set;} = null;
     public List<SubGroup> NewSubGroups { get; set; } = new List<SubGroup>();
     public EventCallback<SubGroup> OnSubGroupSelected { get; set; }
     private RadzenDataGrid<SubGroup> dataGrid;
@@ -65,6 +67,13 @@ else
     protected override async Task OnInitializedAsync()
     {
         editions = await editionService.GetAllAsync();
+
+        if(edition != null)
+        {
+            var subgroupquery = await editionService.GetSubGroupsAsync(edition.Id);
+            subgroups = subgroupquery.ToList();
+        }
+
         await base.OnInitializedAsync();
     }
     private async Task OnRowSelect(SubGroup subgroup)
@@ -77,11 +86,19 @@ else
     void Insert()
     {
         var NewSubGroup = new SubGroup();
+
+        if(edition != null && edition.Id != Guid.Empty)
+            NewSubGroup.EditionId = edition.Id;
+        
         dataGrid.InsertRow(NewSubGroup);
     }
     void InsertAfterRow(SubGroup subgroup)
     {
         var NewSubGroup = new SubGroup();
+
+        if(edition != null && edition.Id != Guid.Empty)
+            NewSubGroup.EditionId = edition.Id;
+        
         dataGrid.InsertAfterRow(NewSubGroup, subgroup);
     }
     void EditRow(SubGroup subgroup)
@@ -161,5 +178,12 @@ else
                 dataGrid.CancelEditRow(subgroup);
             }
         }
+    }
+    private bool EditionVisable()
+    {
+        if(edition != null)
+            return false;
+        
+        return true;
     }
 }
