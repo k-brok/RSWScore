@@ -62,19 +62,15 @@ else
     private bool allowPaging = true;
     protected override async Task OnInitializedAsync()
     {
-        if(category == null)
+        categorys = await categoryService.GetAllAsync();
+
+        if(category != null && category.Id != Guid.Empty)
         {
-            categorys = await categoryService.GetAllAsync();
+            allowPaging = false;
+            IEnumerable<SubCategory>? subcategoriesquery = await categoryService.GetSubCategorysAsync(category.Id);
+            subcategories = subcategoriesquery.ToList();
         }
-        else
-        {
-            if(category.Id != Guid.Empty)
-            {
-                allowPaging = false;
-                IEnumerable<SubCategory>? subcategoriesquery = await categoryService.GetSubCategorysAsync(category.Id);
-                subcategories = subcategoriesquery.ToList();
-            }
-        }
+        
         await base.OnInitializedAsync();
     }
     private async Task OnRowSelect(SubCategory subcategory)
