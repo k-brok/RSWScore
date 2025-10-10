@@ -19,6 +19,9 @@ else
     protected override async Task OnInitializedAsync()
     {
         associations = await AssociationService.GetAllAsync();
+        foreach(Association association in associations){
+            association.Groups = (await AssociationService.GetUnitsAsync(association.Id)).ToList();
+        }
         await base.OnInitializedAsync();
     }
 }
