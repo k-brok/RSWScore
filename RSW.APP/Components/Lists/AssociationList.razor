@@ -34,11 +34,12 @@
             </EditTemplate>
         </RadzenDataGridColumn>
     </Columns>
-    @if(association.Groups != null){
+
         <Template Context="association">
+            @if(association.Groups != null){
             <UnitList units="association.Groups"/>
+            }
         </Template>
-    }
 </RadzenDataGrid>
 
 @code {

@@ -46,11 +46,9 @@ else
                 </EditTemplate>
             </RadzenDataGridColumn>
         </Columns>
-        @if(ShowRecrusive){
-            <Template Context="unit">
-                <PatrolList patrols="unit.Patrols" />
-            </Template>
-        }
+        <Template Context="unit">
+            <PatrolList patrols="unit.Patrols" />
+        </Template>
     </RadzenDataGrid>
 }
 @code {
