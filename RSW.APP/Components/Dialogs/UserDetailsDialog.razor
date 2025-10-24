@@ -1,0 +1,165 @@
+@using RSW.Shared.Entities
+@using RSW.Shared.Dto
+
+@inject IUserService UserService
+@inject IUnitService UnitService
+@inject AuthService AuthService
+@inject DialogService DialogService
+@inject NotificationService NotificationService
+
+<RadzenTemplateForm Data="@Model" TItem="ApplicationUser" Submit="@OnSaveAsync">
+    <ChildContent>
+        <div class="rz-p-fluid rz-form-group" style="gap:1rem;display:grid;grid-template-columns:1fr 1fr;">
+            <RadzenTextBox @bind-Value="Model.Firstname" Name="Firstname" Placeholder="Voornaam" />
+            <RadzenTextBox @bind-Value="Model.Lastname" Name="Lastname" Placeholder="Achternaam" />
+
+            <RadzenTextBox @bind-Value="Model.Email" Name="Email" Placeholder="Email" Style="grid-column:1/-1;" />
+
+            <RadzenDropDown Data="@Units"
+                            TextProperty="Name"
+                            ValueProperty="Id"
+                            @bind-Value="Model.UnitId"
+                            Placeholder="Koppel aan Unit"
+                            FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                            AllowClear="true"
+                            Style="grid-column:1/-1;" />
+        </div>
+
+        <div class="rz-mt-3">
+            <RadzenButton ButtonStyle="ButtonStyle.Primary" Icon="save" Text="Opslaan" Type="Submit" Style="margin-right: .5rem" />
+            <RadzenButton ButtonStyle="ButtonStyle.Light" Icon="close" Text="Sluiten" Click="@Close" />
+        </div>
+
+        <hr class="rz-mt-3 rz-mb-3" />
+
+        <h4>Administratieve acties</h4>
+        <div class="rz-mt-2" style="display:flex;flex-wrap:wrap;gap:.5rem;">
+            <RadzenButton Text="Reset wachtwoord" Icon="lock_reset" ButtonStyle="ButtonStyle.Secondary" Click="@ResetPasswordFlowAsync" />
+            <RadzenButton Text="Resend email confirmation" Icon="mail" ButtonStyle="ButtonStyle.Secondary" Click="@ResendConfirmationAsync" />
+        </div>
+
+        @if (Assignments != null && Assignments.Any())
+        {
+            <h4 class="rz-mt-4">Vrijwilliger-koppelingen</h4>
+            <ul class="rz-ml-3">
+                @foreach (var a in Assignments)
+                {
+                    <li>@a.ToString()</li>
+                }
+            </ul>
+        }
+    </ChildContent>
+</RadzenTemplateForm>
+
+@code {
+    [Parameter] public string UserId { get; set; } = "";
+    [Parameter] public ApplicationUser? InitialUser { get; set; }
+    [Parameter] public List<Unit> Units { get; set; } = new();
+
+    private ApplicationUser Model = new();
+    private bool _dirty = false;
+
+    private IEnumerable<VolunteerAssignment>? Assignments;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Start met aangeleverde data; val terug op API als nodig
+        Model = InitialUser ?? await UserService.GetByIdAsync(UserId) ?? new ApplicationUser();
+
+        // Optioneel: assignments tonen
+        Assignments = await UserService.GetVolunteerAssignmentsAsync(UserId);
+
+        // Units evt. alsnog ophalen als ze niet meegegeven zijn
+        if (Units == null || Units.Count == 0)
+            Units = (await UnitService.GetAllAsync())?.ToList() ?? new();
+
+        StateHasChanged();
+    }
+
+    private async Task OnSaveAsync()
+    {
+        try
+        {
+
+
+            var updated = await UserService.UpdateAsync(Model.Id, Model);
+            if (updated == null)
+            {
+                NotificationService.Notify(NotificationSeverity.Warning, "Geen wijziging", "Er zijn geen wijzigingen opgeslagen.");
+                return;
+            }
+
+            _dirty = true;
+            NotificationService.Notify(NotificationSeverity.Success, "Opgeslagen", "Gebruiker is bijgewerkt.");
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine(ex);
+            NotificationService.Notify(NotificationSeverity.Error, "Fout", "Opslaan mislukt.");
+        }
+    }
+
+    private void Close() => DialogService.Close(_dirty);
+
+    private async Task ResetPasswordFlowAsync()
+    {
+        try
+        {
+            // 1) Token genereren (typisch: token wordt per email verstuurd)
+            await AuthService.GeneratePasswordResetTokenAsync(new ResetPasswordTokenRequest
+            {
+                Email = Model.Email
+            });
+
+            // 2) In veel flows verstuur je enkel de email met token.
+            //    Als je hier direct wilt resetten (admin-gedreven), dan heb je nieuw wachtwoord nodig:
+            //    Hieronder voorbeeld met een input dialog.
+            var newPwd = await DialogService.OpenAsync<PromptNewPasswordDialog>(
+                "Nieuw wachtwoord",
+                new Dictionary<string, object?>(),
+                new DialogOptions { Width = "420px" });
+
+            if (newPwd is string pwd && !string.IsNullOrWhiteSpace(pwd))
+            {
+                var ok = await AuthService.ResetPasswordAsync(new ResetPasswordRequest
+                {
+                    Email = Model.Email!,
+                    NewPassword = pwd,
+                    // Let op: in jouw backend zul je de eerder gegenereerde token moeten hanteren.
+                    // Veel APIs sturen de token per mail; wil je hier direct resetten, zorg voor een endpoint
+                    // dat admin-reset zonder email-token ondersteunt of toon een token-input.
+                    Token = "" // <- indien je token hier handmatig wil invullen
+                });
+
+                NotificationService.Notify(ok ? NotificationSeverity.Success : NotificationSeverity.Error,
+                    ok ? "Wachtwoord gereset" : "Mislukt",
+                    ok ? "Het wachtwoord is gereset." : "Kon wachtwoord niet resetten.");
+            }
+            else
+            {
+                NotificationService.Notify(NotificationSeverity.Info, "Token verstuurd", "Reset token is gegenereerd (meestal per email).");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine(ex);
+            NotificationService.Notify(NotificationSeverity.Error, "Fout", "Reset-proces mislukt.");
+        }
+    }
+
+    private async Task ResendConfirmationAsync()
+    {
+        try
+        {
+            var ok = await AuthService.ResendEmailConfirmationAsync(Model.Email!);
+            NotificationService.Notify(ok ? NotificationSeverity.Success : NotificationSeverity.Error,
+                ok ? "Verzonden" : "Mislukt",
+                ok ? "Bevestigingsmail opnieuw verzonden." : "Kon bevestigingsmail niet verzenden.");
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine(ex);
+            NotificationService.Notify(NotificationSeverity.Error, "Fout", "Kon bevestigingsmail niet opnieuw verzenden.");
+        }
+    }
+}

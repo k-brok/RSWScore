@@ -60,5 +60,11 @@ namespace RSW.APP.Services
             var result = await _httpClient.GetFromJsonAsync<List<VolunteerAssignment>>($"{Endpoint}/{id}/volunteerassignments");
             return result ?? new List<VolunteerAssignment>();
         }
+
+        public async Task<IList<string>> GetRolesAsync(string id)
+        {
+            var result = await _httpClient.GetFromJsonAsync<List<string>>($"{Endpoint}/{id}/roles");
+            return result ?? new List<string>();
+        }
     }
 }

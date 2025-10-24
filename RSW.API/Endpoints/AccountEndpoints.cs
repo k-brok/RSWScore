@@ -5,6 +5,7 @@ namespace RSW.API.Endpoints;
 
 public static class EndpointRouteBuilderExtensions
 {
+    public record ResendEmailConfirmationRequest(string Email);
     public static void MapAccountEndpoints(this WebApplication app)
     {
         var group = app.MapGroup("/api/account").WithTags("Account");
@@ -54,7 +55,7 @@ public static class EndpointRouteBuilderExtensions
             // Tip: eventueel alleen relevante properties terugsturen i.p.v. hele ApplicationUser
             return Results.Ok(user);
         }).RequireAuthorization();
-        
+
         group.MapGet("/confirmemail", async (
             [AsParameters] ConfirmEmailRequest request,
             IAuthService authService) =>
@@ -66,5 +67,29 @@ public static class EndpointRouteBuilderExtensions
 
             return Results.Ok(response);
         });
+        
+        // ----------------- RESEND CONFIRMATION -----------------
+        group.MapPost("/resend-confirmation", async (ResendEmailConfirmationRequest req, IAuthService auth) =>
+        {
+            var ok = await auth.ResendEmailConfirmationAsync(req.Email);
+            return ok ? Results.Ok(new { Message = "Bevestigingsmail opnieuw verzonden (indien gebruiker bestaat)" })
+                    : Results.BadRequest(new { Message = "Kon niet verzenden" });
+        }).AllowAnonymous();
+
+        // ----------------- INITIATE CHANGE EMAIL -----------------
+        group.MapPost("/change-email", async (ChangeEmailRequest req, IAuthService auth) =>
+        {
+            var ok = await auth.InitiateChangeEmailAsync(req.UserId, req.NewEmail);
+            return ok ? Results.Ok(new { Message = "Bevestigingsmail verzonden naar nieuwe e-mail" })
+                    : Results.BadRequest(new { Message = "Kon geen wijzigingsmail versturen" });
+        }).RequireAuthorization();
+
+        // ----------------- CONFIRM CHANGE EMAIL (callback) -----------------
+        group.MapGet("/confirmchangeemail", async ([AsParameters] ConfirmChangeEmailRequest req, IAuthService auth) =>
+        {
+            var resp = await auth.ConfirmChangeEmailAsync(req);
+            return resp.Success ? Results.Ok(resp) : Results.BadRequest(resp);
+        }).AllowAnonymous();
+
     }
 }

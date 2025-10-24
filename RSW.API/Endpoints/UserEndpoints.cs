@@ -41,6 +41,15 @@ namespace RSW.API.Endpoints
                 return result is not null ? Results.Ok(result) : Results.NotFound();
             });
 
+            group.MapGet("/{id}/roles", async (string id, IUserService userService, ClaimsPrincipal user) =>
+            {
+                if (!IsCurrentUserOrAdmin(user, id))
+                    return Results.Forbid();
+
+                var result = await userService.GetRolesAsync(id);
+                return result is not null ? Results.Ok(result) : Results.NotFound();
+            });
+
             // POST: api/users (alleen admin)
             group.MapPost("/", async (ApplicationUser model, string password, IUserService userService) =>
             {

@@ -9,12 +9,14 @@ namespace RSW.API.Services
     public class UserService : IUserService
     {
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly RoleManager<IdentityRole> _roleManager;
         private readonly AppDbContext _context;
 
-        public UserService(AppDbContext context, UserManager<ApplicationUser> userManager)
+        public UserService(AppDbContext context, UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager)
         {
             _userManager = userManager;
             _context = context;
+            _roleManager = roleManager;
         }
 
         public async Task<IEnumerable<ApplicationUser>> GetAllAsync()
@@ -51,6 +53,8 @@ namespace RSW.API.Services
             user.PhoneNumber = model.PhoneNumber;
             user.Firstname = model.Firstname;
             user.Lastname = model.Lastname;
+            user.Unit = model.Unit;
+            user.UnitId = model.UnitId;
 
             var result = await _userManager.UpdateAsync(user);
             if (!result.Succeeded)
@@ -69,6 +73,14 @@ namespace RSW.API.Services
 
             var result = await _userManager.DeleteAsync(user);
             return result.Succeeded;
+        }
+
+        public async Task<IList<string>?> GetRolesAsync(string id)
+        {
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null) return null;
+
+            return await _userManager.GetRolesAsync(user);
         }
 
         public async Task<IEnumerable<VolunteerAssignment>?> GetVolunteerAssignmentsAsync(string id)

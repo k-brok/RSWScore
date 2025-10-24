@@ -211,5 +211,80 @@ namespace RSW.API.Services
                 Message = "E-mail succesvol bevestigd!"
             };
         }
+        public async Task<bool> ResendEmailConfirmationAsync(string email)
+        {
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user == null) return false;
+
+            var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+            var encodedToken = WebUtility.UrlEncode(token);
+
+            var baseUrl = _config["Jwt:Audience"];
+            var confirmationLink = $"{baseUrl}/confirmemail?userId={user.Id}&token={encodedToken}";
+
+            var templatePath = Path.Combine(AppContext.BaseDirectory, "Templates", "ConfirmEmail.html");
+            var template = await File.ReadAllTextAsync(templatePath);
+            var body = template
+                .Replace("{{name}}", user.UserName ?? "gebruiker")
+                .Replace("{{confirmationLink}}", confirmationLink)
+                .Replace("{{supportEmail}}", "support@regiodelangstraat.nl")
+                .Replace("{{year}}", DateTime.UtcNow.Year.ToString());
+
+            await _graphMailService.SendAsync(user.Email!, "Bevestig je e-mail voor RSW", body);
+            return true;
+        }
+
+        public async Task<bool> InitiateChangeEmailAsync(string userId, string newEmail)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null) return false;
+
+            // Token voor wijziging naar nieuwe e-mail
+            var token = await _userManager.GenerateChangeEmailTokenAsync(user, newEmail);
+            var encodedToken = WebUtility.UrlEncode(token);
+            var encodedNewEmail = WebUtility.UrlEncode(newEmail);
+
+            var baseUrl = _config["Jwt:Audience"];
+            var link = $"{baseUrl}/confirmchangeemail?userId={user.Id}&newEmail={encodedNewEmail}&token={encodedToken}";
+
+            var body = $@"
+                <p>Beste {user.UserName ?? "gebruiker"},</p>
+                <p>Bevestig je nieuwe e-mail door op deze link te klikken:</p>
+                <p><a href=""{link}"">E-mail wijzigen bevestigen</a></p>
+                <p>Als jij dit niet hebt aangevraagd, kun je dit bericht negeren.</p>";
+
+            await _graphMailService.SendAsync(newEmail, "Bevestig wijziging e-mail voor RSW", body);
+            return true;
+        }
+
+        public async Task<ConfirmEmailResponse> ConfirmChangeEmailAsync(ConfirmChangeEmailRequest request)
+        {
+            var user = await _userManager.FindByIdAsync(request.UserId);
+            if (user == null)
+            {
+                return new ConfirmEmailResponse { Success = false, Message = "Ongeldige gebruiker." };
+            }
+
+            var result = await _userManager.ChangeEmailAsync(user, request.NewEmail, request.Token);
+            if (!result.Succeeded)
+            {
+                var errors = string.Join("; ", result.Errors.Select(e => e.Description));
+                return new ConfirmEmailResponse { Success = false, Message = $"Wijzigen mislukt: {errors}" };
+            }
+
+            // Optioneel: username gelijk trekken met e-mail
+            if (!string.Equals(user.UserName, request.NewEmail, StringComparison.OrdinalIgnoreCase))
+            {
+                var r2 = await _userManager.SetUserNameAsync(user, request.NewEmail);
+                if (!r2.Succeeded)
+                {
+                    var errors = string.Join("; ", r2.Errors.Select(e => e.Description));
+                    return new ConfirmEmailResponse { Success = false, Message = $"E-mail gewijzigd, maar username niet: {errors}" };
+                }
+            }
+
+            return new ConfirmEmailResponse { Success = true, Message = "E-mail succesvol gewijzigd!" };
+        }
+
     }
 }

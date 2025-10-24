@@ -107,5 +107,22 @@ public class AuthService : IAuthService
         var url = $"{Endpoint}/confirmemail?userId={request.UserId}&token={Uri.EscapeDataString(request.Token!)}";
         return await _http.GetFromJsonAsync<ConfirmEmailResponse>(url);
     }
+    public async Task<bool> ResendEmailConfirmationAsync(string email)
+    {
+        var response = await _http.PostAsJsonAsync($"{Endpoint}/resend-confirmation", new { Email = email });
+        return response.IsSuccessStatusCode;
+    }
+
+    public async Task<bool> InitiateChangeEmailAsync(string userId, string newEmail)
+    {
+        var response = await _http.PostAsJsonAsync($"{Endpoint}/change-email", new { UserId = userId, NewEmail = newEmail });
+        return response.IsSuccessStatusCode;
+    }
+
+    public async Task<ConfirmEmailResponse> ConfirmChangeEmailAsync(ConfirmChangeEmailRequest request)
+    {
+        var url = $"{Endpoint}/confirmchangeemail?userId={request.UserId}&token={Uri.EscapeDataString(request.Token!)}&newEmail={Uri.EscapeDataString(request.NewEmail!)}";
+        return await _http.GetFromJsonAsync<ConfirmEmailResponse>(url);
+    }
 }
 

@@ -123,4 +123,16 @@ namespace RSW.Shared.Dto
         public bool Success { get; set; }
         public string? Message { get; set; }
     }
+    public class ChangeEmailRequest
+    {
+        public string UserId { get; set; } = default!;
+        public string NewEmail { get; set; } = default!;
+    }
+
+    public class ConfirmChangeEmailRequest
+    {
+        public string UserId { get; set; } = default!;
+        public string NewEmail { get; set; } = default!;
+        public string Token { get; set; } = default!;
+    }
 }

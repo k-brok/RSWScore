@@ -1,0 +1,126 @@
+@page "/admin/users"
+@attribute [Authorize(Roles = "Admin")]
+
+@inject IUserService UserService
+@inject IUnitService UnitService
+@inject DialogService DialogService
+@inject NotificationService NotificationService
+
+<PageTitle>Gebruikers</PageTitle>
+
+<RadzenHeading>Gebruikers</RadzenHeading>
+
+@if (Users == null)
+{
+    <p>Bezig met laden…</p>
+}
+else if (!Users.Any())
+{
+    <p>Geen gebruikers gevonden.</p>
+}
+else
+{
+    <RadzenDataGrid TItem="UserViewModel" Data="Users" AllowFiltering="true" AllowPaging="true" AllowSorting="true">
+        <Columns>
+            <RadzenDataGridColumn Property="Email" Title="Email" />
+            <RadzenDataGridColumn Property="Firstname" Title="Voornaam" />
+            <RadzenDataGridColumn Property="Lastname" Title="Achternaam" />
+            <RadzenDataGridColumn Title="Rollen">
+                <Template Context="user">
+                    @string.Join(", ", user.Roles)
+                </Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn Title="Acties">
+                <Template Context="user">
+                    <RadzenButton Text="Details" Click="@(async _ => await OpenDetailsAsync(user.Id))" Style="margin-right: .5rem" />
+                </Template>
+            </RadzenDataGridColumn>
+        </Columns>
+    </RadzenDataGrid>
+}
+
+@code {
+    private List<UserViewModel>? Users;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var allUsers = await UserService.GetAllAsync();
+            var list = new List<UserViewModel>();
+
+            foreach (var u in allUsers)
+            {
+                var roles = await UserService.GetRolesAsync(u.Id);
+                list.Add(new UserViewModel
+                {
+                    Id = u.Id,
+                    Email = u.Email ?? "",
+                    Firstname = u.Firstname ?? "",
+                    Lastname = u.Lastname ?? "",
+                    Roles = roles?.ToList() ?? new()
+                });
+            }
+
+            Users = list;
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine(ex);
+            Users = new();
+            NotificationService.Notify(new NotificationMessage
+            {
+                Severity = NotificationSeverity.Error,
+                Summary = "Laden mislukt",
+                Detail = "Kon gebruikers niet laden."
+            });
+        }
+    }
+
+    private async Task OpenDetailsAsync(string userId)
+    {
+        try
+        {
+            // Haal detail + units vooraf (sneller gevoel in de UI)
+            var userTask = UserService.GetByIdAsync(userId);
+            var unitsTask = UnitService.GetAllAsync();
+            await Task.WhenAll(userTask, unitsTask);
+
+            var result = await DialogService.OpenAsync<UserDetailsDialog>(
+                "Gebruiker details",
+                new Dictionary<string, object?>
+                {
+                    ["UserId"] = userId,
+                    ["InitialUser"] = userTask.Result,
+                    ["Units"] = unitsTask.Result?.ToList() ?? new List<Unit>()
+                },
+                new DialogOptions { Width = "720px", CloseDialogOnOverlayClick = true, Resizable = false });
+
+            // Indien de dialog een update heeft gedaan, kun je hier refreshen
+            if (result is bool updated && updated)
+            {
+                await OnInitializedAsync();
+                StateHasChanged();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine(ex);
+            NotificationService.Notify(new NotificationMessage
+            {
+                Severity = NotificationSeverity.Error,
+                Summary = "Fout",
+                Detail = "Kon details niet openen."
+            });
+        }
+    }
+
+    private class UserViewModel
+    {
+        public string Id { get; set; } = "";
+        public string Email { get; set; } = "";
+        public string Firstname { get; set; } = "";
+        public string Lastname { get; set; } = "";
+        public List<string> Roles { get; set; } = new();
+    }
+}
