@@ -1,0 +1,57 @@
+@inject IUnitService UnitService
+@inject IUserService UserService
+@inject IUnitLinkRequestService UnitLinkRequestService
+
+<RadzenDataGrid TItem="PendingUnitLinkRequest" Data="@linkRequests" @ref="dataGrid" RowSelect="OnRowSelect" AllowPaging="true" AllowSorting="true" Responsive="true">
+    <Columns>
+        <RadzenDataGridColumn TItem="PendingUnitLinkRequest" Property="UnitName" Title="Unit Name">
+            <Template Context="request">
+                @units.FirstOrDefault(u => u.Id == request.UnitId)?.Name (@units.FirstOrDefault(u => u.Id == request.UnitId)?.AssociationName)
+            </Template>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="PendingUnitLinkRequest" Property="RequestedBy" Title="Requested By">
+            <Template Context="request">
+                @users.FirstOrDefault(u => u.Id == request.UserId)?.Firstname @users.FirstOrDefault(u => u.Id == request.UserId)?.Lastname
+            </Template>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="PendingUnitLinkRequest" Property="RequestDate" Title="Request Date">
+            <Template Context="request">
+                @request.CreatedUtc.ToString("g")
+            </Template>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn>
+            <Template Context="request">
+                <RadzenButton Text="Approve" ButtonStyle="ButtonStyle.Success" Click="@(async args => 
+                {
+                    await UnitLinkRequestService.ApproveAsync(request.Id);
+                    linkRequests = linkRequests.Where(r => r.Id != request.Id).ToList();
+                    await dataGrid.Reload();
+                })" />
+                <RadzenButton Text="Reject" ButtonStyle="ButtonStyle.Success" Click="@(async args => 
+                {
+                    await UnitLinkRequestService.RejectAsync(request.Id);
+                    linkRequests = linkRequests.Where(r => r.Id != request.Id).ToList();
+                    await dataGrid.Reload();
+                })" />
+            </Template>
+        </RadzenDataGridColumn>
+    </Columns>
+</RadzenDataGrid>
+
+@code {
+    [Parameter]
+    public IEnumerable<PendingUnitLinkRequest> linkRequests { get; set; } = new List<PendingUnitLinkRequest>();
+    List<ApplicationUser> users = new();
+    RadzenDataGrid<PendingUnitLinkRequest>? dataGrid;
+    List<Unit> units = new();
+    protected override async Task OnInitializedAsync()
+    {
+        users = (await UserService.GetAllAsync()).ToList();
+        units = (await UnitService.GetAllAsync()).ToList();
+        await base.OnInitializedAsync();
+    }
+    void OnRowSelect(PendingUnitLinkRequest request)
+    {
+        // Handle row selection if needed
+    }
+}

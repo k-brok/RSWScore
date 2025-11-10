@@ -1,0 +1,25 @@
+@page "/admin/linkrequest"
+@attribute [Authorize(Roles = "Admin")]
+
+@inject IUnitLinkRequestService unitLinkRequestService
+
+<h3>Unit Link requests</h3>
+
+@if (unitLinkRequests == null)
+{
+    <RadzenProgressBarCircular Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
+}
+else
+{
+    <LinkRequestList linkRequests="@unitLinkRequests" />
+}
+
+@code {
+    public List<PendingUnitLinkRequest>? unitLinkRequests { get; set; }
+    protected override async Task OnInitializedAsync()
+    {
+        unitLinkRequests = (await unitLinkRequestService.GetAllAsync()).ToList();
+        unitLinkRequests = unitLinkRequests.Where(L => L.Status == UnitLinkRequestStatus.Pending).ToList();
+        await base.OnInitializedAsync();
+    }
+}

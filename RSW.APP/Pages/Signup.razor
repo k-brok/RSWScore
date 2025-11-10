@@ -1,5 +1,6 @@
 @page "/signup/{id:guid}"
 @page "/signup"
+
 @using RSW.Shared.Entities
 @inject ISignupCodeService SignupCodeService
 @inject IUnitService UnitService
@@ -7,13 +8,12 @@
 @inject IPatrolService PatrolService
 @inject IEditionService EditionService
 @inject ISubGroupService subGroupService
-@inject NavigationManager Nav
 @inject IScoutService scoutService
-@inject NotificationService NotificationService
-
-@* NIEUW: aansluitend op jouw WASM-patroon *@
 @inject IUserService UserService
 @inject AuthService AuthService
+@inject NotificationService NotificationService
+@inject DialogService DialogService
+@inject NavigationManager Nav
 
 <PageTitle>Inschrijven</PageTitle>
 
@@ -27,28 +27,60 @@
 else if (!HasAccess)
 {
     <RadzenCard Style="margin:20px;">
-        Om in te schrijven heb je een inschrijfcode nodig, vul deze hieronder in om de inschrijving te openen.
-        <RadzenTextBox @bind-Value=InsertCode />
-        <RadzenButton Text="Open Inschrijving" Click=@(() => OpenSignup(InsertCode)) />
+        <p>Om in te schrijven heb je een inschrijfcode nodig, vul deze hieronder in om de inschrijving te openen.</p>
+
+        <div class="rz-p-fluid rz-form-group" style="display:grid;grid-template-columns:1fr auto;gap:.5rem;max-width:520px;">
+            <RadzenTextBox @bind-Value=InsertCode Style="width:100%;" />
+            <RadzenButton Text="Open inschrijving" Click="@(() => OpenSignup(InsertCode))" Icon="login" />
+        </div>
+
+        @* Ingelogd, maar geen UnitId (Groep) & nog geen geldige code: toon informatieve melding met aanvraagknop *@
+        @if (IsLoggedInWithoutUnit)
+        {
+            <RadzenAlert Severity="AlertSeverity.Info" Style="margin-top:12px;">
+                Je account is nog niet gekoppeld aan een <b>Groep</b>. Je kunt bij de organisatie een koppeling aanvragen.
+            </RadzenAlert>
+
+            <RadzenButton Text="Koppeling met Groep aanvragen"
+                          Icon="mail"
+                          ButtonStyle="ButtonStyle.Secondary"
+                          Style="margin-top:8px;"
+                          Click="@OpenLinkDialogWithoutUnitAsync" />
+        }
     </RadzenCard>
 }
 else if (ActiveEdition == null)
 {
     <RadzenCard Style="margin:20px;">
-        <h3>🚫 Geen Actieve editie.</h3>
+        <h3>🚫 Geen actieve editie.</h3>
         <p>Neem contact op met de organisatie.</p>
     </RadzenCard>
 }
 else
 {
     <RadzenCard Style="margin:20px;">
-        @* Waarschuwing wanneer presignup voorbij is en er geen patrouilles zijn *@
+        @* Waarschuwing: presignup voorbij & geen patrouilles *@
         @if (NoPatrolsAfterClose)
         {
             <RadzenAlert Severity="AlertSeverity.Warning" Style="margin-bottom:12px;">
-                De voorinschrijvingsperiode is gesloten en er zijn geen patrouilles ingeschreven voor deze unit.
+                De voorinschrijvingsperiode is gesloten en er zijn geen patrouilles ingeschreven voor deze Groep.
                 Inschrijven is momenteel niet mogelijk. Neem contact op met de organisatie.
             </RadzenAlert>
+        }
+
+        @* Ingelogd zonder UnitId, maar we hebben toegang via inschrijfcode en Unit context is bekend *@
+        @if (IsLoggedInWithoutUnit && HasSignupCode && Unit != null)
+        {
+            <RadzenAlert Severity="AlertSeverity.Warning" Style="margin-bottom:12px;">
+                Je bent ingelogd maar nog niet gekoppeld aan <b>@Unit.Name @Association?.Name</b>.
+                Wil je aan deze Groep gekoppeld worden? Dien een aanvraag in bij de organisatie.
+            </RadzenAlert>
+
+            <RadzenButton Text="Koppel mij aan deze Groep"
+                          Icon="mail"
+                          ButtonStyle="ButtonStyle.Secondary"
+                          Style="margin-bottom:16px;"
+                          Click="@OpenLinkDialogWithCurrentUnitAsync" />
         }
 
         <h2>Inschrijfformulier RSW @ActiveEdition.RSWStartDate.Year ⚜️</h2>
@@ -118,7 +150,10 @@ else
                                 <RadzenTableHeaderCell>Sub-kamp</RadzenTableHeaderCell>
                                 <RadzenTableHeaderCell>Voldoet aan deelnemerseisen</RadzenTableHeaderCell>
                                 <RadzenTableHeaderCell rowspan="2">
-                                    @if (patrol.IsYoungest) { <p>jongste</p> }
+                                    @if (patrol.IsYoungest)
+                                    {
+                                        <p>jongste</p>
+                                    }
                                 </RadzenTableHeaderCell>
                             </RadzenTableHeaderRow>
                             <RadzenTableHeaderRow>
@@ -132,7 +167,14 @@ else
                                     @sub?.Color
                                 </RadzenTableHeaderCell>
                                 <RadzenTableHeaderCell>
-                                    @if (ActiveEdition != null && patrol.unranked((DateOnly)(ActiveEdition.LSWStartDate ?? ActiveEdition.RSWStartDate))) { <p>nee</p> } else { <p>ja</p> }
+                                    @if (ActiveEdition != null && patrol.unranked((DateOnly)(ActiveEdition.LSWStartDate ?? ActiveEdition.RSWStartDate)))
+                                    {
+                                        <p>nee</p>
+                                    }
+                                    else
+                                    {
+                                        <p>ja</p>
+                                    }
                                 </RadzenTableHeaderCell>
                             </RadzenTableHeaderRow>
                         </RadzenTableHeader>
@@ -167,41 +209,45 @@ else
     private bool IsinPresignup = true;
 
     private SignupCode? signupCode;
-    private ApplicationUser? CurrentUser;            // ← zoals jouw voorbeeld
+    private ApplicationUser? CurrentUser;
+
     private Unit Unit;
     private Edition? ActiveEdition;
     private Association? Association;
-    private bool NoPatrolsAfterClose => !IsinPresignup && (ExistingPatrol?.Count ?? 0) == 0;
+
     private List<Patrol> newpatrols = new();
-    private List<Patrol> ExistingPatrol = new();     // nooit null
+    private List<Patrol> ExistingPatrol = new();   // nooit null
     private List<Patrol> toRemove = new();
+
     private IEnumerable<SubGroup> SubGroups = new List<SubGroup>();
     private Dictionary<Patrol, RadzenDataGrid<Scout>> ScoutsLists = new();
     private Dictionary<Patrol, List<Scout>> DeleteScoutsLists = new();
 
-    // toegang via geldige code óf via UnitId van ingelogde user
-    private Guid? EffectiveUnitId = null;
+    // Toegangsvlaggen
+    private Guid? EffectiveUnitId = null;                  // Unit uit user of uit code
     private bool HasAccess => EffectiveUnitId != null || signupCode != null;
+    private bool HasSignupCode => signupCode != null;
+    private bool IsLoggedInWithoutUnit => CurrentUser != null && (CurrentUser.UnitId == null || CurrentUser.UnitId == Guid.Empty);
+    private bool NoPatrolsAfterClose => !IsinPresignup && (ExistingPatrol?.Count ?? 0) == 0;
 
     protected override async Task OnInitializedAsync()
     {
-        // Actieve editie + fase
+        // Actieve editie & fase
         ActiveEdition = await EditionService.GetActiveAsync();
-
         if (ActiveEdition?.PreSignupClose != null &&
             ActiveEdition.PreSignupClose < DateOnly.FromDateTime(DateTime.Today))
         {
             IsinPresignup = false;
         }
 
-        // Huidige user ophalen (WASM-patroon zoals jouw /user-pagina)
+        // Ingelogde gebruiker (WASM-patroon)
         CurrentUser = await AuthService.GetCurrentUserAsync();
 
-        // Zet UnitId als bypass-criterium
+        // Zet bypass via UnitId (Groep) indien aanwezig
         if (CurrentUser?.UnitId is Guid u && u != Guid.Empty)
             EffectiveUnitId = u;
 
-        // Context laden (via route/code of via UnitId)
+        // Probeer direct te openen met context
         await OpenSignup();
 
         loaded = true;
@@ -223,20 +269,21 @@ else
                 signupCode = await SignupCodeService.ValidateAsync(id.Value);
                 if (signupCode != null)
                 {
+                    EffectiveUnitId = signupCode.UnitId; // context duidelijk
                     await LoadUnitContext(signupCode.UnitId);
                     return;
                 }
             }
         }
 
-        // (b) geen/ongeldige code, maar wél UnitId via ingelogde user
+        // (b) geen/ongeldige code, maar wel UnitId via ingelogde user
         if (EffectiveUnitId != null)
         {
             await LoadUnitContext(EffectiveUnitId.Value);
             return;
         }
 
-        // (c) anders: HasAccess blijft false → UI toont codeveld
+        // (c) anders: HasAccess blijft false → UI toont codeveld (met info/aanvraagknop indien nodig)
     }
 
     private async Task LoadUnitContext(Guid unitId)
@@ -268,6 +315,7 @@ else
 
         if (IsinPresignup)
         {
+            // nieuwe patrouilles
             foreach (Patrol patrol in newpatrols)
             {
                 await PatrolService.CreateAsync(new Patrol
@@ -277,6 +325,7 @@ else
                     IsYoungest = patrol.IsYoungest
                 });
             }
+            // bestaande bijwerken
             foreach (Patrol patrol in ExistingPatrol)
             {
                 await PatrolService.UpdateAsync(patrol.Id, patrol);
@@ -284,6 +333,7 @@ else
         }
         else
         {
+            // upsert & delete scouts parallel, begrensd
             var tasks = new List<Task>();
             var semaphore = new SemaphoreSlim(5);
 
@@ -345,12 +395,14 @@ else
         patrol.Scouts.Add(NewScout);
         dataGrid.InsertRow(NewScout);
     }
+
     private void InsertAfterRow(Patrol patrol, RadzenDataGrid<Scout> dataGrid, Scout scout)
     {
         var NewScout = new Scout();
         patrol.Scouts.Add(NewScout);
         dataGrid.InsertAfterRow(NewScout, scout);
     }
+
     private void DeleteRow(Patrol patrol, RadzenDataGrid<Scout> dataGrid, Scout scout)
     {
         if (!DeleteScoutsLists.ContainsKey(patrol))
@@ -396,9 +448,18 @@ else
         }
     }
 
+    void RowRender(RowRenderEventArgs<Scout> args)
+    {
+        args.Attributes.Add("title", "Drag row to move it to the other DataGrid");
+        args.Attributes.Add("style", "cursor:grab");
+        args.Attributes.Add("draggable", "true");
+        args.Attributes.Add("ondragstart", EventCallback.Factory.Create<DragEventArgs>(this, () => draggedItem = args.Data));
+    }
+
     RenderFragment RenderColumns(Patrol patrol)
     {
-        return __builder => {
+        return __builder =>
+        {
             <text>
                 <RadzenDataGridColumn TItem="Scout" Property="Firstname" Title="Voornaam">
                     <Template Context="scout">
@@ -467,15 +528,44 @@ else
                                       @onclick:stopPropagation="true" />
                     </Template>
                 </RadzenDataGridColumn>
-            </text>
+            </text>;
         };
     }
 
-    void RowRender(RowRenderEventArgs<Scout> args)
+    // ------------ Dialog openers ------------
+    private async Task OpenLinkDialogWithCurrentUnitAsync()
     {
-        args.Attributes.Add("title", "Drag row to move it to the other DataGrid");
-        args.Attributes.Add("style", "cursor:grab");
-        args.Attributes.Add("draggable", "true");
-        args.Attributes.Add("ondragstart", EventCallback.Factory.Create<DragEventArgs>(this, () => draggedItem = args.Data));
+        if (Unit == null) return;
+
+        var parameters = new Dictionary<string, object?>
+        {
+            ["UnitId"] = Unit.Id,
+            ["UnitName"] = Unit.Name,
+            ["AssociationName"] = Association?.Name
+        };
+
+        var result = await DialogService.OpenAsync<UnitLinkRequestDialog>(
+            "Koppeling met Groep aanvragen",
+            parameters,
+            new DialogOptions { Width = "520px", CloseDialogOnOverlayClick = false });
+
+        // optioneel: feedback na succesvol indienen
+        if (result is RSW.Shared.Dto.CreateUnitLinkRequestResponse resp && resp.Success)
+        {
+            NotificationService.Notify(NotificationSeverity.Success, "Aanvraag ingediend", "We brengen je op de hoogte zodra de organisatie reageert.");
+        }
+    }
+
+    private async Task OpenLinkDialogWithoutUnitAsync()
+    {
+        var result = await DialogService.OpenAsync<UnitLinkRequestDialog>(
+            "Koppeling met Groep aanvragen",
+            new Dictionary<string, object?>(), // geen prefill
+            new DialogOptions { Width = "520px", CloseDialogOnOverlayClick = false });
+
+        if (result is RSW.Shared.Dto.CreateUnitLinkRequestResponse resp && resp.Success)
+        {
+            //NotificationService.Notify(NotificationSeverity.Success, "Aanvraag ingediend", "We brengen je op de hoogte zodra de organisatie reageert.");
+        }
     }
 }

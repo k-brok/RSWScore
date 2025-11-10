@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Wachtwoord reset</title>
+  <title>{{Subject}}</title>
   <style>
     /* Basis, inlined wordt vaak beter ondersteund; houd het eenvoudig */
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background:#f4f6f8; margin:0; padding:20px; color:#0f1720; }
@@ -26,18 +26,17 @@
   </style>
 </head>
 <body>
-  <div class="container" role="article" aria-label="Wachtwoord reset e-mail">
+  <div class="container" role="article" aria-label="{{Subject}}">
     <div class="header">
       <div class="logo">RegioDeLangstraat</div>
     </div>
 
     <div class="content">
-      
+      {{Content}}
     </div>
 
     <div class="footer">
       <div>© {{year}} RegioDeLangstraat — Alle rechten voorbehouden.</div>
-      <div style="margin-top:8px;" class="muted">Deze link verloopt automatisch na {{expiryMinutes}} minuten. Voor je veiligheid: deel deze link nooit via sociale media of onveilige kanalen.</div>
     </div>
   </div>
 </body>

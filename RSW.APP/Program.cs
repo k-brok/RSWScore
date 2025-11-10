@@ -41,6 +41,8 @@ public class Program
         builder.Services.AddScoped<AuthService>();
         builder.Services.AddScoped<AuthenticationStateProvider, JwtAuthenticationStateProvider>();
         builder.Services.AddScoped<JwtAuthenticationStateProvider>();
+        builder.Services.AddScoped<IUnitLinkRequestService, UnitLinkRequestService>();
+        //builder.Services.AddScoped<IEmailConfigService, IEmailConfigService>();
 
         builder.Services.AddAuthorizationCore();
 

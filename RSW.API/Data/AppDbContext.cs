@@ -26,5 +26,7 @@ namespace RSW.API.Data
         public DbSet<WebSetting> WebSettings { get; set; } = null!;
         public DbSet<VolunteerTask> VolunteerTasks { get; set; } = null!;
         public DbSet<VolunteerAssignment> VolunteerAssignments { get; set; } = null!;
+        public DbSet<PendingUnitLinkRequest> UnitLinkRequests => Set<PendingUnitLinkRequest>();
+        public DbSet<EmailConfig> EmailConfigs { get; set; } = null!;
     }
 }

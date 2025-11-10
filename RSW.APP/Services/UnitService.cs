@@ -18,6 +18,11 @@ namespace RSW.APP.Services
         {
             var result = await _httpClient.GetFromJsonAsync<List<Unit>>(Endpoint);
 
+            foreach (var item in result)
+            {
+                Console.WriteLine($"Fetched unit: {item.Id} - {item.Name} ({item.AssociationName})");
+            }
+
             return result ?? new List<Unit>();
         }
 

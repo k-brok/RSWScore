@@ -1,0 +1,129 @@
+@using RSW.Shared.Dto
+@using RSW.Shared.Entities
+@inject IUnitLinkRequestService LinkService
+@inject IUnitService UnitService
+@inject NotificationService NotificationService
+@inject DialogService DialogService
+
+<RadzenTemplateForm TItem="CreateUnitLinkRequestRequest" Data="@Model" Submit="@OnSubmit" Style="min-width: 420px;">
+    <ChildContent>
+        @if (Prefilled)
+        {
+            <RadzenAlert Severity="AlertSeverity.Info" Style="margin-bottom:10px;">
+                Je vraagt een koppeling aan met <b>@(PrefiledUnit.Name ?? "onbekende Groep")</b>
+                @if (!string.IsNullOrWhiteSpace(PrefiledUnit.AssociationName))
+                {
+                    <text>(@PrefiledUnit.AssociationName)</text>
+                }.
+                De organisatie ontvangt deze aanvraag en kan deze accepteren of weigeren.
+            </RadzenAlert>
+        }
+        else
+        {
+            <RadzenAlert Severity="AlertSeverity.Info" Style="margin-bottom:10px;">
+                Je account is nog niet gekoppeld aan een <b>Groep</b>. Kies hieronder je Groep en voeg optioneel een korte toelichting toe.
+            </RadzenAlert>
+        }
+
+        <div class="rz-p-fluid rz-form-group" style="display:grid;grid-template-columns:1fr;gap:1rem;">
+
+            @* Groepselectie of readonly weergave *@
+            @if (Prefilled)
+            {
+                <div>
+                    <label class="rz-label">Groep</label>
+                    <RadzenTextBox Value="@BuildUnitLabel(PrefiledUnit)" ReadOnly="true" Style="width:100%;" />
+                </div>
+            }
+            else
+            {
+                <div>
+                    <label class="rz-label">Kies Groep</label>
+                    <RadzenDropDown Data="@Units"
+                                    ValueProperty="Id"
+                                    @bind-Value="Model.UnitId"
+                                    Placeholder="Selecteer een Groep"
+                                    FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                                    AllowClear="true"
+                                    Style="width:100%;"
+                                    Name="UnitIdDropDown">
+                                    <Template Context="unit">
+                                        @BuildUnitLabel((Unit)unit)
+                                    </Template>
+                                    </RadzenDropDown>
+                    <RadzenRequiredValidator Component="UnitIdDropDown"
+                                             Text="Selecteer een Groep."
+                                             Popup="false" />
+                </div>
+            }
+
+            <div>
+                <label class="rz-label">Toelichting (optioneel)</label>
+                <RadzenTextArea @bind-Value="Model.Message" Rows="4" Style="width:100%;" />
+            </div>
+        </div>
+
+        <div class="rz-mt-3" style="display:flex;gap:.5rem;flex-wrap:wrap;">
+            <RadzenButton ButtonStyle="ButtonStyle.Primary" Icon="send" Text="Aanvraag indienen" Type="Submit" />
+            <RadzenButton ButtonStyle="ButtonStyle.Light" Icon="close" Text="Annuleren" Click="@Close" />
+        </div>
+    </ChildContent>
+</RadzenTemplateForm>
+
+@code {
+    // -------- Parameters (prefill vanuit aanroep) --------
+    [Parameter] public Guid? UnitId { get; set; }
+
+    // -------- Intern --------
+    private CreateUnitLinkRequestRequest Model = new();
+    private bool Prefilled => UnitId.HasValue && UnitId.Value != Guid.Empty;
+    private List<Unit> Units = new();
+    private Unit PrefiledUnit =new();
+    private RadzenTextBox? UnitIdDropShadow;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Prefill
+        if (Prefilled)
+        {
+            Model.UnitId = UnitId!.Value;
+            PrefiledUnit = await UnitService.GetByIdAsync(UnitId.Value) ?? new Unit();
+        }
+        else
+        {
+            // Units laden voor selectie
+            Units = (await UnitService.GetAllAsync())?.ToList() ?? new List<Unit>();
+        }
+    }
+
+    private string BuildUnitLabel(Unit unit)
+    {
+        Console.WriteLine($"Building label for unit: {unit.Id} - {unit.Name} ({unit.AssociationName})");
+        if (string.IsNullOrWhiteSpace(unit.Name))
+            return "(onbekend)";
+        return string.IsNullOrWhiteSpace(unit.AssociationName) ? unit.Name! : $"{unit.Name} ({unit.AssociationName})";
+    }
+
+    private async Task OnSubmit()
+    {
+        if (!Prefilled && (Model.UnitId == Guid.Empty || Model.UnitId == default))
+        {
+            NotificationService.Notify(NotificationSeverity.Warning, "Ontbrekende gegevens", "Selecteer eerst een Groep.");
+            return;
+        }
+
+        CreateUnitLinkRequestResponse? resp = await LinkService.CreateAsync(Model);
+
+        if (resp.Success)
+        {
+            NotificationService.Notify(NotificationSeverity.Success, "Aanvraag verstuurd", "Je koppelingsaanvraag is ingediend.");
+            DialogService.Close(resp);   // geef response terug aan aanroeper
+        }
+        else
+        {
+            NotificationService.Notify(NotificationSeverity.Error, "Mislukt", resp.Message ?? "Kon de aanvraag niet indienen.");
+        }
+    }
+
+    private void Close() => DialogService.Close(null);
+}

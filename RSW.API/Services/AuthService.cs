@@ -21,19 +21,22 @@ namespace RSW.API.Services
         private readonly ILogger<AuthService> _logger;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly GraphMailService _graphMailService;
+        private readonly IEmailConfigService _emailConfigService;
 
         public AuthService(
             UserManager<ApplicationUser> userManager,
             IConfiguration config,
             ILogger<AuthService> logger,
             IHttpContextAccessor httpContextAccessor,
-            GraphMailService graphMailService)
+            GraphMailService graphMailService,
+            IEmailConfigService emailConfigService)
         {
             _userManager = userManager;
             _config = config;
             _logger = logger;
             _httpContextAccessor = httpContextAccessor;
             _graphMailService = graphMailService;
+            _emailConfigService = emailConfigService;
         }
         public async Task<LoginResponse?> LoginAsync(LoginRequest request, bool rememberMe)
         {
@@ -79,16 +82,20 @@ namespace RSW.API.Services
             var baseUrl = _config["Jwt:Audience"];
             var confirmationLink = $"{baseUrl}/confirmemail?userId={user.Id}&token={encodedToken}";
 
-            var templatePath = Path.Combine(AppContext.BaseDirectory, "Templates", "ConfirmEmail.html");
-            var template = await File.ReadAllTextAsync(templatePath);
+            var tokens = new Dictionary<string, string>
+            {
+                ["name"] = user.UserName ?? "gebruiker",
+                ["confirmationLink"] = confirmationLink,
+                ["expiryMinutes"] = "30",
+                ["supportEmail"] = "support@regiodelangstraat.nl",
+                ["year"] = DateTime.UtcNow.Year.ToString()
+            };
 
-            var body = template
-                .Replace("{{name}}", user.UserName ?? "gebruiker")
-                .Replace("{{confirmationLink}}", confirmationLink)
-                .Replace("{{supportEmail}}", "support@regiodelangstraat.nl")
-                .Replace("{{year}}", DateTime.UtcNow.Year.ToString());
-
-            await _graphMailService.SendAsync(user.Email!, "Bevestig je e-mail voor RSW", body);
+            await _graphMailService.SendWithLayoutAsync(
+                toAddress: user.Email!,
+                templateName: "ConfirmEmailEmail",
+                tokens: tokens
+            );
 
             return new RegisterResponse(result);
         }
@@ -130,17 +137,20 @@ namespace RSW.API.Services
             var BaseUrl = _config["Jwt:Audience"];
             var resetLink = $"{BaseUrl}/PasswordReset?email={request.Email}&token={encodedToken}";
 
-            var templatePath = Path.Combine(AppContext.BaseDirectory, "Templates", "PasswordReset.html");
-            var template = await File.ReadAllTextAsync(templatePath);
+            var tokens = new Dictionary<string, string>
+            {
+                ["name"] = user.UserName ?? "gebruiker",
+                ["resetLink"] = resetLink,
+                ["expiryMinutes"] = "30",
+                ["supportEmail"] = "support@regiodelangstraat.nl",
+                ["year"] = DateTime.UtcNow.Year.ToString()
+            };
 
-            var body = template
-                .Replace("{{name}}", user.UserName ?? "gebruiker")
-                .Replace("{{resetLink}}", resetLink)
-                .Replace("{{expiryMinutes}}", "30")
-                .Replace("{{supportEmail}}", "support@regiodelangstraat.nl")
-                .Replace("{{year}}", DateTime.UtcNow.Year.ToString());
-
-            await _graphMailService.SendAsync(request.Email, "Wachtwoord reset voor RSW", body);
+            await _graphMailService.SendWithLayoutAsync(
+                toAddress: request.Email,
+                templateName: "ResetPasswordEmail",
+                tokens: tokens
+            );
         }
 
         public async Task<bool> ResetPasswordAsync(ResetPasswordRequest request)
@@ -222,15 +232,21 @@ namespace RSW.API.Services
             var baseUrl = _config["Jwt:Audience"];
             var confirmationLink = $"{baseUrl}/confirmemail?userId={user.Id}&token={encodedToken}";
 
-            var templatePath = Path.Combine(AppContext.BaseDirectory, "Templates", "ConfirmEmail.html");
-            var template = await File.ReadAllTextAsync(templatePath);
-            var body = template
-                .Replace("{{name}}", user.UserName ?? "gebruiker")
-                .Replace("{{confirmationLink}}", confirmationLink)
-                .Replace("{{supportEmail}}", "support@regiodelangstraat.nl")
-                .Replace("{{year}}", DateTime.UtcNow.Year.ToString());
+            var tokens = new Dictionary<string, string>
+            {
+                ["name"] = user.UserName ?? "gebruiker",
+                ["confirmationLink"] = confirmationLink,
+                ["expiryMinutes"] = "30",
+                ["supportEmail"] = "support@regiodelangstraat.nl",
+                ["year"] = DateTime.UtcNow.Year.ToString()
+            };
 
-            await _graphMailService.SendAsync(user.Email!, "Bevestig je e-mail voor RSW", body);
+            await _graphMailService.SendWithLayoutAsync(
+                toAddress: user.Email!,
+                templateName: "ConfirmEmailEmail",
+                tokens: tokens
+            );
+
             return true;
         }
 
@@ -247,13 +263,21 @@ namespace RSW.API.Services
             var baseUrl = _config["Jwt:Audience"];
             var link = $"{baseUrl}/confirmchangeemail?userId={user.Id}&newEmail={encodedNewEmail}&token={encodedToken}";
 
-            var body = $@"
-                <p>Beste {user.UserName ?? "gebruiker"},</p>
-                <p>Bevestig je nieuwe e-mail door op deze link te klikken:</p>
-                <p><a href=""{link}"">E-mail wijzigen bevestigen</a></p>
-                <p>Als jij dit niet hebt aangevraagd, kun je dit bericht negeren.</p>";
+            var tokens = new Dictionary<string, string>
+            {
+                ["name"] = user.UserName ?? "gebruiker",
+                ["confirmationLink"] = link,
+                ["expiryMinutes"] = "30",
+                ["supportEmail"] = "support@regiodelangstraat.nl",
+                ["year"] = DateTime.UtcNow.Year.ToString()
+            };
 
-            await _graphMailService.SendAsync(newEmail, "Bevestig wijziging e-mail voor RSW", body);
+            await _graphMailService.SendWithLayoutAsync(
+                toAddress: user.Email!,
+                templateName: "ConfirmChangeEmailEmail",
+                tokens: tokens
+            );
+
             return true;
         }
 

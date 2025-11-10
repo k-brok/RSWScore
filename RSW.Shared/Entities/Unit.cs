@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 
 namespace RSW.Shared.Entities
@@ -8,6 +9,8 @@ namespace RSW.Shared.Entities
         [Required]
         public string? Name { get; set; }
         public Guid AssociationId { get; set; }
+        [NotMapped]
+        public string? AssociationName { get; set; }
         [JsonIgnore]
         public Association Association { get; set; } = null!;
         [JsonIgnore]

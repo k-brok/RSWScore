@@ -18,12 +18,33 @@ namespace RSW.API.Services
         public async Task<IEnumerable<Unit>> GetAllAsync()
         {
             return await _context.Units
+                .Include(u => u.Association)
+                .Select(u => new Unit
+                {
+                    Id = u.Id,
+                    Name = u.Name,
+                    AssociationId = u.AssociationId,
+                    AssociationName = u.Association.Name, // hier vullen we 'm
+                    Association = u.Association,
+                    Patrols = u.Patrols
+                })
                 .ToListAsync();
         }
 
         public async Task<Unit?> GetByIdAsync(Guid id)
         {
-            var entity = await _context.Units.FirstOrDefaultAsync(e => e.Id == id);
+            var entity = await _context.Units
+                .Include(u => u.Association)
+                .Select(u => new Unit
+                {
+                    Id = u.Id,
+                    Name = u.Name,
+                    AssociationId = u.AssociationId,
+                    AssociationName = u.Association.Name, // hier vullen we 'm
+                    Association = u.Association,
+                    Patrols = u.Patrols
+                })
+                .FirstOrDefaultAsync(e => e.Id == id);
             return entity;
         }
 

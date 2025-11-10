@@ -10,6 +10,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.OpenApi.Models;
 using System.Security.Claims;
+using RSW.API.Seeders;
 
 namespace RSW.API;
 
@@ -49,9 +50,13 @@ public class Program
         builder.Services.AddScoped<IVolunteerTaskService, VolunteerTaskService>();
         builder.Services.AddScoped<IVolunteerAssignmentService, VolunteerAssignmentService>();
         builder.Services.AddScoped<IUserService, UserService>();
+        builder.Services.AddScoped<IEmailConfigService, EmailConfigService>();
+
+        builder.Services.AddScoped<IUnitLinkRequestService, UnitLinkWorkflow>();
 
         builder.Services.AddScoped<SeedService>();
         builder.Services.AddScoped<GraphMailService>();
+        builder.Services.AddScoped<EmailSeeder>();
 
         var jwtSection = builder.Configuration.GetSection("Jwt");
         var key = jwtSection["Key"] ?? throw new Exception("Jwt:Key is missing");
@@ -158,7 +163,8 @@ public class Program
         app.MapVolunteerAssignmentEndpoints();
         app.MapUserEndpoints();
         app.MapAccountEndpoints();
-
+        app.MapUnitLinkEndpoints();
+        app.MapEmailConfigEndpoints();
 
         using (var scope = app.Services.CreateScope())
         {
@@ -168,6 +174,8 @@ public class Program
             var adminPassword = builder.Configuration["AdminUser:Password"] ?? "Admin123!";
 
             await seedService.SeedAsync(adminEmail, adminPassword);
+
+            await scope.ServiceProvider.GetRequiredService<EmailSeeder>().SeedEmails();
         }
         app.MapHub<UpdatesHub>("/hubs/updates");
 
