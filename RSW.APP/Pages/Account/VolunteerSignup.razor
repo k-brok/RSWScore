@@ -172,6 +172,7 @@
         {
             PreviousVolunteerAssignments.Add(result);
             assignment = new(); // reset formulier
+            NotificationService.Notify(new NotificationMessage { Summary = $"Bedankt voor je aanvraag! We nemen nog contact met je op!." });
         }
         else
         {
