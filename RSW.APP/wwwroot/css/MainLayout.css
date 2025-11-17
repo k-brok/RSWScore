@@ -1,0 +1,60 @@
+/* Wrapper voor logo + stempel blijft gelijk */
+.logo-wrapper {
+    position: relative;
+    display: inline-block;
+    margin-left: 32px;   /* Logo + stempel naar rechts */
+    margin-top: 6px;     /* Logo + stempel iets naar beneden */
+}
+
+/* STEMPL – groot en duidelijk achter het logo */
+.logo-stamp {
+    position: absolute;
+    top: -80px;
+    left: -40px;
+    width: 250px;
+    height: 250px;
+    opacity: 0.9;
+    filter: brightness(1.25) contrast(1.4);
+    transform: rotate(-6deg);
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* LOGO – iets kleiner dan de stempel en alleen naar beneden uitstekend */
+.hero-logo {
+    position: relative;
+    z-index: 1;
+    height: 140px;        /* past mooi in een stempel van 250x250 */
+    margin-top: 0;        /* bovenkant logo = bovenkant header */
+    margin-bottom: -50px; /* laat het logo onder de header uitsteken */
+    filter: drop-shadow(0 8px 16px rgba(0,0,0,0.18));
+}
+
+/* Header en stack */
+.header-hero {
+    background: #ffffff;
+    height: 70px;
+    position: relative;
+    border-bottom: 1px solid #eee;
+    overflow: visible;
+}
+
+.header-inner {
+    height: 100%;
+    padding: 0 12px;
+    display: flex;
+    align-items: flex-start; /* bovenkant logo gelijk met bovenkant header */
+}
+@media (max-width: 600px) {
+    .hero-logo {
+        height: 100px;
+        margin-bottom: -30px;
+    }
+
+    .logo-stamp {
+        width: 180px;
+        height: 180px;
+        top: -40px;
+        left: -30px;
+    }
+}

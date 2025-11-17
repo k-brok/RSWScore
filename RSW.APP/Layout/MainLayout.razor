@@ -2,28 +2,38 @@
 
 <HeadContent>
     <RadzenTheme Theme="material" />
+    <link rel="stylesheet" href="css/mainlayout.css" />
 </HeadContent>
 
 <RadzenComponents />
 
 <RadzenLayout>
-    <RadzenHeader>
-        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0">
-            <RadzenSidebarToggle Click="@(() => sidebar1Expanded = !sidebar1Expanded)" />
-            <RadzenLabel Text="Header" />
+    <RadzenHeader class="header-hero">
+    <RadzenStack Orientation="Orientation.Horizontal"
+                 Gap="0"
+                 class="header-inner">
 
-            <div class="rz-ml-auto">
-                <ProfileMenu />
-            </div>
-        </RadzenStack>
-    </RadzenHeader>
-    <RadzenSidebar @bind-Expanded="@sidebar1Expanded">
-        <NavMenu />
-    </RadzenSidebar>
+        <div class="logo-wrapper">
+            <!-- Stempel achter het logo -->
+            <img src="images/stempel.png" alt=""
+                 class="logo-stamp" />
+
+            <!-- Originele regio-logo -->
+            <RadzenImage Path="images/de-langstraat-logo.png"
+                         class="hero-logo" />
+        </div>
+
+        <div class="rz-ml-auto">
+            <ProfileMenu />
+        </div>
+    </RadzenStack>
+</RadzenHeader>
+
     <RadzenBody class="rz-p-1">
         @Body
     </RadzenBody>
-    <RadzenFooter>
+
+    <RadzenFooter class="footer">
         Powerd by CHUNKK
     </RadzenFooter>
 </RadzenLayout>
