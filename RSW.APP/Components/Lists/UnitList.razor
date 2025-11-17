@@ -2,7 +2,7 @@
 @inject NotificationService NotificationService
 @inject IAssociationService associationService
 
-@if(associations == null){
+@if(Loading){
     <RadzenCard Style="margin:20px;">
         <RadzenProgressBarCircular Value="50" ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
         <p>Data ophalen...</p>
@@ -10,7 +10,7 @@
 }
 else
 {
-    <RadzenDataGrid @ref="dataGrid" Data="@units" TItem="Unit" RowSelect="@OnRowSelect" AllowPaging="true" PageSize="10" AllowSorting="true" AllowFiltering="true" FilterMode="FilterMode.Simple" Responsive="true" Style="height: 600px;">
+    <RadzenDataGrid @ref="dataGrid" Data="@units" TItem="Unit" RowSelect="@OnRowSelect" AllowPaging="true" PageSize="10" AllowSorting="true" AllowFiltering="true" FilterMode="FilterMode.Simple" Responsive="true" >
         <Columns>
             <RadzenDataGridColumn TItem="Unit" Property="Name" Title="Name" >
                 <EditTemplate Context="unit">
@@ -19,7 +19,7 @@ else
                     </RadzenFormField>
                 </EditTemplate>
             </RadzenDataGridColumn>
-            <RadzenDataGridColumn TItem="Unit" Property="AssociationId" Title="Vereniging">
+            <RadzenDataGridColumn TItem="Unit" Property="AssociationId" Title="Vereniging" Visible=@(association == null)>
                 <Template Context="criteria">
                     @associations.FirstOrDefault(C => C.Id == criteria.AssociationId).Name
                 </Template>
@@ -46,14 +46,22 @@ else
                 </EditTemplate>
             </RadzenDataGridColumn>
         </Columns>
+        <Template Context="unit">
+            <PatrolList patrols="unit.Patrols" />
+        </Template>
     </RadzenDataGrid>
 }
 @code {
     [Parameter]
-    public List<Unit> units { get; set; } = new List<Unit>();
+    public List<Unit>? units { get; set; } = null;
+    [Parameter]
+    public Association? association { get; set; } = null;
+    [Parameter]
+    public bool ShowRecrusive { get; set; } = false;
     public EventCallback<Unit> OnUnitSelected { get; set; }
     private RadzenDataGrid<Unit> dataGrid;
     private IEnumerable<Association>? associations { get; set; } = null;
+    private bool Loading = true;
 
     [Inject]
     private IUnitService unitService { get; set; } = default!;
@@ -61,7 +69,21 @@ else
     protected override async Task OnInitializedAsync()
     {
         associations = await associationService.GetAllAsync();
+
+        if(units == null && association == null){
+            return;
+        }
+        else if(association != null && units == null){
+            if(association.Groups.Any())
+                units = association.Groups;
+            else{
+                return;
+            } 
+        }
+
         await base.OnInitializedAsync();
+
+        Loading = false;
     }
     private async Task OnRowSelect(Unit unit)
     {
@@ -73,11 +95,15 @@ else
     void Insert()
     {
         var NewUnit = new Unit();
+        if(association != null)
+            NewUnit.AssociationId = association.Id;
         dataGrid.InsertRow(NewUnit);
     }
     void InsertAfterRow(Unit unit)
     {
         var NewUnit = new Unit();
+        if(association != null)
+            NewUnit.AssociationId = association.Id;
         dataGrid.InsertAfterRow(NewUnit, unit);
     }
     void EditRow(Unit unit)

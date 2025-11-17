@@ -1,7 +1,7 @@
 ﻿@inject DialogService DialogService
 @inject NotificationService NotificationService
 
-<RadzenDataGrid @ref="dataGrid" Data="@associations" TItem="Association" RowSelect="@OnRowSelect" AllowPaging="true" PageSize="10" AllowSorting="true" AllowFiltering="true" FilterMode="FilterMode.Simple" Responsive="true" Style="height: 600px;">
+<RadzenDataGrid @ref="dataGrid" Data="@associations" TItem="Association" RowSelect="@OnRowSelect" AllowPaging="true" PageSize="10" AllowSorting="true" AllowFiltering="true" FilterMode="FilterMode.Simple" Responsive="true">
     <Columns>
         <RadzenDataGridColumn TItem="Association" Property="Name" Title="Name" >
             <EditTemplate Context="association">
@@ -34,6 +34,12 @@
             </EditTemplate>
         </RadzenDataGridColumn>
     </Columns>
+
+        <Template Context="association">
+            @if(association.Groups != null){
+            <UnitList units="association.Groups"/>
+            }
+        </Template>
 </RadzenDataGrid>
 
 @code {

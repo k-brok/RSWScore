@@ -1,7 +1,7 @@
 ﻿@inject DialogService DialogService
 @inject NotificationService NotificationService
 
-<RadzenDataGrid @ref="dataGrid" Data="@editions" TItem="Edition" RowSelect="@OnRowSelect" AllowPaging="true" PageSize="10" AllowSorting="true" AllowFiltering="true" FilterMode="FilterMode.Simple" Responsive="true" Style="height: 600px;">
+<RadzenDataGrid @ref="dataGrid" Data="@editions" TItem="Edition" RowSelect="@OnRowSelect" AllowPaging="true" PageSize="10" AllowSorting="true" AllowFiltering="true" FilterMode="FilterMode.Simple" Responsive="true">
     <Columns>
         <RadzenDataGridColumn TItem="Edition" Property="RSWStartDate" Title="RSW datum" >
             <EditTemplate Context="edition">
@@ -51,6 +51,9 @@
             </EditTemplate>
         </RadzenDataGridColumn>
     </Columns>
+    <Template Context="edition">
+        <SubGroupList edition="edition" />
+    </Template>
 </RadzenDataGrid>
 
 @code {
