@@ -6,7 +6,7 @@ namespace RSW.APP.Services;
 public class BrowserTokenStorage : ITokenStorage
 {
     private readonly IJSRuntime _js;
-    private const string Key = "jwt_token";
+    private const string Key = "RSW_jwt_token";
 
     public BrowserTokenStorage(IJSRuntime js)
     {
