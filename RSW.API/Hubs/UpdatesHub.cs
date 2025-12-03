@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.SignalR;
+using RSW.Application.Interfaces;
+using RSW.Domain.Entities;
 
-public class UpdatesHub : Hub
+public class UpdatesHub : Hub, IUpdatesHub
 {
-    // Dit kan leeg blijven als je alleen server -> client push wilt
-    // Je kunt ook client -> server methoden hier toevoegen
+    public Task SendScoreUpdateAsync(Score UpdateScore)
+        => Clients.All.SendAsync("ScoreUpdate", UpdateScore);
 }

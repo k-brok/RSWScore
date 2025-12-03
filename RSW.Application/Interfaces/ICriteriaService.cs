@@ -1,0 +1,13 @@
+using RSW.Domain.Entities;
+
+namespace RSW.Application.Interfaces
+{
+    public interface ICriteriaService
+    {
+        Task<IEnumerable<Criteria>> GetAllAsync();
+        Task<Criteria?> GetByIdAsync(Guid id);
+        Task<Criteria> CreateAsync(Criteria model);
+        Task<Criteria?> UpdateAsync(Guid id, Criteria model);
+        Task<bool> DeleteAsync(Guid id);
+    }
+}

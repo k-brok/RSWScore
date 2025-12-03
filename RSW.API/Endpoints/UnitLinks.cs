@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using RSW.API.Services;
-using RSW.Shared.Dto;
-using RSW.Shared.Interfaces;
+using RSW.Infrastructure.Services;
+using RSW.Domain.Dto;
+using RSW.Application.Interfaces;
 
 namespace RSW.API.Endpoints;
 

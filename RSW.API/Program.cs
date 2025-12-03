@@ -1,10 +1,10 @@
 using Microsoft.EntityFrameworkCore;
-using RSW.API.Data;
+using RSW.Infrastructure.Data;
 using RSW.API.Endpoints;
-using RSW.API.Services;
-using RSW.Shared.Interfaces;
+using RSW.Infrastructure.Services;
+using RSW.Application.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
-using RSW.Shared.Entities;
+using RSW.Domain.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
@@ -20,6 +20,8 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
+        builder.Services.AddInfrastructure(builder.Configuration);
+
         builder.Services.AddDbContext<AppDbContext>(options =>
             options
                 .UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"))
@@ -33,26 +35,6 @@ public class Program
             })
             .AddEntityFrameworkStores<AppDbContext>()
             .AddDefaultTokenProviders();
-
-        builder.Services.AddScoped<IAssociationService, AssociationService>();
-        builder.Services.AddScoped<ICategoryService, CategoryService>();
-        builder.Services.AddScoped<ICriteriaService, CriteriaService>();
-        builder.Services.AddScoped<IEditionService, EditionService>();
-        builder.Services.AddScoped<IUnitService, UnitService>();
-        builder.Services.AddScoped<IJurySlotService, JurySlotService>();
-        builder.Services.AddScoped<IPatrolService, PatrolService>();
-        builder.Services.AddScoped<IScoreService, ScoreService>();
-        builder.Services.AddScoped<IScoutService, ScoutService>();
-        builder.Services.AddScoped<ISignupCodeService, SignupCodeService>();
-        builder.Services.AddScoped<ISubCategoryService, SubCategoryService>();
-        builder.Services.AddScoped<ISubGroupService, SubGroupService>();
-        builder.Services.AddScoped<IWebSettingService, WebSettingService>();
-        builder.Services.AddScoped<IVolunteerTaskService, VolunteerTaskService>();
-        builder.Services.AddScoped<IVolunteerAssignmentService, VolunteerAssignmentService>();
-        builder.Services.AddScoped<IUserService, UserService>();
-        builder.Services.AddScoped<IEmailConfigService, EmailConfigService>();
-
-        builder.Services.AddScoped<IUnitLinkRequestService, UnitLinkWorkflow>();
 
         builder.Services.AddScoped<SeedService>();
         builder.Services.AddScoped<GraphMailService>();
@@ -87,6 +69,7 @@ public class Program
 
         builder.Services.AddScoped<IAuthService, AuthService>();
         builder.Services.AddScoped<IJwtService, JwtService>();
+        builder.Services.AddSingleton<IUpdatesHub, UpdatesHub>();
 
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         builder.Services.AddEndpointsApiExplorer();

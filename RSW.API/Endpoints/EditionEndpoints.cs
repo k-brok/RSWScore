@@ -1,6 +1,6 @@
-using RSW.API.Services;
-using RSW.Shared.Entities;
-using RSW.Shared.Interfaces;
+using RSW.Infrastructure.Services;
+using RSW.Domain.Entities;
+using RSW.Application.Interfaces;
 
 namespace RSW.API.Endpoints
 {

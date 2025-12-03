@@ -2,8 +2,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
-using RSW.Shared.Entities;
-using RSW.Shared.Interfaces;
+using RSW.Domain.Entities;
+using RSW.Application.Interfaces;
 using System.Security.Claims;
 
 namespace RSW.API.Endpoints

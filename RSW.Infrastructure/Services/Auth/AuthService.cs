@@ -1,0 +1,314 @@
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+using RSW.Domain.Entities;
+using System.Net;
+using RSW.Application.Interfaces;
+using RSW.Domain.Dto;
+
+namespace RSW.Infrastructure.Services
+{
+    public class AuthService : IAuthService
+    {
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IConfiguration _config;
+        private readonly ILogger<AuthService> _logger;
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly GraphMailService _graphMailService;
+        private readonly IEmailConfigService _emailConfigService;
+
+        public AuthService(
+            UserManager<ApplicationUser> userManager,
+            IConfiguration config,
+            ILogger<AuthService> logger,
+            IHttpContextAccessor httpContextAccessor,
+            GraphMailService graphMailService,
+            IEmailConfigService emailConfigService)
+        {
+            _userManager = userManager;
+            _config = config;
+            _logger = logger;
+            _httpContextAccessor = httpContextAccessor;
+            _graphMailService = graphMailService;
+            _emailConfigService = emailConfigService;
+        }
+        public async Task<LoginResponse?> LoginAsync(LoginRequest request, bool rememberMe)
+        {
+            var user = await _userManager.FindByEmailAsync(request.Email!);
+            if (user == null)
+            {
+                return new LoginResponse("Ongeldig e-mailadres of wachtwoord.");
+            }
+
+            if (!await _userManager.IsEmailConfirmedAsync(user))
+            {
+                return new LoginResponse("Je e-mail is nog niet bevestigd. Controleer je mailbox.");
+            }
+
+            var check = await _userManager.CheckPasswordAsync(user, request.Password!);
+            if (!check)
+            {
+                return new LoginResponse("Ongeldig e-mailadres of wachtwoord.");
+            }
+
+            string token = await GenerateJwtToken(user);
+            return new LoginResponse("Login is gelukt!", true, token);
+        }
+        public async Task<RegisterResponse?> RegisterAsync(RegisterRequest request, bool rememberMe)
+        {
+            var user = new ApplicationUser
+            {
+                UserName = request.Email,
+                Email = request.Email
+            };
+
+            var result = await _userManager.CreateAsync(user, request.Password);
+            if (!result.Succeeded)
+            {
+                return new RegisterResponse(result);
+            }
+
+            await _userManager.AddToRoleAsync(user, "User");
+
+            var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+            var encodedToken = WebUtility.UrlEncode(token);
+
+            var baseUrl = _config["Jwt:Audience"];
+            var confirmationLink = $"{baseUrl}/confirmemail?userId={user.Id}&token={encodedToken}";
+
+            var tokens = new Dictionary<string, string>
+            {
+                ["name"] = user.UserName ?? "gebruiker",
+                ["confirmationLink"] = confirmationLink,
+                ["expiryMinutes"] = "30",
+                ["supportEmail"] = "support@regiodelangstraat.nl",
+                ["year"] = DateTime.UtcNow.Year.ToString()
+            };
+
+            await _graphMailService.SendWithLayoutAsync(
+                toAddress: user.Email!,
+                templateName: "ConfirmEmailEmail",
+                tokens: tokens
+            );
+
+            return new RegisterResponse(result);
+        }
+        private async Task<string> GenerateJwtToken(ApplicationUser user)
+        {
+            var roles = await _userManager.GetRolesAsync(user);
+
+            var claims = new List<Claim>
+            {
+                new(ClaimTypes.NameIdentifier, await _userManager.GetUserIdAsync(user)!),
+                new(ClaimTypes.Name, await _userManager.GetUserNameAsync(user)!)
+            };
+
+            claims.AddRange(roles.Select(r => new Claim(ClaimTypes.Role, r)));
+
+            var jwtSettings = _config.GetSection("Jwt");
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Key"]!));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var token = new JwtSecurityToken(
+                issuer: jwtSettings["Issuer"],
+                audience: jwtSettings["Audience"],
+                claims: claims,
+                expires: DateTime.UtcNow.AddMinutes(int.Parse(jwtSettings["ExpireMinutes"]!)),
+                signingCredentials: creds
+            );
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
+        public async Task GeneratePasswordResetTokenAsync(ResetPasswordTokenRequest request)
+        {
+            var user = await _userManager.FindByEmailAsync(request.Email);
+            if (user == null) return;
+
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+
+            var encodedToken = WebUtility.UrlEncode(token);
+            var BaseUrl = _config["Jwt:Audience"];
+            var resetLink = $"{BaseUrl}/PasswordReset?email={request.Email}&token={encodedToken}";
+
+            var tokens = new Dictionary<string, string>
+            {
+                ["name"] = user.UserName ?? "gebruiker",
+                ["resetLink"] = resetLink,
+                ["expiryMinutes"] = "30",
+                ["supportEmail"] = "support@regiodelangstraat.nl",
+                ["year"] = DateTime.UtcNow.Year.ToString()
+            };
+
+            await _graphMailService.SendWithLayoutAsync(
+                toAddress: request.Email,
+                templateName: "ResetPasswordEmail",
+                tokens: tokens
+            );
+        }
+
+        public async Task<bool> ResetPasswordAsync(ResetPasswordRequest request)
+        {
+            var user = await _userManager.FindByEmailAsync(request.Email);
+            if (user == null) return false;
+
+            var result = await _userManager.ResetPasswordAsync(user, request.Token, request.NewPassword);
+            return result.Succeeded;
+        }
+        public async Task<IList<Claim>> GetClaimsForUserAsync(ApplicationUser user)
+        {
+            var roles = await _userManager.GetRolesAsync(user);
+
+            var claims = new List<Claim>
+            {
+                new(ClaimTypes.NameIdentifier, await _userManager.GetUserIdAsync(user)!),
+                new(ClaimTypes.Name, await _userManager.GetUserNameAsync(user)!)
+            };
+
+            claims.AddRange(roles.Select(r => new Claim(ClaimTypes.Role, r)));
+
+            return claims;
+        }
+        public async Task LogoutAsync()
+        {
+            var ctx = _httpContextAccessor.HttpContext;
+            if (ctx != null)
+            {
+                await ctx.SignOutAsync(IdentityConstants.ApplicationScheme);
+            }
+        }
+        public async Task<ApplicationUser?> GetCurrentUserAsync()
+        {
+            var userId = _httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
+            Console.WriteLine(userId);
+            if (string.IsNullOrEmpty(userId)) return null;
+
+            var user = await _userManager.FindByIdAsync(userId);
+            return user;
+        }
+        public async Task<ConfirmEmailResponse> ConfirmEmailAsync(ConfirmEmailRequest request)
+        {
+            var user = await _userManager.FindByIdAsync(request.UserId!);
+            if (user == null)
+            {
+                return new ConfirmEmailResponse
+                {
+                    Success = false,
+                    Message = "Ongeldige gebruiker."
+                };
+            }
+
+            var result = await _userManager.ConfirmEmailAsync(user, request.Token!);
+            if (!result.Succeeded)
+            {
+                var errors = string.Join("; ", result.Errors.Select(e => e.Description));
+                return new ConfirmEmailResponse
+                {
+                    Success = false,
+                    Message = $"Bevestigen mislukt: {errors}"
+                };
+            }
+
+            return new ConfirmEmailResponse
+            {
+                Success = true,
+                Message = "E-mail succesvol bevestigd!"
+            };
+        }
+        public async Task<bool> ResendEmailConfirmationAsync(string email)
+        {
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user == null) return false;
+
+            var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+            var encodedToken = WebUtility.UrlEncode(token);
+
+            var baseUrl = _config["Jwt:Audience"];
+            var confirmationLink = $"{baseUrl}/confirmemail?userId={user.Id}&token={encodedToken}";
+
+            var tokens = new Dictionary<string, string>
+            {
+                ["name"] = user.UserName ?? "gebruiker",
+                ["confirmationLink"] = confirmationLink,
+                ["expiryMinutes"] = "30",
+                ["supportEmail"] = "support@regiodelangstraat.nl",
+                ["year"] = DateTime.UtcNow.Year.ToString()
+            };
+
+            await _graphMailService.SendWithLayoutAsync(
+                toAddress: user.Email!,
+                templateName: "ConfirmEmailEmail",
+                tokens: tokens
+            );
+
+            return true;
+        }
+
+        public async Task<bool> InitiateChangeEmailAsync(string userId, string newEmail)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null) return false;
+
+            // Token voor wijziging naar nieuwe e-mail
+            var token = await _userManager.GenerateChangeEmailTokenAsync(user, newEmail);
+            var encodedToken = WebUtility.UrlEncode(token);
+            var encodedNewEmail = WebUtility.UrlEncode(newEmail);
+
+            var baseUrl = _config["Jwt:Audience"];
+            var link = $"{baseUrl}/confirmchangeemail?userId={user.Id}&newEmail={encodedNewEmail}&token={encodedToken}";
+
+            var tokens = new Dictionary<string, string>
+            {
+                ["name"] = user.UserName ?? "gebruiker",
+                ["confirmationLink"] = link,
+                ["expiryMinutes"] = "30",
+                ["supportEmail"] = "support@regiodelangstraat.nl",
+                ["year"] = DateTime.UtcNow.Year.ToString()
+            };
+
+            await _graphMailService.SendWithLayoutAsync(
+                toAddress: user.Email!,
+                templateName: "ConfirmChangeEmailEmail",
+                tokens: tokens
+            );
+
+            return true;
+        }
+
+        public async Task<ConfirmEmailResponse> ConfirmChangeEmailAsync(ConfirmChangeEmailRequest request)
+        {
+            var user = await _userManager.FindByIdAsync(request.UserId);
+            if (user == null)
+            {
+                return new ConfirmEmailResponse { Success = false, Message = "Ongeldige gebruiker." };
+            }
+
+            var result = await _userManager.ChangeEmailAsync(user, request.NewEmail, request.Token);
+            if (!result.Succeeded)
+            {
+                var errors = string.Join("; ", result.Errors.Select(e => e.Description));
+                return new ConfirmEmailResponse { Success = false, Message = $"Wijzigen mislukt: {errors}" };
+            }
+
+            // Optioneel: username gelijk trekken met e-mail
+            if (!string.Equals(user.UserName, request.NewEmail, StringComparison.OrdinalIgnoreCase))
+            {
+                var r2 = await _userManager.SetUserNameAsync(user, request.NewEmail);
+                if (!r2.Succeeded)
+                {
+                    var errors = string.Join("; ", r2.Errors.Select(e => e.Description));
+                    return new ConfirmEmailResponse { Success = false, Message = $"E-mail gewijzigd, maar username niet: {errors}" };
+                }
+            }
+
+            return new ConfirmEmailResponse { Success = true, Message = "E-mail succesvol gewijzigd!" };
+        }
+
+    }
+}

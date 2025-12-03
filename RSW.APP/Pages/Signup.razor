@@ -1,7 +1,7 @@
 @page "/signup/{id:guid}"
 @page "/signup"
 
-@using RSW.Shared.Entities
+@using RSW.Domain.Entities
 @inject ISignupCodeService SignupCodeService
 @inject IUnitService UnitService
 @inject IAssociationService AssociationService
@@ -550,7 +550,7 @@ else
             new DialogOptions { Width = "520px", CloseDialogOnOverlayClick = false });
 
         // optioneel: feedback na succesvol indienen
-        if (result is RSW.Shared.Dto.CreateUnitLinkRequestResponse resp && resp.Success)
+        if (result is RSW.Domain.Dto.CreateUnitLinkRequestResponse resp && resp.Success)
         {
             NotificationService.Notify(NotificationSeverity.Success, "Aanvraag ingediend", "We brengen je op de hoogte zodra de organisatie reageert.");
         }
@@ -563,7 +563,7 @@ else
             new Dictionary<string, object?>(), // geen prefill
             new DialogOptions { Width = "520px", CloseDialogOnOverlayClick = false });
 
-        if (result is RSW.Shared.Dto.CreateUnitLinkRequestResponse resp && resp.Success)
+        if (result is RSW.Domain.Dto.CreateUnitLinkRequestResponse resp && resp.Success)
         {
             //NotificationService.Notify(NotificationSeverity.Success, "Aanvraag ingediend", "We brengen je op de hoogte zodra de organisatie reageert.");
         }

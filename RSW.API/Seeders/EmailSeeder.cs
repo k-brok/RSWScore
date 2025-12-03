@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
-using RSW.API.Data;
-using RSW.Shared.Entities;
+using RSW.Infrastructure.Data;
+using RSW.Domain.Entities;
 
 namespace RSW.API.Seeders
 {

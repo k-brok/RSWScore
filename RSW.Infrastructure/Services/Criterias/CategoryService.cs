@@ -1,0 +1,72 @@
+
+using Microsoft.EntityFrameworkCore;
+using RSW.Infrastructure.Data;
+using RSW.Domain.Entities;
+using RSW.Application.Interfaces;
+
+namespace RSW.Infrastructure.Services
+{
+    public class CategoryService : ICategoryService
+    {
+        private readonly AppDbContext _context;
+
+        public CategoryService(AppDbContext context)
+        {
+            _context = context;
+        }
+
+        public async Task<IEnumerable<Category>> GetAllAsync()
+        {
+            return await _context.Categories
+                .ToListAsync();
+        }
+
+        public async Task<Category?> GetByIdAsync(Guid id)
+        {
+            var entity = await _context.Categories.FirstOrDefaultAsync(e => e.Id == id);
+            return entity;
+        }
+
+        public async Task<Category> CreateAsync(Category model)
+        {
+            var entity = new Category
+            {
+                Id = Guid.NewGuid(),
+                Name = model.Name,
+                Weight = model.Weight
+            };
+
+            _context.Categories.Add(entity);
+            await _context.SaveChangesAsync();
+
+            return entity;
+        }
+
+        public async Task<Category?> UpdateAsync(Guid id, Category model)
+        {
+            var existing = await _context.Categories.FirstOrDefaultAsync(e => e.Id == id);
+            if (existing == null) return null;
+
+            existing.Name = model.Name;
+            existing.Weight = model.Weight;
+
+            await _context.SaveChangesAsync();
+            return existing;
+        }
+        public async Task<bool> DeleteAsync(Guid id)
+        {
+            var found = await _context.Categories.FirstOrDefaultAsync(e => e.Id == id);
+            if (found == null) return false;
+
+            _context.Categories.Remove(found);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<IEnumerable<SubCategory>> GetSubCategorysAsync(Guid id)
+        {
+            return await _context.SubCategories.Where(S => S.CategoryId == id).ToListAsync();
+        }
+    }
+
+}

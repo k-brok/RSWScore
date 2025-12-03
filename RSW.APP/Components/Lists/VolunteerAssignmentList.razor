@@ -4,7 +4,7 @@
 @inject IVolunteerTaskService volunteerTaskService
 @inject IUserService userService
 @using Microsoft.AspNetCore.Identity
-@using RSW.Shared.Entities
+@using RSW.Domain.Entities
 @if(Editions == null || VolunteerTasks == null || Users == null){
     <RadzenCard Style="margin:20px;">
         <RadzenProgressBarCircular Value="50" ShowValue="false" Mode="ProgressBarMode.Indeterminate" />

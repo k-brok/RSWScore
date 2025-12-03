@@ -1,7 +1,7 @@
-@using RSW.Shared.Entities
+@using RSW.Domain.Entities
 @using Radzen
 @inject NotificationService notificationService
-@inject RSW.APP.Services.AuthService AuthService
+@inject RSW.APP.Application.Services.AuthService AuthService
 
 <RadzenTemplateForm Data="@registerModel" Submit="@OnSubmit" TItem="RegisterRequest">
 

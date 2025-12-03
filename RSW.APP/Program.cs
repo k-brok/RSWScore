@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Radzen;
-using RSW.APP.Services;
-using RSW.Shared.Interfaces;
-using RSW.APP.Auth;
+using RSW.APP.Application.Services;
+using RSW.Application.Interfaces;
+using RSW.APP.Application.Services;
 using Microsoft.AspNetCore.Components.Authorization;
 
 namespace RSW.APP;

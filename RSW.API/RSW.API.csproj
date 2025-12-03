@@ -1,29 +1,29 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>4b85dde3-61a2-4feb-a2cb-0818cca81101</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.*" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.*" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.*" />
-	<PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.*" />
-	<PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.*" />
-  <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.*" />
-  <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.*" />
-	<PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.*">
-		<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-		<PrivateAssets>all</PrivateAssets>
-	</PackageReference>
-  <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.*" />
-  <PackageReference Include="Azure.Identity" Version="1.*" />
-  <PackageReference Include="Microsoft.Graph" Version="5.*" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.*" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.*" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.*" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.*" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.*">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.*" />
   </ItemGroup>
+
   <ItemGroup>
-    <ProjectReference Include="..\RSW.Shared\RSW.Shared.csproj" />
+    <ProjectReference Include="..\RSW.Application\RSW.Application.csproj" />
+    <ProjectReference Include="..\RSW.Infrastructure\RSW.Infrastructure.csproj" />
   </ItemGroup>
 
   <ItemGroup>

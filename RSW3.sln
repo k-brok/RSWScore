@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.12.35527.113
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RSW.Shared", "RSW.Shared\RSW.Shared.csproj", "{30B4AA95-EF22-48F4-B068-67BDB0C199B2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RSW.Domain", "RSW.Domain\RSW.Domain.csproj", "{30B4AA95-EF22-48F4-B068-67BDB0C199B2}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RSW.API", "RSW.API\RSW.API.csproj", "{E5528234-C54C-48C6-9C5B-B768C249DD5D}"
 EndProject

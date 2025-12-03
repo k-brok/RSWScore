@@ -1,6 +1,6 @@
 ﻿@inject DialogService DialogService
 @inject NotificationService NotificationService
-@using RSW.Shared.Entities
+@using RSW.Domain.Entities
 
 <RadzenDataGrid @ref="dataGrid" Data="@volunteertasks" TItem="VolunteerTask" RowSelect="@OnRowSelect" AllowPaging="true" PageSize="10" AllowSorting="true" AllowFiltering="true" FilterMode="FilterMode.Simple" Responsive="true" Style="height: 600px;">
     <Columns>
